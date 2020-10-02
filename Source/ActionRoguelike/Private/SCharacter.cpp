@@ -132,11 +132,6 @@ void ASCharacter::SpawnProjectile(TSubclassOf<AActor> ClassToSpawn)
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		SpawnParams.Instigator = this;
 
-		FHitResult Hit;
-		FVector TraceStart = CameraComp->GetComponentLocation();
-		// endpoint far into the look-at distance (not too far, still adjust somewhat towards crosshair on a miss)
-		FVector TraceEnd = CameraComp->GetComponentLocation() + (GetControlRotation().Vector() * 5000);
-
 		FCollisionShape Shape;
 		Shape.SetSphere(20.0f);
 
@@ -149,19 +144,21 @@ void ASCharacter::SpawnProjectile(TSubclassOf<AActor> ClassToSpawn)
 		ObjParams.AddObjectTypesToQuery(ECC_WorldStatic);
 		ObjParams.AddObjectTypesToQuery(ECC_Pawn);
 
-		FRotator ProjRotation;
-		// true if we got to a blocking hit (Alternative: SweepSingleByChannel with ECC_WorldDynamic)
+		FVector TraceStart = CameraComp->GetComponentLocation();
+
+		// endpoint far into the look-at distance (not too far, still adjust somewhat towards crosshair on a miss)
+		FVector TraceEnd = CameraComp->GetComponentLocation() + (GetControlRotation().Vector() * 5000);
+
+		FHitResult Hit;
+		// returns true if we got to a blocking hit
 		if (GetWorld()->SweepSingleByObjectType(Hit, TraceStart, TraceEnd, FQuat::Identity, ObjParams, Shape, Params))
 		{
-			// Adjust location to end up at crosshair look-at
-			ProjRotation = FRotationMatrix::MakeFromX(Hit.ImpactPoint - HandLocation).Rotator();
-		}
-		else
-		{
-			// Fall-back since we failed to find any blocking hit
-			ProjRotation = FRotationMatrix::MakeFromX(TraceEnd - HandLocation).Rotator();
+			// Overwrite trace end with impact point in world
+			TraceEnd = Hit.ImpactPoint;
 		}
 
+		// find new direction/rotation from Hand pointing to impact point in world.
+		FRotator ProjRotation = FRotationMatrix::MakeFromX(TraceEnd - HandLocation).Rotator();
 
 		FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
 		GetWorld()->SpawnActor<AActor>(ClassToSpawn, SpawnTM, SpawnParams);
@@ -176,4 +173,3 @@ void ASCharacter::PrimaryInteract()
 		InteractionComp->PrimaryInteract();
 	}
 }
-
