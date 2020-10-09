@@ -21,6 +21,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Powerup")
 	float RespawnTime;
 
+	FTimerHandle TimerHandle_RespawnTimer;
+
 	UFUNCTION()
 	void ShowPowerup();
 

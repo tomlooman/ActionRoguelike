@@ -23,8 +23,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* MeshComp;
 
-	// float healt amount?
-
 public:
 
 	void Interact_Implementation(APawn* InstigatorPawn) override;
