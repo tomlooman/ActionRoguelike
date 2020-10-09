@@ -30,8 +30,8 @@ ASProjectileBase::ASProjectileBase()
 	MoveComp->ProjectileGravityScale = 0.0f;
 	MoveComp->InitialSpeed = 8000;
 
-	ImpactShakeInnerRadius = 250.0f;
-	ImpactShakeOuterRadius = 2500.0f;
+	ImpactShakeInnerRadius = 0.0f;
+	ImpactShakeOuterRadius = 1500.0f;
 
 }
 
