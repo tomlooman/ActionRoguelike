@@ -29,14 +29,38 @@ float USAttributeComponent::GetHealthMax() const
 }
 
 
-bool USAttributeComponent::ApplyHealthChange(float Delta)
+bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {
 	float OldHealth = Health;
 
 	Health = FMath::Clamp(Health + Delta, 0.0f, HealthMax);
 
 	float ActualDelta = Health - OldHealth;
-	OnHealthChanged.Broadcast(nullptr, this, Health, ActualDelta); // @fixme: Still nullptr for InstigatorActor parameter
+	OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
 
 	return ActualDelta != 0;
 }
+
+
+USAttributeComponent* USAttributeComponent::GetAttributes(AActor* FromActor)
+{
+	if (FromActor)
+	{
+		return Cast<USAttributeComponent>(FromActor->GetComponentByClass(USAttributeComponent::StaticClass()));
+	}
+
+	return nullptr;
+}
+
+
+bool USAttributeComponent::IsActorAlive(AActor* Actor)
+{
+	USAttributeComponent* AttributeComp = GetAttributes(Actor);
+	if (AttributeComp)
+	{
+		return AttributeComp->IsAlive();
+	}
+
+	return false;
+}
+
