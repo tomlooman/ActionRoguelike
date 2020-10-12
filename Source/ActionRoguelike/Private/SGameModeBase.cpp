@@ -47,39 +47,32 @@ void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryIn
 		return;
 	}
 
-
 	int32 NrOfAliveBots = 0;
 	for (TActorIterator<ASAICharacter> It(GetWorld()); It; ++It)
 	{
 		ASAICharacter* Bot = *It;
 
 		USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(Bot->GetComponentByClass(USAttributeComponent::StaticClass()));
-		if (ensure(AttributeComp) && AttributeComp->IsAlive())
+		if (AttributeComp && AttributeComp->IsAlive())
 		{
 			NrOfAliveBots++;
 		}
 	}
 
 	float MaxBotCount = 10.0f;
-
 	if (DifficultyCurve)
 	{
 		MaxBotCount = DifficultyCurve->GetFloatValue(GetWorld()->TimeSeconds);
 	}
-
 
 	if (NrOfAliveBots >= MaxBotCount)
 	{
 		return;
 	}
 
-
-
 	TArray<FVector> Locations = QueryInstance->GetResultsAsLocations();
-
 	if (Locations.IsValidIndex(0))
 	{
-
 		GetWorld()->SpawnActor<AActor>(MinionClass, Locations[0], FRotator::ZeroRotator);
 	}
 }
