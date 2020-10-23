@@ -218,7 +218,8 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 	APawn* KillerPawn = Cast<APawn>(Killer);
 	if (KillerPawn)
 	{
-		if (ASPlayerState* PS = KillerPawn->GetPlayerState<ASPlayerState>()) // < can cast and check for nullptr within if-statement.
+		ASPlayerState* PS = KillerPawn->GetPlayerState<ASPlayerState>();
+		if (PS) 
 		{
 			PS->AddCredits(CreditsPerKill);
 		}

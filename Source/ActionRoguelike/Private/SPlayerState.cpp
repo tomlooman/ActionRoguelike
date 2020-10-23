@@ -6,6 +6,7 @@
 
 
 
+
 void ASPlayerState::AddCredits(int32 Delta)
 {
 	// Avoid user-error of adding a negative amount or zero
@@ -39,4 +40,10 @@ bool ASPlayerState::RemoveCredits(int32 Delta)
 	OnCreditsChanged.Broadcast(this, Credits, -Delta);
 
 	return true;
+}
+
+
+int32 ASPlayerState::GetCredits() const
+{
+	return Credits;
 }
