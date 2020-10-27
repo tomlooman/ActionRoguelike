@@ -13,7 +13,8 @@
 #include "SPlayerState.h"
 
 
-static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
+// Disabled by default while working on multiplayer...
+static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), false, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
 
 
 
@@ -69,7 +70,7 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 {
 	if (!CVarSpawnBots.GetValueOnGameThread())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Bot spawning disabled via cvar 'CVarSpawnBots'."));
+		//UE_LOG(LogTemp, Warning, TEXT("Bot spawning disabled via cvar 'CVarSpawnBots'."));
 		return;
 	}
 
