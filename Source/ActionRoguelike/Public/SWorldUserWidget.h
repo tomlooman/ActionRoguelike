@@ -29,6 +29,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	FVector WorldOffset;
 
-	UPROPERTY(BlueprintReadOnly, Category = "UI")
+	UPROPERTY(BlueprintReadWrite, Category = "UI", meta = (ExposeOnSpawn=true))
 	AActor* AttachedActor;
 };
