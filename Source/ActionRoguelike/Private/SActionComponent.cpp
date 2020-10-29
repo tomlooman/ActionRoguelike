@@ -64,6 +64,20 @@ void USActionComponent::RemoveAction(USAction* ActionToRemove)
 }
 
 
+USAction* USActionComponent::GetAction(TSubclassOf<USAction> ActionClass) const
+{
+	for (USAction* Action : Actions)
+	{
+		if (Action && Action->IsA(ActionClass))
+		{
+			return Action;
+		}
+	}
+
+	return nullptr;
+}
+
+
 bool USActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 {
 	for (USAction* Action : Actions)
