@@ -61,7 +61,7 @@ protected:
 	//UPROPERTY(ReplicatedUsing="")
 	//bool bIsAlive;
 
-	UFUNCTION(NetMulticast, Reliable) // @FIXME: mark as unreliable once we moved the 'state' our of scharacter
+	UFUNCTION(NetMulticast, Reliable) // @FIXME: could mark as unreliable once we moved the 'state' out of scharacter (eg. once its cosmetic only)
 	void MulticastHealthChanged(AActor* InstigatorActor, float NewHealth, float Delta);
 
 public:	
@@ -82,7 +82,7 @@ public:
 	float GetHealthMax() const;
 
 	UPROPERTY(BlueprintAssignable, Category = "Attributes")
-	FOnHealthChanged OnHealthChanged;
+	FOnAttributeChanged OnHealthChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Attributes")
 	FOnAttributeChanged OnRageChanged;
