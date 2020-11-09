@@ -39,13 +39,13 @@ void USActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::White, DebugMsg);
 
 	// Draw All Actions
-	for (USAction* Action : Actions)
-	{
-		FColor TextColor = Action->IsRunning() ? FColor::Blue : FColor::White;
-		FString ActionMsg = FString::Printf(TEXT("[%s] Action: %s"), *GetNameSafe(GetOwner()), *GetNameSafe(Action));
-
-		LogOnScreen(this, ActionMsg, TextColor, 0.0f);
-	}
+// 	for (USAction* Action : Actions)
+// 	{
+// 		FColor TextColor = Action->IsRunning() ? FColor::Blue : FColor::White;
+// 		FString ActionMsg = FString::Printf(TEXT("[%s] Action: %s"), *GetNameSafe(GetOwner()), *GetNameSafe(Action));
+// 
+// 		LogOnScreen(this, ActionMsg, TextColor, 0.0f);
+// 	}
 }
 
 
