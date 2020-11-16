@@ -22,7 +22,7 @@
 #include "Engine/AssetManager.h"
 
 
-// Disabled by default while working on multiplayer...
+
 static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
 
 
@@ -158,7 +158,6 @@ void ASGameModeBase::OnBotSpawnQueryCompleted(UEnvQueryInstanceBlueprintWrapper*
 			// Get Random Enemy
 			int32 RandomIndex = FMath::RandRange(0, Rows.Num() - 1);
 			FMonsterInfoRow* SelectedRow = Rows[RandomIndex];
-
 
 			UAssetManager* Manager = UAssetManager::GetIfValid();
 			if (Manager)
