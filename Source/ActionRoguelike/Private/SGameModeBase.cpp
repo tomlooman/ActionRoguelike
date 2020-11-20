@@ -285,16 +285,27 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 {
 	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victim: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(Killer));
 
-	// Respawn Players after delay
+	// Handle Player death
 	ASCharacter* Player = Cast<ASCharacter>(VictimActor);
 	if (Player)
 	{
-		FTimerHandle TimerHandle_RespawnDelay;
-		FTimerDelegate Delegate;
-		Delegate.BindUFunction(this, "RespawnPlayerElapsed", Player->GetController());
+		// Disabled auto-respawn
+// 		FTimerHandle TimerHandle_RespawnDelay;
+// 		FTimerDelegate Delegate;
+// 		Delegate.BindUFunction(this, "RespawnPlayerElapsed", Player->GetController());
+// 
+// 		float RespawnDelay = 2.0f;
+// 		GetWorldTimerManager().SetTimer(TimerHandle_RespawnDelay, Delegate, RespawnDelay, false);
 
-		float RespawnDelay = 2.0f;
-		GetWorldTimerManager().SetTimer(TimerHandle_RespawnDelay, Delegate, RespawnDelay, false);
+		// Store time if it was better than previous record
+		ASPlayerState* PS = Player->GetPlayerState<ASPlayerState>();
+		if (PS)
+		{
+			PS->UpdatePersonalRecord(GetWorld()->TimeSeconds);
+		}
+
+		// Immediately auto save on death
+		WriteSaveGame();
 	}
 
 	// Give Credits for kill

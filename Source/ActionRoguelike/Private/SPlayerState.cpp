@@ -44,11 +44,30 @@ bool ASPlayerState::RemoveCredits(int32 Delta)
 }
 
 
+bool ASPlayerState::UpdatePersonalRecord(float NewTime)
+{
+	// Higher time is better
+	if (NewTime > PersonalRecordTime)
+	{
+		float OldRecord = PersonalRecordTime;
+
+		PersonalRecordTime = NewTime;
+
+		OnRecordTimeChanged.Broadcast(this, PersonalRecordTime, OldRecord);
+
+		return true;
+	}
+
+	return false;
+}
+
+
 void ASPlayerState::SavePlayerState_Implementation(USSaveGame* SaveObject)
 {
 	if (SaveObject)
 	{
 		SaveObject->Credits = Credits;
+		SaveObject->PersonalRecordTime = PersonalRecordTime;
 	}
 }
 
@@ -60,6 +79,8 @@ void ASPlayerState::LoadPlayerState_Implementation(USSaveGame* SaveObject)
 		//Credits = SaveObject->Credits;
 		// Makes sure we trigger credits changed event
 		AddCredits(SaveObject->Credits);
+
+		PersonalRecordTime = SaveObject->PersonalRecordTime;
 	}
 }
 
