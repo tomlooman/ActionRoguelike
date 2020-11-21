@@ -60,6 +60,7 @@ class ACTIONROGUELIKE_API ASGameModeBase : public AGameModeBase
 
 protected:
 
+	/* Name of slot to save/load to disk. Can be overriden via InitGame() Options-string */
 	FString SlotName;
 
 	UPROPERTY()
@@ -69,14 +70,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	UDataTable* MonsterTable;
 
-// 	UPROPERTY(EditDefaultsOnly, Category = "AI")
-// 	TSubclassOf<AActor> MinionClass;
-
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	UEnvQuery* SpawnBotQuery;
 
+	/* Curve to grant credits to spend on spawning monsters */
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	UCurveFloat* DifficultyCurve;
+	UCurveFloat* SpawnCreditCurve;
+	
+	/* Time to wait between failed attempts to spawn/buy monster to give some time to build up credits. */
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	float CooldownTimeBetweenFailures;
 
 	FTimerHandle TimerHandle_SpawnBots;
 
@@ -116,6 +119,16 @@ protected:
 	UFUNCTION()
 	void RespawnPlayerElapsed(AController* Controller);
 
+protected:
+
+	// Points available to spend on spawning monsters
+	float AvailableSpawnCredit;
+
+	/* GameTime cooldown to give spawner some time to build up credits */
+	float CooldownBotSpawnUntil;
+
+	FMonsterInfoRow* SelectedMonsterRow;
+
 public:
 
 	virtual void OnActorKilled(AActor* VictimActor, AActor* Killer);
@@ -130,7 +143,6 @@ public:
 
 	UFUNCTION(Exec)
 	void KillAll();
-
 
 	UFUNCTION(BlueprintCallable, Category = "SaveGame")
 	void WriteSaveGame();

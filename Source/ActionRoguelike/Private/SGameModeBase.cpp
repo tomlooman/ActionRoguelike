@@ -31,6 +31,7 @@ ASGameModeBase::ASGameModeBase()
 {
 	SpawnTimerInterval = 2.0f;
 	CreditsPerKill = 20;
+	CooldownTimeBetweenFailures = 8.0f;
 
 	DesiredPowerupCount = 10;
 	RequiredPowerupDistance = 2000;
@@ -111,6 +112,21 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 		return;
 	}
 
+	// Give points to spend
+	if (SpawnCreditCurve)
+	{
+		AvailableSpawnCredit += SpawnCreditCurve->GetFloatValue(GetWorld()->TimeSeconds);
+	}
+
+	if (CooldownBotSpawnUntil > GetWorld()->TimeSeconds)
+	{
+		// Still cooling down
+		return;
+	}
+
+	LogOnScreen(this, FString::Printf(TEXT("Available SpawnCredits: %f"), AvailableSpawnCredit));
+
+	// Count alive bots before spawning
 	int32 NrOfAliveBots = 0;
 	for (TActorIterator<ASAICharacter> It(GetWorld()); It; ++It)
 	{
@@ -125,18 +141,57 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 
 	UE_LOG(LogTemp, Log, TEXT("Found %i alive bots."), NrOfAliveBots);
 
-	float MaxBotCount = 10.0f;
-	if (DifficultyCurve)
-	{
-		MaxBotCount = DifficultyCurve->GetFloatValue(GetWorld()->TimeSeconds);
-	}
-
+	const float MaxBotCount = 40.0f;
 	if (NrOfAliveBots >= MaxBotCount)
 	{
 		UE_LOG(LogTemp, Log, TEXT("At maximum bot capacity. Skipping bot spawn."));
 		return;
 	}
 
+	if (MonsterTable)
+	{
+		// Reset before selecting new row
+		SelectedMonsterRow = nullptr;
+
+		TArray<FMonsterInfoRow*> Rows;
+		MonsterTable->GetAllRows("", Rows);
+
+		// Get total weight
+		float TotalWeight = 0;
+		for (FMonsterInfoRow* Entry : Rows)
+		{
+			TotalWeight += Entry->Weight;
+		}
+
+		// Random number within total random
+		int32 RandomWeight = FMath::RandRange(0.0f, TotalWeight);
+
+		//Reset
+		TotalWeight = 0;
+
+		// Get monster based on random weight
+		for (FMonsterInfoRow* Entry : Rows)
+		{
+			TotalWeight += Entry->Weight;
+
+			if (RandomWeight <= TotalWeight)
+			{
+				SelectedMonsterRow = Entry;
+				break;
+			}
+		}
+
+		if (SelectedMonsterRow && SelectedMonsterRow->SpawnCost >= AvailableSpawnCredit)
+		{
+			// Too expensive to spawn, try again soon
+			CooldownBotSpawnUntil = GetWorld()->TimeSeconds + CooldownTimeBetweenFailures;
+
+			LogOnScreen(this, FString::Printf(TEXT("Cooling down until: %f"), CooldownBotSpawnUntil), FColor::Red);
+			return;
+		}
+	}
+
+	// Run EQS to find valid spawn location
 	UEnvQueryInstanceBlueprintWrapper* QueryInstance = UEnvQueryManager::RunEQSQuery(this, SpawnBotQuery, this, EEnvQueryRunMode::RandomBest5Pct, nullptr);
 	if (ensure(QueryInstance))
 	{
@@ -156,43 +211,16 @@ void ASGameModeBase::OnBotSpawnQueryCompleted(UEnvQueryInstanceBlueprintWrapper*
 	TArray<FVector> Locations = QueryInstance->GetResultsAsLocations();
 	if (Locations.IsValidIndex(0) && MonsterTable)
 	{	
-		TArray<FMonsterInfoRow*> Rows;
-		MonsterTable->GetAllRows("", Rows);
-
-		// Get total weight
-		float TotalWeight = 0;
-		for (FMonsterInfoRow* Entry : Rows)
+		if (UAssetManager* Manager = UAssetManager::GetIfValid())
 		{
-			TotalWeight += Entry->Weight;
-		}
+			// Apply spawn cost
+			AvailableSpawnCredit -= SelectedMonsterRow->SpawnCost;
 
-		// Random number within total random
-		int32 RandomWeight = FMath::RandRange(0.0f, TotalWeight);
-		FMonsterInfoRow* SelectedRow = nullptr;
-
-		//Reset
-		TotalWeight = 0;
-
-		// Get monster based on random weight
-		for (FMonsterInfoRow* Entry : Rows)
-		{
-			TotalWeight += Entry->Weight;
-
-			if (RandomWeight <= TotalWeight)
-			{
-				SelectedRow = Entry;
-				break;
-			}
-		}
-
-		UAssetManager* Manager = UAssetManager::GetIfValid();
-		if (Manager)
-		{
-			//LogOnScreen(this, "Loading monster...", FColor::Green);
+			FPrimaryAssetId MonsterId = SelectedMonsterRow->MonsterId;
 
 			TArray<FName> Bundles;
-			FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ASGameModeBase::OnMonsterLoaded, SelectedRow->MonsterId, Locations[0]);
-			Manager->LoadPrimaryAsset(SelectedRow->MonsterId, Bundles, Delegate);
+			FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ASGameModeBase::OnMonsterLoaded, MonsterId, Locations[0]);
+			Manager->LoadPrimaryAsset(MonsterId, Bundles, Delegate);
 		}	
 	}
 }
