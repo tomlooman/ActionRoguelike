@@ -154,35 +154,53 @@ void ASGameModeBase::OnBotSpawnQueryCompleted(UEnvQueryInstanceBlueprintWrapper*
 	}
 
 	TArray<FVector> Locations = QueryInstance->GetResultsAsLocations();
-	if (Locations.IsValidIndex(0))
-	{
-		if (MonsterTable)
+	if (Locations.IsValidIndex(0) && MonsterTable)
+	{	
+		TArray<FMonsterInfoRow*> Rows;
+		MonsterTable->GetAllRows("", Rows);
+
+		// Get total weight
+		float TotalWeight = 0;
+		for (FMonsterInfoRow* Entry : Rows)
 		{
-			TArray<FMonsterInfoRow*> Rows;
-			MonsterTable->GetAllRows("", Rows);
-
-			// Get Random Enemy
-			int32 RandomIndex = FMath::RandRange(0, Rows.Num() - 1);
-			FMonsterInfoRow* SelectedRow = Rows[RandomIndex];
-
-			UAssetManager* Manager = UAssetManager::GetIfValid();
-			if (Manager)
-			{
-				LogOnScreen(this, "Loading monster...", FColor::Green);
-
-				TArray<FName> Bundles;
-				FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ASGameModeBase::OnMonsterLoaded, SelectedRow->MonsterId, Locations[0]);
-				Manager->LoadPrimaryAsset(SelectedRow->MonsterId, Bundles, Delegate);
-			}
-
+			TotalWeight += Entry->Weight;
 		}
+
+		// Random number within total random
+		int32 RandomWeight = FMath::RandRange(0.0f, TotalWeight);
+		FMonsterInfoRow* SelectedRow = nullptr;
+
+		//Reset
+		TotalWeight = 0;
+
+		// Get monster based on random weight
+		for (FMonsterInfoRow* Entry : Rows)
+		{
+			TotalWeight += Entry->Weight;
+
+			if (RandomWeight <= TotalWeight)
+			{
+				SelectedRow = Entry;
+				break;
+			}
+		}
+
+		UAssetManager* Manager = UAssetManager::GetIfValid();
+		if (Manager)
+		{
+			//LogOnScreen(this, "Loading monster...", FColor::Green);
+
+			TArray<FName> Bundles;
+			FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ASGameModeBase::OnMonsterLoaded, SelectedRow->MonsterId, Locations[0]);
+			Manager->LoadPrimaryAsset(SelectedRow->MonsterId, Bundles, Delegate);
+		}	
 	}
 }
 
 
 void ASGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation)
 {
-	LogOnScreen(this, "Finished loading.", FColor::Green);
+	//LogOnScreen(this, "Finished loading.", FColor::Green);
 
 	UAssetManager* Manager = UAssetManager::GetIfValid();
 	if (Manager)
