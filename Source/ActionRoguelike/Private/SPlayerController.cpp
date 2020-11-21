@@ -18,6 +18,13 @@ void ASPlayerController::TogglePauseMenu()
 
 		bShowMouseCursor = false;
 		SetInputMode(FInputModeGameOnly());
+
+		// Single-player only
+		if (GetWorld()->IsNetMode(NM_Standalone))
+		{
+			UGameplayStatics::SetGamePaused(this, false);
+		}
+
 		return;
 	}
 
@@ -28,6 +35,12 @@ void ASPlayerController::TogglePauseMenu()
 
 		bShowMouseCursor = true;
 		SetInputMode(FInputModeUIOnly());
+
+		// Single-player only
+		if (GetWorld()->IsNetMode(NM_Standalone))
+		{
+			UGameplayStatics::SetGamePaused(this, true);
+		}
 	}
 }
 
