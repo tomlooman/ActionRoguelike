@@ -18,6 +18,7 @@ Stanford CS193U Reference Project (Fall '20)
 - **SaveGame System** for persisting progress of character and world state.
 - Heavy use of Events to drive UI and gameplay reactions.
 - Mix of C++ & Blueprint and how to combine these effectively.
+- **GameplayTags** to mark-up Actors, Buffs, Actions.
 - **Multiplayer support** for all features
 - GameMode Logic
   - EQS for binding bot/powerup spawn locations.
