@@ -6,6 +6,8 @@
 #include "Animation/AnimInstance.h"
 #include "SAnimInstance.generated.h"
 
+class USActionComponent;
+
 /**
  * 
  */

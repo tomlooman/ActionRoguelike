@@ -4,6 +4,7 @@
 #include "SPowerupActor.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Net/UnrealNetwork.h"
 
 
 ASPowerupActor::ASPowerupActor()
