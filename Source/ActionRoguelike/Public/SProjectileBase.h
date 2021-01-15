@@ -11,7 +11,7 @@ class UProjectileMovementComponent;
 class UParticleSystemComponent;
 class UAudioComponent;
 class USoundCue;
-class UCameraShake;
+class UCameraShakeBase;
 
 
 UCLASS(ABSTRACT) // 'ABSTRACT' marks this class as incomplete, keeping this out of certain dropdowns windows like SpawnActor in Unreal Editor
@@ -22,7 +22,7 @@ class ACTIONROGUELIKE_API ASProjectileBase : public AActor
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects|Shake")
-	TSubclassOf<UCameraShake> ImpactShake;
+	TSubclassOf<UCameraShakeBase> ImpactShake;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects|Shake")
 	float ImpactShakeInnerRadius;
