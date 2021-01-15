@@ -2,7 +2,7 @@
 Stanford CS193U Reference Project (Fall '20)
 **Details: [Course Page](https://www.tomlooman.com/stanford-cs193u/)**
 
-**Current Engine Version: 4.25**
+**Current Engine Version: 4.26**
 
 **Use Branch "Lecture29-FinishedProject" for Course-only Code.** (Master/Main branch include additional polish and additions)
 
