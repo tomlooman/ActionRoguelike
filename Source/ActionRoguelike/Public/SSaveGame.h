@@ -33,7 +33,7 @@ struct FPlayerSaveData
 
 public:
 
-	/* Player Id defined by the online sub system. */ 
+	/* Player Id defined by the online sub system (such as Steam) */ 
 	UPROPERTY()
 	int32 PlayerID;
 
@@ -73,4 +73,6 @@ public:
 
 	UPROPERTY()
 	TArray<FActorSaveData> SavedActors;
+
+	FPlayerSaveData* GetPlayerData(APlayerState* PlayerState);
 };

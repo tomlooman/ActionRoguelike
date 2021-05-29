@@ -89,7 +89,7 @@ void ASPlayerState::LoadPlayerState_Implementation(USSaveGame* SaveObject)
 {
 	if (SaveObject)
 	{
-		FPlayerSaveData* FoundData = SaveObject->SavedPlayers.FindByPredicate([&](const FPlayerSaveData& Data) { return Data.PlayerID == GetPlayerId(); });
+		FPlayerSaveData* FoundData = SaveObject->GetPlayerData(this);
 		if (FoundData)
 		{
 			//Credits = SaveObject->Credits;
@@ -116,7 +116,7 @@ bool ASPlayerState::OverrideSpawnTransform(USSaveGame* SaveObject)
 {
 	if (APawn* MyPawn = GetPawn())
 	{
-		FPlayerSaveData* FoundData = SaveObject->SavedPlayers.FindByPredicate([&](const FPlayerSaveData& Data) { return Data.PlayerID == GetPlayerId(); });
+		FPlayerSaveData* FoundData = SaveObject->GetPlayerData(this);
 		if (FoundData && FoundData->bResumeAtTransform)
 		{		
 			MyPawn->SetActorLocation(FoundData->Location);
