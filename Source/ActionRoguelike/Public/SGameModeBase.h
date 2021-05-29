@@ -16,6 +16,9 @@ class UDataTable;
 class USMonsterData;
 
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSaveGameSignature, class USSaveGame*, SaveObject);
+
+
 /* DataTable Row for spawning monsters in game mode  */
 USTRUCT(BlueprintType)
 struct FMonsterInfoRow : public FTableRowBase
@@ -149,4 +152,9 @@ public:
 
 	void LoadSaveGame();
 
+	UPROPERTY(BlueprintAssignable)
+	FOnSaveGameSignature OnSaveGameLoaded;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnSaveGameSignature OnSaveGameWritten;
 };

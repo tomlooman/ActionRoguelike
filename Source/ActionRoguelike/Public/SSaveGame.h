@@ -16,7 +16,7 @@ public:
 
 	/* Identifier for which Actor this belongs to */
 	UPROPERTY()
-	FString ActorName;
+	FName ActorName;
 
 	/* For movable Actors, keep location,rotation,scale. */
 	UPROPERTY()
@@ -24,6 +24,37 @@ public:
 
 	UPROPERTY()
 	TArray<uint8> ByteData;
+};
+
+USTRUCT()
+struct FPlayerSaveData
+{
+	GENERATED_BODY()
+
+public:
+
+	/* Player Id defined by the online sub system. */ 
+	UPROPERTY()
+	int32 PlayerID;
+
+	UPROPERTY()
+    int32 Credits;
+
+	/* Longest survival time */
+	UPROPERTY()
+    float PersonalRecordTime;
+
+	/* Location if player was alive during save */
+	UPROPERTY()
+	FVector Location;
+
+	/* Orientation if player was alive during save */ 
+	UPROPERTY()
+	FRotator Rotation;
+
+	/* We don't always want to restore location, and may just resume player at specific respawn point in world. */
+	UPROPERTY()
+	bool bResumeAtTransform;
 };
 
 
@@ -38,11 +69,7 @@ class ACTIONROGUELIKE_API USSaveGame : public USaveGame
 public:
 
 	UPROPERTY()
-	int32 Credits;
-
-	/* Longest survival time */
-	UPROPERTY()
-	float PersonalRecordTime;
+	TArray<FPlayerSaveData> SavedPlayers;
 
 	UPROPERTY()
 	TArray<FActorSaveData> SavedActors;

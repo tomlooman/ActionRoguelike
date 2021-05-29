@@ -87,6 +87,13 @@ void ASGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* N
 	}
 
 	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+
+	// Now we're ready to override spawn location
+	// Alternatively we could override core spawn location to use store locations immediately (skipping the whole 'find player start' logic)
+	if (PS)
+	{
+		PS->OverrideSpawnTransform(CurrentSaveGame);
+	}
 }
 
 
@@ -99,7 +106,7 @@ void ASGameModeBase::KillAll()
 		USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(Bot);
 		if (ensure(AttributeComp) && AttributeComp->IsAlive())
 		{
-			AttributeComp->Kill(this); // @fixme: pass in player? for kill credit
+			AttributeComp->Kill(this);
 		}
 	}
 }
@@ -371,6 +378,10 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 
 void ASGameModeBase::WriteSaveGame()
 {
+	// Clear arrays, may contain data from previously loaded SaveGame
+	CurrentSaveGame->SavedPlayers.Empty();
+	CurrentSaveGame->SavedActors.Empty();
+	
 	// Iterate all player states, we don't have proper ID to match yet (requires Steam or EOS)
 	for (int32 i = 0; i < GameState->PlayerArray.Num(); i++)
 	{
@@ -382,7 +393,6 @@ void ASGameModeBase::WriteSaveGame()
 		}
 	}
 
-	CurrentSaveGame->SavedActors.Empty();
 
 	// Iterate the entire world of actors
 	for (FActorIterator It(GetWorld()); It; ++It)
@@ -395,7 +405,7 @@ void ASGameModeBase::WriteSaveGame()
 		}
 
 		FActorSaveData ActorData;
-		ActorData.ActorName = Actor->GetName();
+		ActorData.ActorName = Actor->GetFName();
 		ActorData.Transform = Actor->GetActorTransform();
 		
 		// Pass the array to fill with data from Actor
@@ -411,6 +421,8 @@ void ASGameModeBase::WriteSaveGame()
 	}
 
 	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SlotName, 0);
+
+	OnSaveGameWritten.Broadcast(CurrentSaveGame);
 }
 
 
@@ -440,7 +452,7 @@ void ASGameModeBase::LoadSaveGame()
 
 			for (FActorSaveData ActorData : CurrentSaveGame->SavedActors)
 			{
-				if (ActorData.ActorName == Actor->GetName())
+				if (ActorData.ActorName == Actor->GetFName())
 				{
 					Actor->SetActorTransform(ActorData.Transform);
 
@@ -457,6 +469,8 @@ void ASGameModeBase::LoadSaveGame()
 				}
 			}
 		}
+
+		OnSaveGameLoaded.Broadcast(CurrentSaveGame);
 	}
 	else
 	{
