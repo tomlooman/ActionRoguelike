@@ -66,8 +66,21 @@ void ASPlayerState::SavePlayerState_Implementation(USSaveGame* SaveObject)
 {
 	if (SaveObject)
 	{
-		SaveObject->Credits = Credits;
-		SaveObject->PersonalRecordTime = PersonalRecordTime;
+		// Gather all relevant data for player
+		FPlayerSaveData SaveData;
+		SaveData.Credits = Credits;
+		SaveData.PersonalRecordTime = PersonalRecordTime;
+		SaveData.PlayerID = GetPlayerId();
+
+		// May not be alive while we save
+		if (APawn* MyPawn = GetPawn())
+		{
+			SaveData.Location = MyPawn->GetActorLocation();
+			SaveData.Rotation = MyPawn->GetActorRotation();
+			SaveData.bResumeAtTransform = true;
+		}
+		
+		SaveObject->SavedPlayers.Add(SaveData);
 	}
 }
 
@@ -76,11 +89,19 @@ void ASPlayerState::LoadPlayerState_Implementation(USSaveGame* SaveObject)
 {
 	if (SaveObject)
 	{
-		//Credits = SaveObject->Credits;
-		// Makes sure we trigger credits changed event
-		AddCredits(SaveObject->Credits);
+		FPlayerSaveData* FoundData = SaveObject->GetPlayerData(this);
+		if (FoundData)
+		{
+			//Credits = SaveObject->Credits;
+			// Makes sure we trigger credits changed event
+			AddCredits(FoundData->Credits);
 
-		PersonalRecordTime = SaveObject->PersonalRecordTime;
+			PersonalRecordTime = FoundData->PersonalRecordTime;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Could not find SaveGame data for player id '%i'."), GetPlayerId());
+		}
 	}
 }
 
@@ -88,6 +109,29 @@ void ASPlayerState::LoadPlayerState_Implementation(USSaveGame* SaveObject)
 void ASPlayerState::OnRep_Credits(int32 OldCredits)
 {
 	OnCreditsChanged.Broadcast(this, Credits, Credits - OldCredits);
+}
+
+
+bool ASPlayerState::OverrideSpawnTransform(USSaveGame* SaveObject)
+{
+	if (APawn* MyPawn = GetPawn())
+	{
+		FPlayerSaveData* FoundData = SaveObject->GetPlayerData(this);
+		if (FoundData && FoundData->bResumeAtTransform)
+		{		
+			MyPawn->SetActorLocation(FoundData->Location);
+			MyPawn->SetActorRotation(FoundData->Rotation);
+
+			// PlayerState owner is a (Player)Controller
+			AController* PC = Cast<AController>(GetOwner());
+			// Set control rotation to change camera direction, setting Pawn rotation is not enough
+			PC->SetControlRotation(FoundData->Rotation);
+			
+			return true;
+		}
+	}
+
+	return false;
 }
 
 
