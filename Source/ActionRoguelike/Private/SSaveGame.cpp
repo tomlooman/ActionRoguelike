@@ -29,7 +29,9 @@ FPlayerSaveData* USSaveGame::GetPlayerData(APlayerState* PlayerState)
 		return nullptr;
 	}
 
-	int32 PlayerID = PlayerState->GetPlayerId();
+	// Easiest way to deal with the different IDs is as FString (original Steam id is uint64)
+	// Keep in mind that GetUniqueId() returns the online id, where GetUniqueID() is a function from UObject (very confusing...)
+	FString PlayerID = PlayerState->GetUniqueId().ToString();
 	// Iterate the array and match by PlayerID (eg. unique ID provided by Steam)
 	return SavedPlayers.FindByPredicate([&](const FPlayerSaveData& Data) { return Data.PlayerID == PlayerID; });
 }
