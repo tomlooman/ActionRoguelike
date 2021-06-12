@@ -8,6 +8,7 @@
 #include "SAction.generated.h"
 
 class UWorld;
+class USActionComponent;
 
 
 USTRUCT()

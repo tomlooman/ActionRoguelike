@@ -393,13 +393,13 @@ void ASGameModeBase::WriteSaveGame()
 		}
 	}
 
-
 	// Iterate the entire world of actors
 	for (FActorIterator It(GetWorld()); It; ++It)
 	{
 		AActor* Actor = *It;
-		// Only interested in our 'gameplay actors'
-		if (!Actor->Implements<USGameplayInterface>())
+		// Only interested in our 'gameplay actors', skip actors that are being destroyed
+		// Note: You might instead use a dedicated SavableObject interface for Actors you want to save instead of re-using GameplayInterface
+		if (Actor->IsPendingKill() || !Actor->Implements<USGameplayInterface>())
 		{
 			continue;
 		}

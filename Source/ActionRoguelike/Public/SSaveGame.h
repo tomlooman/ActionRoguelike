@@ -22,6 +22,7 @@ public:
 	UPROPERTY()
 	FTransform Transform;
 
+	/* Contains all 'SaveGame' marked variables of the Actor */
 	UPROPERTY()
 	TArray<uint8> ByteData;
 };
@@ -71,6 +72,7 @@ public:
 	UPROPERTY()
 	TArray<FPlayerSaveData> SavedPlayers;
 
+	/* Actors stored from a level (currently does not support a specific level and just assumes the demo map) */
 	UPROPERTY()
 	TArray<FActorSaveData> SavedActors;
 
