@@ -10,6 +10,7 @@
 #include "SAttributeComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "SActionComponent.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -35,6 +36,9 @@ ASCharacter::ASCharacter()
 	
 	// Enabled on mesh to react to incoming projectiles
 	GetMesh()->SetGenerateOverlapEvents(true);
+	// Disable on capsule collision to avoid double-dipping and receiving 2 overlaps when entering trigger zones etc.
+	// Once from the mesh, and 2nd time from capsule
+	GetCapsuleComponent()->SetGenerateOverlapEvents(false);
 
 	TimeToHitParamName = "TimeToHit";
 }
