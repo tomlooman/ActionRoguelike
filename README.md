@@ -12,7 +12,7 @@ Stanford CS193U Reference Project (Fall '20)
 
 # Project Features
 - Third-person Action Character Movement
-- **Action System** (Gameplay Ability System-lite)
+- **Action System** (similar to Gameplay Ability System in design)
   - Dash Ability (Teleporting via projectile)
   - Blackhole Ability
   - Magic Projectile Attack
