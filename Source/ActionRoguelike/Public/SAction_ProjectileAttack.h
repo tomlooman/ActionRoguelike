@@ -8,6 +8,7 @@
 
 class UAnimMontage;
 class UParticleSystem;
+class USoundBase;
 
 /**
  * 
@@ -34,6 +35,10 @@ protected:
 	/* Particle System played during attack animation */
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	UParticleSystem* CastingEffect;
+
+	/* Sound Effect to play (Can be Wave or Cue) */
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	USoundBase* CastingSound;
 
 	UFUNCTION()
 	void AttackDelay_Elapsed(ACharacter* InstigatorCharacter);

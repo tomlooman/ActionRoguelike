@@ -3,6 +3,7 @@
 
 #include "SAction_ProjectileAttack.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
 #include "GameFramework/Character.h"
 
 
@@ -25,6 +26,8 @@ void USAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
 		Character->PlayAnimMontage(AttackAnim);
 
 		UGameplayStatics::SpawnEmitterAttached(CastingEffect, Character->GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
+
+		UGameplayStatics::SpawnSoundAttached(CastingSound, Character->GetMesh());
 
 		if (Character->HasAuthority())
 		{
