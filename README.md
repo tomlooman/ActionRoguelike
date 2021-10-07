@@ -1,14 +1,18 @@
 # ActionRoguelike
-Stanford CS193U Reference Project (Fall '20)
-**Details: [Course Page](https://www.tomlooman.com/stanford-cs193u/)**
 
-**Current Engine Version: 4.26**
+This project is part of the **[Professional Game Development in C++ and Unreal Engine](https://courses.tomlooman.com/p/unrealengine-cpp/?product_id=3423335&coupon_code=EARLYBIRD20)** Course. You can browse individual Commits or analyse the finished project.
 
-**Use Branch "Lecture29-FinishedProject" for Course-only Code.** (Master/Main branch include additional polish and additions)
+![Course Header](https://www.tomlooman.com/wp-content/uploads/2021/09/course_heroheader-1.jpg)
+
+Stanford University CS193U Reference Project (Fall '20) **Details: [Course Page](https://www.tomlooman.com/stanford-cs193u/)**
+
+**Current Engine Version: 4.27**
+
+**Use Branch "Lecture29-FinishedProject" for Course-only Code. (Made with UE 4.25)** ('Main branch' includes additional polish and features)
 
 ![GitHub Branch Selection Info](https://www.tomlooman.com/wp-content/uploads/2021/01/github_branchesinfo.jpg)
 
-![Combat Example Still](https://www.tomlooman.com/wp-content/uploads/2021/01/actionroguelike_ue4_combatsample.jpg)
+![Combat Example Still](https://www.tomlooman.com/wp-content/uploads/2021/09/ue_course_herobanner_split_small.jpg)
 
 # Project Features
 - Third-person Action Character Movement
