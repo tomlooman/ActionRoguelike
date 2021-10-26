@@ -21,7 +21,9 @@ ASPowerupActor::ASPowerupActor()
 	RespawnTime = 10.0f;
 	bIsActive = true;
 
-	SetReplicates(true);
+	// Directly set bool instead of going through SetReplicates(true) within constructor,
+	// Only use SetReplicates() outside constructor
+	bReplicates = true;
 }
 
 

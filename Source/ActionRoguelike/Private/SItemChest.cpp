@@ -17,7 +17,9 @@ ASItemChest::ASItemChest()
 
 	TargetPitch = 110;
 
-	SetReplicates(true);
+	// Directly set bool instead of going through SetReplicates(true) within constructor,
+	// Only use SetReplicates() outside constructor
+	bReplicates = true;
 }
 
 
