@@ -11,12 +11,8 @@
 class UEnvQuery;
 class UEnvQueryInstanceBlueprintWrapper;
 class UCurveFloat;
-class USSaveGame;
 class UDataTable;
 class USMonsterData;
-
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSaveGameSignature, class USSaveGame*, SaveObject);
 
 
 /* DataTable Row for spawning monsters in game mode  */
@@ -62,12 +58,6 @@ class ACTIONROGUELIKE_API ASGameModeBase : public AGameModeBase
 	GENERATED_BODY()
 
 protected:
-
-	/* Name of slot to save/load to disk. Can be overriden via InitGame() Options-string */
-	FString SlotName;
-
-	UPROPERTY()
-	USSaveGame* CurrentSaveGame;
 
 	/* All available monsters */
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
@@ -146,15 +136,4 @@ public:
 
 	UFUNCTION(Exec)
 	void KillAll();
-
-	UFUNCTION(BlueprintCallable, Category = "SaveGame")
-	void WriteSaveGame();
-
-	void LoadSaveGame();
-
-	UPROPERTY(BlueprintAssignable)
-	FOnSaveGameSignature OnSaveGameLoaded;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnSaveGameSignature OnSaveGameWritten;
 };

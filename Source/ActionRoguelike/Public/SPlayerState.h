@@ -6,12 +6,13 @@
 #include "GameFramework/PlayerState.h"
 #include "SPlayerState.generated.h"
 
+class ASPlayerState; // Forward declared to satisfy the delegate macros below
+class USSaveGame;
+
 // Event Handler for Credits
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnCreditsChanged, ASPlayerState*, PlayerState, int32, NewCredits, int32, Delta);
 // Event Handler for Personal Record Time
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnRecordTimeChanged, ASPlayerState*, PlayerState, float, NewTime, float, OldRecord);
-
-class USSaveGame;
 
 /**
  * 
@@ -38,9 +39,6 @@ protected:
 	//void MulticastCredits(float NewCredits, float Delta);
 
 public:
-
-	UFUNCTION(BlueprintCallable)
-	bool OverrideSpawnTransform(USSaveGame* SaveObject);
 
 	/* Checks current record and only sets if better time was passed in. */
 	UFUNCTION(BlueprintCallable)

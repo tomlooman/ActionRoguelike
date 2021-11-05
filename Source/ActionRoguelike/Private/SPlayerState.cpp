@@ -113,29 +113,6 @@ void ASPlayerState::OnRep_Credits(int32 OldCredits)
 }
 
 
-bool ASPlayerState::OverrideSpawnTransform(USSaveGame* SaveObject)
-{
-	if (APawn* MyPawn = GetPawn())
-	{
-		FPlayerSaveData* FoundData = SaveObject->GetPlayerData(this);
-		if (FoundData && FoundData->bResumeAtTransform)
-		{		
-			MyPawn->SetActorLocation(FoundData->Location);
-			MyPawn->SetActorRotation(FoundData->Rotation);
-
-			// PlayerState owner is a (Player)Controller
-			AController* PC = Cast<AController>(GetOwner());
-			// Set control rotation to change camera direction, setting Pawn rotation is not enough
-			PC->SetControlRotation(FoundData->Rotation);
-			
-			return true;
-		}
-	}
-
-	return false;
-}
-
-
 // void ASPlayerState::MulticastCredits_Implementation(float NewCredits, float Delta)
 // {
 // 	OnCreditsChanged.Broadcast(this, NewCredits, Delta);
