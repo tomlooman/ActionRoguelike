@@ -13,6 +13,9 @@ USAction_ProjectileAttack::USAction_ProjectileAttack()
 {
 	HandSocketName = "Muzzle_01";
 	AttackAnimDelay = 0.2f;
+
+	SweepRadius = 20.0f;
+	SweepDistanceFallback = 5000;
 }
 
 
@@ -47,37 +50,37 @@ void USAction_ProjectileAttack::AttackDelay_Elapsed(ACharacter* InstigatorCharac
 	{
 		FVector HandLocation = InstigatorCharacter->GetMesh()->GetSocketLocation(HandSocketName);
 
+		// We trace against the environment first to find whats under the player crosshair.
+		// We use the hit location to adjust the projectile launch direction so it will hit what is under the crosshair rather than shoot straight forward from the player hands.
+
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		SpawnParams.Instigator = InstigatorCharacter;
 
 		FCollisionShape Shape;
-		Shape.SetSphere(20.0f);
+		Shape.SetSphere(SweepRadius);
 
 		// Ignore Player
 		FCollisionQueryParams Params;
 		Params.AddIgnoredActor(InstigatorCharacter);
 
-		FCollisionObjectQueryParams ObjParams;
-		ObjParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-		ObjParams.AddObjectTypesToQuery(ECC_WorldStatic);
-		ObjParams.AddObjectTypesToQuery(ECC_Pawn);
+		FVector TraceDirection = InstigatorCharacter->GetControlRotation().Vector();
 
-		FVector TraceStart = InstigatorCharacter->GetPawnViewLocation();
-
+		// Add sweep radius onto start to avoid the sphere clipping into floor/walls the camera is directly against.
+		FVector TraceStart = InstigatorCharacter->GetPawnViewLocation() + (TraceDirection * SweepRadius);
 		// endpoint far into the look-at distance (not too far, still adjust somewhat towards crosshair on a miss)
-		FVector TraceEnd = TraceStart + (InstigatorCharacter->GetControlRotation().Vector() * 5000);
+		FVector TraceEnd = TraceStart + (TraceDirection * SweepDistanceFallback);
 
 		FHitResult Hit;
-		// returns true if we got to a blocking hit
-		if (GetWorld()->SweepSingleByObjectType(Hit, TraceStart, TraceEnd, FQuat::Identity, ObjParams, Shape, Params))
+		// returns true if we got to a blocking hit (Channel1="Projectile" defined in DefaultGame.ini)
+		if (GetWorld()->SweepSingleByChannel(Hit, TraceStart, TraceEnd, FQuat::Identity, ECC_GameTraceChannel1, Shape, Params))
 		{
 			// Overwrite trace end with impact point in world
 			TraceEnd = Hit.ImpactPoint;
 		}
 
 		// find new direction/rotation from Hand pointing to impact point in world.
-		FRotator ProjRotation = FRotationMatrix::MakeFromX(TraceEnd - HandLocation).Rotator();
+		FRotator ProjRotation = (TraceEnd - HandLocation).Rotation();
 
 		FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
 		GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
