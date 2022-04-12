@@ -40,7 +40,7 @@ void USSaveGameSubsystem::HandleStartingNewPlayer(AController* NewPlayer)
 
 bool USSaveGameSubsystem::OverrideSpawnTransform(AController* NewPlayer)
 {
-	if (NewPlayer == nullptr || NewPlayer->IsPendingKill())
+	if (!IsValid(NewPlayer))
 	{
 		return false;
 	}
@@ -114,7 +114,7 @@ void USSaveGameSubsystem::WriteSaveGame()
 		AActor* Actor = *It;
 		// Only interested in our 'gameplay actors', skip actors that are being destroyed
 		// Note: You might instead use a dedicated SavableObject interface for Actors you want to save instead of re-using GameplayInterface
-		if (Actor->IsPendingKill() || !Actor->Implements<USGameplayInterface>())
+		if (!IsValid(Actor) || !Actor->Implements<USGameplayInterface>())
 		{
 			continue;
 		}
