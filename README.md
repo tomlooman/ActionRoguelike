@@ -2,7 +2,7 @@
 
 This project is part of the **[Professional Game Development in C++ and Unreal Engine](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)** Course where we build this entire game project step-by-step.
 
-![Course Header](https://www.tomlooman.com/wp-content/uploads/2021/09/course_heroheader-1.jpg)
+![Course Header](https://www.tomlooman.com/wp-content/uploads/2021/11/actionroguelike_ue4_combatsample4.jpg)
 
 > **Engine Version: 5.0** (UE4.X Available under 'Branches' dropdown)
 
