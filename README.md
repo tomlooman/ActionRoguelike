@@ -2,15 +2,15 @@
 
 This project is part of the **[Professional Game Development in C++ and Unreal Engine](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)** Course where we build this entire game project step-by-step.
 
-![Course Header](https://www.tomlooman.com/wp-content/uploads/2021/11/actionroguelike_ue4_combatsample4.jpg)
+![Course Header](https://www.tomlooman.com/wp-content/uploads/2021/09/actionroguelike_ue4_combatsample5.jpg)
+
+
 
 > **Engine Version: 5.0** (UE4.X Available under 'Branches' dropdown)
-
-**Use Branch "Lecture29-FinishedProject" for course-only code.** (UE 4.25, 'Main branch' includes additional polish and features)
+> 
+> **Use Branch "Lecture29-FinishedProject" for course-only code.** (UE 4.25, 'Main branch' includes additional polish and features)
 
 ![GitHub Branch Selection Info](https://www.tomlooman.com/wp-content/uploads/2021/01/github_branchesinfo.jpg)
-
-![Combat Example Still](https://www.tomlooman.com/wp-content/uploads/2021/09/ue_course_herobanner_split_small.jpg)
 
 # Project Features
 - Third-person Action Character Movement
@@ -45,6 +45,8 @@ UMG
 - C++ Localized Text
 
 This project is part of the **[Professional Game Development in C++ and Unreal Engine](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)** Course where we build this entire game project step-by-step.
+
+![Combat Example Still](https://www.tomlooman.com/wp-content/uploads/2021/09/ue_course_herobanner_split_small.jpg)
 
 # Unreal Engine 5.0
 
