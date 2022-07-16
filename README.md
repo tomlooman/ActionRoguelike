@@ -50,7 +50,7 @@ This project is part of the **[Professional Game Development in C++ and Unreal E
 
 # Unreal Engine 5.0
 
-With the release of UE5, some new rendering features have been enabled. For longer end machines it may be required to turn these off. You can do so via the Project Settings or the config INI.
+With the release of UE5, some new rendering features have been enabled. For lower end machines it may be required to turn these off. You can do so via the Project Settings or the config INI.
 
 ### DefaultEngine.ini
 
