@@ -3,8 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SignificanceManager.h"
-#include "SSignificanceData.h"
 #include "GameFramework/Character.h"
 #include "SAICharacter.generated.h"
 
@@ -19,10 +17,6 @@ UCLASS()
 class ACTIONROGUELIKE_API ASAICharacter : public ACharacter
 {
 	GENERATED_BODY()
-
-	virtual void BeginPlay() override;
-
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
 
@@ -76,22 +70,7 @@ protected:
 
 	// -- Significance Manager -- //
 
-	//UFUNCTION(BlueprintCallable, Category = "Audio")
-	//bool PlaySoundAttached(USoundBase* Sound, float RequiredSignificance = 0.0f);
-
 	/* Accessor for Blueprint to skip playing Audio or VFX based on significance thresholds */
-	UFUNCTION(BlueprintPure, Category = "Optimization")
-	bool IsSignificant(float RequiredSignificance = 0.0f) const;
-	
-	UPROPERTY(EditAnywhere, Category = "Performance")
-	FName SignificanceTag;
-
-	UPROPERTY()
-	USSignificanceData* SignificanceData;
-
-	float CurrentSignifance;
-
-	float CalcSignificance(USignificanceManager::FManagedObjectInfo* ObjectInfo, const FTransform& Viewpoint) const;
-	
-	void PostSignificanceUpdate(USignificanceManager::FManagedObjectInfo* ObjectInfo, float OldSignificance, float Significance, bool bFinal);
+	//UFUNCTION(BlueprintPure, Category = "Optimization")
+	//bool IsSignificant(float RequiredSignificance = 0.0f) const;
 };
