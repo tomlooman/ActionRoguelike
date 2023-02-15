@@ -38,18 +38,15 @@ protected:
 	void SetPowerupState(bool bNewIsActive);
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	USphereComponent* SphereComp;
+	TObjectPtr<USphereComponent> SphereComp;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* MeshComp;
+	TObjectPtr<UStaticMeshComponent> MeshComp;
 
 public:
+	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 
-	void Interact_Implementation(APawn* InstigatorPawn) override;
-
-	FText GetInteractText_Implementation(APawn* InstigatorPawn);
-
-public:
+	virtual FText GetInteractText_Implementation(APawn* InstigatorPawn) override;
 
 	ASPowerupActor();
 

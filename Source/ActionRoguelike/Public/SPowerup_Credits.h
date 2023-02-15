@@ -21,8 +21,7 @@ protected:
 	int32 CreditsAmount;
 
 public:
-
-	void Interact_Implementation(APawn* InstigatorPawn) override;
+	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 
 	ASPowerup_Credits();
 };

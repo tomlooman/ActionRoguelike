@@ -24,7 +24,7 @@ protected:
 	FString CurrentSlotName;
 
 	UPROPERTY()
-	USSaveGame* CurrentSaveGame;
+	TObjectPtr<USSaveGame> CurrentSaveGame;
 
 public:
 
@@ -52,6 +52,6 @@ public:
 	FOnSaveGameSignature OnSaveGameWritten;
 
 	/* Initialize Subsystem, good moment to load in SaveGameSettings variables */
-	void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 };

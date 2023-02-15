@@ -19,9 +19,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	float TargetPitch;
 
-	void Interact_Implementation(APawn* InstigatorPawn);
+	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 
-	void OnActorLoaded_Implementation();
+	virtual void OnActorLoaded_Implementation() override;
 
 protected:
 
@@ -32,10 +32,10 @@ protected:
 	void OnRep_LidOpened();
 
 	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* BaseMesh;
+	TObjectPtr<UStaticMeshComponent> BaseMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UStaticMeshComponent* LidMesh;
+	TObjectPtr<UStaticMeshComponent> LidMesh;
 
 public:	
 

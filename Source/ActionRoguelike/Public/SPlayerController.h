@@ -26,12 +26,12 @@ protected:
 	TSubclassOf<UUserWidget> PauseMenuClass;
 
 	UPROPERTY()
-	UUserWidget* PauseMenuInstance;
+	TObjectPtr<UUserWidget> PauseMenuInstance;
 
 	UFUNCTION(BlueprintCallable)
 	void TogglePauseMenu();
 
-	void SetupInputComponent() override;
+	virtual void SetupInputComponent() override;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnPawnChanged OnPawnChanged;
@@ -50,5 +50,5 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BlueprintBeginPlayingState();
 
-	void OnRep_PlayerState() override;
+	virtual void OnRep_PlayerState() override;
 };

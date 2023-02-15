@@ -31,22 +31,22 @@ protected:
 	float ImpactShakeOuterRadius;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
-	UParticleSystem* ImpactVFX;
+	TObjectPtr<UParticleSystem> ImpactVFX;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
-	USoundCue* ImpactSound;
+	TObjectPtr<USoundCue> ImpactSound;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USphereComponent* SphereComp;
+	TObjectPtr<USphereComponent> SphereComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UProjectileMovementComponent* MoveComp;
+	TObjectPtr<UProjectileMovementComponent> MoveComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UParticleSystemComponent* EffectComp;
+	TObjectPtr<UParticleSystemComponent> EffectComp;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UAudioComponent* AudioComp;
+	TObjectPtr<UAudioComponent> AudioComp;
 
 	// 'virtual' so we can override this in child-classes
 	UFUNCTION()

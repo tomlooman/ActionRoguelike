@@ -23,10 +23,10 @@ protected:
 	bool bIsStunned;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
-	USActionComponent* ActionComp;
+	TObjectPtr<USActionComponent> ActionComp;
 
-	void NativeInitializeAnimation() override;
+	virtual void NativeInitializeAnimation() override;
 
-	void NativeUpdateAnimation(float DeltaSeconds) override;
+	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 };

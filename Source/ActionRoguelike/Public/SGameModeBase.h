@@ -61,14 +61,14 @@ protected:
 
 	/* All available monsters */
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	UDataTable* MonsterTable;
+	TObjectPtr<UDataTable> MonsterTable;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	UEnvQuery* SpawnBotQuery;
+	TObjectPtr<UEnvQuery> SpawnBotQuery;
 
 	/* Curve to grant credits to spend on spawning monsters */
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	UCurveFloat* SpawnCreditCurve;
+	TObjectPtr<UCurveFloat> SpawnCreditCurve;
 	
 	/* Time to wait between failed attempts to spawn/buy monster to give some time to build up credits. */
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
@@ -84,7 +84,7 @@ protected:
 	int32 CreditsPerKill;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
-	UEnvQuery* PowerupSpawnQuery;
+	TObjectPtr<UEnvQuery> PowerupSpawnQuery;
 
 	/* All power-up classes used to spawn with EQS at match start */
 	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
@@ -112,8 +112,6 @@ protected:
 	UFUNCTION()
 	void RespawnPlayerElapsed(AController* Controller);
 
-protected:
-
 	// Points available to spend on spawning monsters
 	float AvailableSpawnCredit;
 
@@ -128,11 +126,11 @@ public:
 
 	ASGameModeBase();
 
-	void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 
 	virtual void StartPlay() override;
 
-	void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
+	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 
 	UFUNCTION(Exec)
 	void KillAll();

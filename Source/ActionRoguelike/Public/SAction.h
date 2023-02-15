@@ -22,7 +22,7 @@ public:
 	bool bIsRunning;
 
 	UPROPERTY()
-	AActor* Instigator;
+	TObjectPtr<AActor> Instigator;
 };
 
 
@@ -40,7 +40,7 @@ protected:
 	TSoftObjectPtr<UTexture2D> Icon;
 
 	UPROPERTY(Replicated)
-	USActionComponent* ActionComp;
+	TObjectPtr<USActionComponent> ActionComp;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	USActionComponent* GetOwningComponent() const;
@@ -86,9 +86,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Action")
 	FName ActionName;
 
-	UWorld* GetWorld() const override;
+	virtual UWorld* GetWorld() const override;
 
-	bool IsSupportedForNetworking() const override
+	virtual bool IsSupportedForNetworking() const override
 	{
 		return true;
 	}

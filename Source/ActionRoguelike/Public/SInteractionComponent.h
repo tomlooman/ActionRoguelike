@@ -30,7 +30,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY()
-	AActor* FocusedActor;
+	TObjectPtr<AActor> FocusedActor;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Trace")
 	float TraceDistance;
@@ -45,7 +45,7 @@ protected:
 	TSubclassOf<USWorldUserWidget> DefaultWidgetClass;
 
 	UPROPERTY()
-	USWorldUserWidget* DefaultWidgetInstance;
+	TObjectPtr<USWorldUserWidget> DefaultWidgetInstance;
 
 public:	
 

@@ -26,19 +26,19 @@ protected:
 	FName TimeToHitParamName;
 
 	UPROPERTY(VisibleAnywhere)
-	USpringArmComponent* SpringArmComp;
+	TObjectPtr<USpringArmComponent> SpringArmComp;
 
 	UPROPERTY(VisibleAnywhere)
-	UCameraComponent* CameraComp;
+	TObjectPtr<UCameraComponent> CameraComp;
 
 	UPROPERTY(VisibleAnywhere)
-	USInteractionComponent* InteractionComp;
+	TObjectPtr<USInteractionComponent> InteractionComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USAttributeComponent* AttributeComp;
+	TObjectPtr<USAttributeComponent> AttributeComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USActionComponent* ActionComp;
+	TObjectPtr<USActionComponent> ActionComp;
 
 	void MoveForward(float Value);
 

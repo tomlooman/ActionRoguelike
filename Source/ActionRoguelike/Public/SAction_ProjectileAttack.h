@@ -38,15 +38,15 @@ protected:
 	float AttackAnimDelay;
 
 	UPROPERTY(EditAnywhere, Category = "Attack")
-	UAnimMontage* AttackAnim;
+	TObjectPtr<UAnimMontage> AttackAnim;
 
 	/* Particle System played during attack animation */
 	UPROPERTY(EditAnywhere, Category = "Attack")
-	UParticleSystem* CastingEffect;
+	TObjectPtr<UParticleSystem> CastingEffect;
 
 	/* Sound Effect to play (Can be Wave or Cue) */
 	UPROPERTY(EditAnywhere, Category = "Attack")
-	USoundBase* CastingSound;
+	TObjectPtr<USoundBase> CastingSound;
 
 	UFUNCTION()
 	void AttackDelay_Elapsed(ACharacter* InstigatorCharacter);

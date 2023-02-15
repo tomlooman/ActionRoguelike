@@ -25,7 +25,7 @@ public:
 protected:
 
 	UPROPERTY()
-	USWorldUserWidget* ActiveHealthBar;
+	TObjectPtr<USWorldUserWidget> ActiveHealthBar;
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> HealthBarWidgetClass;
@@ -54,23 +54,17 @@ protected:
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UPawnSensingComponent* PawnSensingComp;
+	TObjectPtr<UPawnSensingComponent> PawnSensingComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USAttributeComponent* AttributeComp;
+	TObjectPtr<USAttributeComponent> AttributeComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USActionComponent* ActionComp;
+	TObjectPtr<USActionComponent> ActionComp;
 
 	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastPawnSeen();
-
-	// -- Significance Manager -- //
-
-	/* Accessor for Blueprint to skip playing Audio or VFX based on significance thresholds */
-	//UFUNCTION(BlueprintPure, Category = "Optimization")
-	//bool IsSignificant(float RequiredSignificance = 0.0f) const;
 };

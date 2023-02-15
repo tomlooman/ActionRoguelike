@@ -23,10 +23,9 @@ protected:
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
 
 public:
+	virtual void StartAction_Implementation(AActor* Instigator) override;
 
-	void StartAction_Implementation(AActor* Instigator) override;
-
-	void StopAction_Implementation(AActor* Instigator) override;
+	virtual void StopAction_Implementation(AActor* Instigator) override;
 
 	USActionEffect_Thorns();
 };
