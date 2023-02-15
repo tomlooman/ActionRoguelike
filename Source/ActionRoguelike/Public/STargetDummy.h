@@ -19,6 +19,8 @@ public:
 
 	ASTargetDummy();
 
+	virtual void PostInitializeComponents() override;
+
 protected:
 
 	UPROPERTY(VisibleAnywhere)

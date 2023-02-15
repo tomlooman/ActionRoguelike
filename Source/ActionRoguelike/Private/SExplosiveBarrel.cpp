@@ -28,9 +28,6 @@ ASExplosiveBarrel::ASExplosiveBarrel()
 
 	// Optional, default constructor of component already adds 4 object types to affect, excluding WorldDynamic
 	ForceComp->AddCollisionChannelToAffect(ECC_WorldDynamic);
-
-	// Binding either in constructor or in PostInitializeComponents() below
-	//MeshComp->OnComponentHit.AddDynamic(this, &ASExplosiveBarrel::OnActorHit);
 }
 
 

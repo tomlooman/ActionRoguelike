@@ -12,6 +12,12 @@ ASTargetDummy::ASTargetDummy()
 	RootComponent = MeshComp;
 
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
+}
+
+void ASTargetDummy::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
 	// Trigger when health is changed (damage/healing)
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ASTargetDummy::OnHealthChanged);
 }
