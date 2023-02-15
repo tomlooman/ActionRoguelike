@@ -6,7 +6,7 @@ This project is part of the **[Professional Game Development in C++ and Unreal E
 
 
 
-> **Engine Version: 5.0** (UE4.X Available under 'Branches' dropdown)
+> **Engine Version: 5.1** (UE4.X Available under 'Branches' dropdown)
 > 
 > **Use Branch "Lecture29-FinishedProject" for course-only code.** (UE 4.25, 'Main branch' includes additional polish and features)
 
