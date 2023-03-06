@@ -66,11 +66,15 @@ void ASGameModeBase::StartPlay()
 	if (ensure(PowerupClasses.Num() > 0))
 	{
 		// Run EQS to find potential power-up spawn locations
-		UEnvQueryInstanceBlueprintWrapper* QueryInstance = UEnvQueryManager::RunEQSQuery(this, PowerupSpawnQuery, this, EEnvQueryRunMode::AllMatching, nullptr);
-		if (ensure(QueryInstance))
-		{
-			QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ASGameModeBase::OnPowerupSpawnQueryCompleted);
-		}
+		//UEnvQueryInstanceBlueprintWrapper* QueryInstance = UEnvQueryManager::RunEQSQuery(this, PowerupSpawnQuery, this, EEnvQueryRunMode::AllMatching, nullptr);
+		//if (ensure(QueryInstance))
+		//{
+		//	QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ASGameModeBase::OnPowerupSpawnQueryCompleted);
+		//}
+
+		// Skip the Blueprint wrapper and use the direct C++ option which the Wrapper uses as well
+		FEnvQueryRequest Request(PowerupSpawnQuery, this);
+		Request.Execute(EEnvQueryRunMode::AllMatching, this, &ASGameModeBase::OnPowerupSpawnQueryCompleted);
 	}
 }
 
@@ -191,23 +195,31 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 	}
 
 	// Run EQS to find valid spawn location
-	UEnvQueryInstanceBlueprintWrapper* QueryInstance = UEnvQueryManager::RunEQSQuery(this, SpawnBotQuery, this, EEnvQueryRunMode::RandomBest5Pct, nullptr);
-	if (ensure(QueryInstance))
-	{
-		QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ASGameModeBase::OnBotSpawnQueryCompleted);
-	}
+	//UEnvQueryInstanceBlueprintWrapper* QueryInstance = UEnvQueryManager::RunEQSQuery(this, SpawnBotQuery, this, EEnvQueryRunMode::RandomBest5Pct, nullptr);
+	//if (ensure(QueryInstance))
+	//{
+	//	QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ASGameModeBase::OnBotSpawnQueryCompleted);
+	//}
+
+	// Skip the Blueprint wrapper and use the direct C++ option which the Wrapper uses as well
+	FEnvQueryRequest Request(SpawnBotQuery, this);
+	Request.Execute(EEnvQueryRunMode::RandomBest5Pct, this, &ASGameModeBase::OnBotSpawnQueryCompleted);
 }
 
 
-void ASGameModeBase::OnBotSpawnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus)
+void ASGameModeBase::OnBotSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result)
 {
-	if (QueryStatus != EEnvQueryStatus::Success)
+	FEnvQueryResult* QueryResult = Result.Get();
+	if (!QueryResult->IsSuccessful())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Spawn bot EQS Query Failed!"));
 		return;
 	}
 
-	TArray<FVector> Locations = QueryInstance->GetResultsAsLocations();
+	// Retrieve all possible locations that passed the query
+	TArray<FVector> Locations;
+	QueryResult->GetAllAsLocations(Locations);
+
 	if (Locations.IsValidIndex(0) && MonsterTable)
 	{	
 		if (UAssetManager* Manager = UAssetManager::GetIfValid())
@@ -255,15 +267,18 @@ void ASGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLoca
 }
 
 
-void ASGameModeBase::OnPowerupSpawnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus)
+void ASGameModeBase::OnPowerupSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result)
 {
-	if (QueryStatus != EEnvQueryStatus::Success)
+	FEnvQueryResult* QueryResult = Result.Get();
+	if (!QueryResult->IsSuccessful())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Spawn bot EQS Query Failed!"));
 		return;
 	}
 
-	TArray<FVector> Locations = QueryInstance->GetResultsAsLocations();
+	// Retrieve all possible locations that passed the query
+	TArray<FVector> Locations;
+	QueryResult->GetAllAsLocations(Locations);
 
 	// Keep used locations to easily check distance between points
 	TArray<FVector> UsedLocations;

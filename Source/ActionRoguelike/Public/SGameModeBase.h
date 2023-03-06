@@ -101,13 +101,11 @@ protected:
 	UFUNCTION()
 	void SpawnBotTimerElapsed();
 
-	UFUNCTION()
-	void OnBotSpawnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
+	void OnBotSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result);
 
 	void OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation);
-
-	UFUNCTION()
-	void OnPowerupSpawnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
+	
+	void OnPowerupSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result);
 
 	UFUNCTION()
 	void RespawnPlayerElapsed(AController* Controller);
