@@ -95,10 +95,8 @@ void ASGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* N
 
 void ASGameModeBase::KillAll()
 {
-	for (TActorIterator<ASAICharacter> It(GetWorld()); It; ++It)
+	for (ASAICharacter* Bot : TActorRange<ASAICharacter>(GetWorld()))
 	{
-		ASAICharacter* Bot = *It;
-
 		USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(Bot);
 		if (ensure(AttributeComp) && AttributeComp->IsAlive())
 		{
@@ -131,16 +129,16 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 
 	// Count alive bots before spawning
 	int32 NrOfAliveBots = 0;
-	for (TActorIterator<ASAICharacter> It(GetWorld()); It; ++It)
+	// TActorRange simplifies the code compared to TActorIterator<T>
+	for (ASAICharacter* Bot : TActorRange<ASAICharacter>(GetWorld()))
 	{
-		ASAICharacter* Bot = *It;
-
 		USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(Bot);
 		if (ensure(AttributeComp) && AttributeComp->IsAlive())
 		{
 			NrOfAliveBots++;
 		}
 	}
+	
 
 	UE_LOG(LogTemp, Log, TEXT("Found %i alive bots."), NrOfAliveBots);
 
