@@ -10,7 +10,7 @@ void USGameViewportClient::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (USignificanceManager* SignificanceManager = FSignificanceManagerModule::Get(World))
+	if (USignificanceManager* SignificanceManager = USignificanceManager::Get(World))
 	{
 		// Update once per frame, using only Player 0
 		if (APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0))

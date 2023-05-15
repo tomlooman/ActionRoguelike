@@ -66,7 +66,7 @@ void USSignificanceComponent::BeginPlay()
 
 void USSignificanceComponent::RegisterWithManager()
 {
-	if (USignificanceManager* SignificanceManager = FSignificanceManagerModule::Get(GetWorld()))
+	if (USignificanceManager* SignificanceManager = USignificanceManager::Get(GetWorld()))
 	{
 		auto SignificanceFunc = [&](USignificanceManager::FManagedObjectInfo* ObjectInfo, const FTransform& Viewpoint) -> float
 		{
@@ -90,7 +90,7 @@ void USSignificanceComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	if (bManageSignificance)
 	{
 		// Unregister
-		if (USignificanceManager* SignificanceManager = FSignificanceManagerModule::Get(GetWorld()))
+		if (USignificanceManager* SignificanceManager = USignificanceManager::Get(GetWorld()))
 		{
 			SignificanceManager->UnregisterObject(this);
 		}
