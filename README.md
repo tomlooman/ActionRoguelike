@@ -46,7 +46,7 @@ UMG
 
 This project is part of the **[Professional Game Development in C++ and Unreal Engine](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)** Course where we build this entire game project step-by-step.
 
-![Combat Example Still](https://www.tomlooman.com/wp-content/uploads/2021/09/ue_course_herobanner_split_small.jpg)
+![Combat Example Still](https://www.tomlooman.com/wp-content/uploads/2023/02/Course_HeroBanner_TwoSplit_Narrow_1200.jpg)
 
 # Unreal Engine 5.0
 
