@@ -34,6 +34,15 @@ struct FPlayerSaveData
 
 public:
 
+	FPlayerSaveData()
+	{
+		Credits = 0;
+		PersonalRecordTime = 0.0f;
+		Location = FVector::ZeroVector;
+		Rotation = FRotator::ZeroRotator;
+		bResumeAtTransform = true;
+	}
+
 	/* Player Id defined by the online sub system (such as Steam) converted to FString for simplicity  */ 
 	UPROPERTY()
 	FString PlayerID;

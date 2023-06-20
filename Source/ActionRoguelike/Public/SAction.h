@@ -23,6 +23,11 @@ public:
 
 	UPROPERTY()
 	TObjectPtr<AActor> Instigator;
+
+	FActionRepData()
+	{
+		bIsRunning = false;
+	}
 };
 
 
