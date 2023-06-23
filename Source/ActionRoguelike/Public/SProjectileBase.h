@@ -13,8 +13,29 @@ class UAudioComponent;
 class USoundCue;
 class UCameraShakeBase;
 
+/* SparseData to reduce memory footprint, see class description for URL*/
+USTRUCT(BlueprintType)
+struct FProjectileSparseData
+{
+	GENERATED_BODY()
 
-UCLASS(ABSTRACT) // 'ABSTRACT' marks this class as incomplete, keeping this out of certain dropdowns windows like SpawnActor in Unreal Editor
+	FProjectileSparseData()
+	: ImpactShakeInnerRadius(0.f),
+	ImpactShakeOuterRadius(1500.f)
+	{ }
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Effects|Shake")
+	float ImpactShakeInnerRadius;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects|Shake")
+	float ImpactShakeOuterRadius;
+};
+
+
+/*
+ * Example of Implementing SparseClassData, reduces memory by specifying a set of properties that won't change per-instance. More info: https://docs.unrealengine.com/en-US/sparse-class-data-in-unreal-engine/
+ */
+UCLASS(ABSTRACT, SparseClassDataTypes = ProjectileSparseData) // 'ABSTRACT' marks this class as incomplete, keeping this out of certain dropdowns windows like SpawnActor in Unreal Editor
 class ACTIONROGUELIKE_API ASProjectileBase : public AActor
 {
 	GENERATED_BODY()
@@ -23,12 +44,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects|Shake")
 	TSubclassOf<UCameraShakeBase> ImpactShake;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Effects|Shake")
-	float ImpactShakeInnerRadius;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Effects|Shake")
-	float ImpactShakeOuterRadius;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	TObjectPtr<UParticleSystem> ImpactVFX;
@@ -61,7 +76,23 @@ protected:
 	virtual void PostInitializeComponents() override;
 
 public:	
-
 	ASProjectileBase();
+	
+#if WITH_EDITORONLY_DATA
+	//~ These properties are moving out to the FMySparseClassData struct:
+	private:
+	
+	UPROPERTY()
+	float ImpactShakeInnerRadius_DEPRECATED;
+
+	UPROPERTY()
+	float ImpactShakeOuterRadius_DEPRECATED;
+#endif
+
+#if WITH_EDITOR
+public:
+	// ~ This function transfers existing data into FMySparseClassData.
+	virtual void MoveDataToSparseClassDataStruct() const override;
+#endif
 
 };

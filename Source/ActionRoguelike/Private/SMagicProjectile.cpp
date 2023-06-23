@@ -8,12 +8,13 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "SActionEffect.h"
 
+// NOTE: With SparseDataClass feature in use, some properties are replaced with "GetXXX()" which is generated automatically by UHT.
+// Example: DamageAmount becomes GetDamageAmount() without this function visible in our own header.
 
 ASMagicProjectile::ASMagicProjectile()
 {
 	SphereComp->SetSphereRadius(20.0f);
 	InitialLifeSpan = 10.0f;
-	DamageAmount = 20.0f;
 }
 
 
@@ -35,7 +36,7 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 
 		// Parry Ability (GameplayTag Example)
 		USActionComponent* ActionComp = Cast<USActionComponent>(OtherActor->GetComponentByClass(USActionComponent::StaticClass()));
-		if (ActionComp && ActionComp->ActiveGameplayTags.HasTag(ParryTag))
+		if (ActionComp && ActionComp->ActiveGameplayTags.HasTag(GetParryTag()))
 		{
 			MoveComp->Velocity = -MoveComp->Velocity;
 
@@ -44,15 +45,41 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 
 		// Apply Damage & Impulse
-		if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
+		if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, GetDamageAmount(), SweepResult))
 		{
 			// We only explode if the target can be damaged, it ignores anything it Overlaps that it cannot Damage (it requires an AttributeComponent on the target)
 			Explode();
 
-			if (ActionComp && BurningActionClass && HasAuthority())
+			if (ActionComp && GetBurningActionClass() && HasAuthority())
 			{
-				ActionComp->AddAction(GetInstigator(), BurningActionClass);
+				ActionComp->AddAction(GetInstigator(), GetBurningActionClass());
 			}
 		}
 	}
 }
+
+
+#if WITH_EDITOR
+// Only required to convert existing properties already stored in Blueprints into the 'new' system
+void ASMagicProjectile::MoveDataToSparseClassDataStruct() const
+{
+	// make sure we don't overwrite the sparse data if it has been saved already
+	const UBlueprintGeneratedClass* BPClass = Cast<UBlueprintGeneratedClass>(GetClass());
+	if (BPClass == nullptr || BPClass->bIsSparseClassDataSerializable == true)
+	{
+		return;
+	}
+	
+	Super::MoveDataToSparseClassDataStruct();
+
+#if WITH_EDITORONLY_DATA
+	// Unreal Header Tool (UHT) will create GetMySparseClassData automatically.
+	FMagicProjectileSparseData* SparseClassData = GetMagicProjectileSparseData();
+
+	// Modify these lines to include all Sparse Class Data properties.
+	SparseClassData->DamageAmount = DamageAmount_DEPRECATED;
+	SparseClassData->ParryTag = ParryTag_DEPRECATED;
+	SparseClassData->BurningActionClass = BurningActionClass_DEPRECATED;
+#endif // WITH_EDITORONLY_DATA
+}
+#endif
