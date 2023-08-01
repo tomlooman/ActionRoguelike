@@ -2,7 +2,7 @@
 
 
 #include "Components/SSignificanceComponent.h"
-
+#include "ActionRoguelike.h"
 #include "SSignificanceInterface.h"
 #include "ParticleHelper.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -147,7 +147,7 @@ void USSignificanceComponent::PostSignificanceUpdate(USignificanceManager::FMana
 	if (Significance != OldSignificance)
 	{
 		CurrentSignificance = static_cast<ESignificanceValue>(Significance);
-		UE_LOG(LogTemp, Log, TEXT("Significance for %s changed to %s"), *GetNameSafe(GetOwner()), *UEnum::GetValueAsString(CurrentSignificance));
+		UE_LOGFMT(LogGame, Log, "Significance for {owner} changed to {significance}", GetNameSafe(GetOwner()), UEnum::GetValueAsString(CurrentSignificance));
 		OnSignificanceChanged.Broadcast(CurrentSignificance);
 	}
 
@@ -161,7 +161,7 @@ float USSignificanceComponent::GetSignificanceByDistance(float DistanceSqrd) con
 	const int32 NumThresholds = Thresholds.Num();
 	if (NumThresholds == 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("SignificanceManager: No distance thresholds set in %s."), *GetNameSafe(GetOwner()));
+		UE_LOGFMT(LogGame, Warning, "SignificanceManager: No distance thresholds set in {owner}.", GetNameSafe(GetOwner()));
 		return static_cast<float>(ESignificanceValue::Highest);
 	}
 
@@ -219,7 +219,7 @@ void USSignificanceComponent::UpdateParticleSignificance(float NewSignificance)
 			Comp->SetRequiredSignificance(CurrSignificance);
 
 			// High "required" significance means we quickly cull many particle emitters that don't match the requirement
-			//UE_LOG(LogTemp, Log, TEXT("Changed required particle significance to %s for %s in %s"), *UEnum::GetValueAsString(CurrSignificance), *Comp->GetName(), *GetOwner()->GetName());
+			//UE_LOG(LogGame, Log, TEXT("Changed required particle significance to %s for %s in %s"), *UEnum::GetValueAsString(CurrSignificance), *Comp->GetName(), *GetOwner()->GetName());
 		}
 	}
 }

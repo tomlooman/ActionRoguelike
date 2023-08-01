@@ -3,6 +3,7 @@
 
 #include "SSaveGameSubsystem.h"
 
+#include "ActionRoguelike.h"
 #include "EngineUtils.h"
 #include "SGameplayInterface.h"
 #include "SPlayerState.h"
@@ -151,11 +152,11 @@ void USSaveGameSubsystem::LoadSaveGame(FString InSlotName /*= ""*/)
 		CurrentSaveGame = Cast<USSaveGame>(UGameplayStatics::LoadGameFromSlot(CurrentSlotName, 0));
 		if (CurrentSaveGame == nullptr)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to load SaveGame Data."));
+			UE_LOGFMT(LogGame, Warning, "Failed to load SaveGame Data.");
 			return;
 		}
 
-		UE_LOG(LogTemp, Log, TEXT("Loaded SaveGame Data."));
+		UE_LOGFMT(LogGame, Log, "Loaded SaveGame Data.");
 
 
 		// Iterate the entire world of actors
@@ -194,6 +195,6 @@ void USSaveGameSubsystem::LoadSaveGame(FString InSlotName /*= ""*/)
 	{
 		CurrentSaveGame = Cast<USSaveGame>(UGameplayStatics::CreateSaveGameObject(USSaveGame::StaticClass()));
 
-		UE_LOG(LogTemp, Log, TEXT("Created New SaveGame Data."));
+		UE_LOGFMT(LogGame, Log, "Created New SaveGame Data.");
 	}
 }

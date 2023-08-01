@@ -2,6 +2,8 @@
 
 
 #include "SPlayerState.h"
+
+#include "ActionRoguelike.h"
 #include "SSaveGame.h"
 #include "Net/UnrealNetwork.h"
 
@@ -101,7 +103,7 @@ void ASPlayerState::LoadPlayerState_Implementation(USSaveGame* SaveObject)
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Could not find SaveGame data for player id '%i'."), GetPlayerId());
+			UE_LOGFMT(LogGame, Warning, "Could not find SaveGame data for player id '%i'.", GetPlayerId());
 		}
 	}
 }

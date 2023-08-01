@@ -24,7 +24,6 @@ void ASPowerup_Action::Interact_Implementation(APawn* InstigatorPawn)
 	{
 		if (ActionComp->GetAction(ActionToGrant))
 		{
-			//UE_LOG(LogTemp, Log, TEXT("Instigator already has action of class: %s"), *GetNameSafe(ActionToGrant));
 			FString DebugMsg = FString::Printf(TEXT("Action '%s' already known."), *GetNameSafe(ActionToGrant));
 			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, DebugMsg);
 			return;

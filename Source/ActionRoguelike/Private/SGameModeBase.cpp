@@ -140,12 +140,12 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 	}
 	
 
-	UE_LOG(LogTemp, Log, TEXT("Found %i alive bots."), NrOfAliveBots);
+	UE_LOGFMT(LogGame, Log, "Found {number} alive bots.", NrOfAliveBots);
 
 	const float MaxBotCount = 40.0f;
 	if (NrOfAliveBots >= MaxBotCount)
 	{
-		UE_LOG(LogTemp, Log, TEXT("At maximum bot capacity. Skipping bot spawn."));
+		UE_LOGFMT(LogGame, Log, "At maximum bot capacity. Skipping bot spawn.");
 		return;
 	}
 
@@ -210,7 +210,7 @@ void ASGameModeBase::OnBotSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result
 	FEnvQueryResult* QueryResult = Result.Get();
 	if (!QueryResult->IsSuccessful())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Spawn bot EQS Query Failed!"));
+		UE_LOGFMT(LogGame, Warning, "Spawn bot EQS Query Failed!");
 		return;
 	}
 
@@ -270,7 +270,7 @@ void ASGameModeBase::OnPowerupSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Re
 	FEnvQueryResult* QueryResult = Result.Get();
 	if (!QueryResult->IsSuccessful())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Spawn bot EQS Query Failed!"));
+		UE_LOGFMT(LogGame, Warning, "Spawn bot EQS Query Failed!");
 		return;
 	}
 
@@ -341,7 +341,7 @@ void ASGameModeBase::RespawnPlayerElapsed(AController* Controller)
 
 void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 {
-	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victim: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(Killer));
+	UE_LOGFMT(LogGame, Log, "OnActorKilled: Victim: {victim}, Killer: {killer}", GetNameSafe(VictimActor), GetNameSafe(Killer));
 
 	// Handle Player death
 	ASCharacter* Player = Cast<ASCharacter>(VictimActor);

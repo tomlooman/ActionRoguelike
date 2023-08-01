@@ -7,6 +7,13 @@ public class ActionRoguelike : ModuleRules
 	public ActionRoguelike(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		
+		// Simplify the include paths in our source files
+		PublicIncludePaths.AddRange(
+			new string[] {
+				"ActionRoguelike"
+			}
+		);
 	
 		PublicDependencyModuleNames.AddRange(new string[]
 		{

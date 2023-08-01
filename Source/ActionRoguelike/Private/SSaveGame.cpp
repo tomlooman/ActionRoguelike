@@ -2,6 +2,8 @@
 
 
 #include "SSaveGame.h"
+
+#include "ActionRoguelike.h"
 #include "GameFramework/PlayerState.h"
 
 
@@ -18,7 +20,7 @@ FPlayerSaveData* USSaveGame::GetPlayerData(APlayerState* PlayerState)
 	// UObjects don't have access to UWorld, so we grab it via PlayerState instead
 	if (PlayerState->GetWorld()->IsPlayInEditor())
 	{
-		UE_LOG(LogTemp, Log, TEXT("During PIE we cannot use PlayerID to retrieve Saved Player data. Using first entry in array if available."));
+		UE_LOGFMT(LogGame, Log, "During PIE we cannot use PlayerID to retrieve Saved Player data. Using first entry in array if available.");
 
 		if (SavedPlayers.IsValidIndex(0))
 		{

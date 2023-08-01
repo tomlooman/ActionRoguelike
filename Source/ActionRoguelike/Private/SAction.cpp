@@ -3,7 +3,7 @@
 
 #include "SAction.h"
 #include "SActionComponent.h"
-#include "../ActionRoguelike.h"
+#include "ActionRoguelike.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -35,7 +35,7 @@ bool USAction::CanStart_Implementation(AActor* Instigator)
 
 void USAction::StartAction_Implementation(AActor* Instigator)
 {
-	UE_LOG(LogTemp, Log, TEXT("Started: %s"), *GetNameSafe(this));
+	UE_LOGFMT(LogGame, Log, "Started: {ActionName}", GetName());
 	//LogOnScreen(this, FString::Printf(TEXT("Started: %s"), *ActionName.ToString()), FColor::Green);
 
 	USActionComponent* Comp = GetOwningComponent();	
@@ -46,7 +46,7 @@ void USAction::StartAction_Implementation(AActor* Instigator)
 
 	if (GetOwningComponent()->GetOwnerRole() == ROLE_Authority)
 	{
-		TimeStarted = GetWorld()->TimeSeconds;
+		TimeStarted = GetWorld()->TimeSeconds; 
 	}
 
 	GetOwningComponent()->OnActionStarted.Broadcast(GetOwningComponent(), this);
@@ -55,7 +55,7 @@ void USAction::StartAction_Implementation(AActor* Instigator)
 
 void USAction::StopAction_Implementation(AActor* Instigator)
 {
-	UE_LOG(LogTemp, Log, TEXT("Stopped: %s"), *GetNameSafe(this));
+	UE_LOGFMT(LogGame, Log, "Stopped: {name}", GetName());
 	//LogOnScreen(this, FString::Printf(TEXT("Stopped: %s"), *ActionName.ToString()), FColor::White);
 
 	//ensureAlways(bIsRunning);

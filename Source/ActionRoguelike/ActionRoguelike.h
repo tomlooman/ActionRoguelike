@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+// Added here to more easily include whenever we also use LogGame (structuredlog is new in 5.2)
+#include "Logging/StructuredLog.h"
 
 // Define new "stat command" group shown in-game via "stat stanford"
 DECLARE_STATS_GROUP(TEXT("STANFORD_Game"), STATGROUP_STANFORD, STATCAT_Advanced);
