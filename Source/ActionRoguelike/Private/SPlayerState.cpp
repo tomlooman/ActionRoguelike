@@ -103,7 +103,7 @@ void ASPlayerState::LoadPlayerState_Implementation(USSaveGame* SaveObject)
 		}
 		else
 		{
-			UE_LOGFMT(LogGame, Warning, "Could not find SaveGame data for player id '%i'.", GetPlayerId());
+			UE_LOGFMT(LogGame, Warning, "Could not find SaveGame data for player id: {playerid}.", GetPlayerId());
 		}
 	}
 }
