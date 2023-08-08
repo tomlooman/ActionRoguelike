@@ -27,7 +27,8 @@ public class ActionRoguelike : ModuleRules
 			"GameplayTags", 
 			"OnlineSubsystem", 
 			"DeveloperSettings",
-			"SignificanceManager"
+			"SignificanceManager",
+			"EnhancedInput"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

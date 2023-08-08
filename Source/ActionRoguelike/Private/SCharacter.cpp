@@ -12,10 +12,14 @@
 #include "SActionComponent.h"
 #include "Components/CapsuleComponent.h"
 
+// Enhanced Input
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+
+
 // Sets default values
 ASCharacter::ASCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>("SpringArmComp");
@@ -67,54 +71,113 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAxis("MoveForward", this, &ASCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &ASCharacter::MoveRight);
+	const APlayerController* PC = GetController<APlayerController>();
+	const ULocalPlayer* LP = PC->GetLocalPlayer();
+	
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	check(Subsystem);
 
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	Subsystem->ClearAllMappings();
 
-	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
-	// Used generic name 'SecondaryAttack' for binding
-	PlayerInputComponent->BindAction("SecondaryAttack", IE_Pressed, this, &ASCharacter::BlackHoleAttack);
-	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &ASCharacter::Dash);
-	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::PrimaryInteract);
+	// Add mappings for our game, more complex games may have multiple Contexts that are added/removed at runtime
+	Subsystem->AddMappingContext(DefaultInputMapping, 0);
 
-	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::SprintStart);
-	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintStop);
+	// New Enhanced Input system
+	UEnhancedInputComponent* InputComp = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	// General
+	InputComp->BindAction(Input_Move, ETriggerEvent::Triggered, this, &ASCharacter::Move);
+	InputComp->BindAction(Input_Jump, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+	InputComp->BindAction(Input_Interact, ETriggerEvent::Triggered, this, &ASCharacter::PrimaryInteract);
+
+	// Sprint while key is held
+	InputComp->BindAction(Input_Sprint, ETriggerEvent::Started, this, &ASCharacter::SprintStart);
+	InputComp->BindAction(Input_Sprint, ETriggerEvent::Completed, this, &ASCharacter::SprintStop);
+
+	// MKB
+	InputComp->BindAction(Input_LookMouse, ETriggerEvent::Triggered, this, &ASCharacter::LookMouse);
+	// Gamepad
+	InputComp->BindAction(Input_LookStick, ETriggerEvent::Triggered, this, &ASCharacter::LookStick);
+
+	// Abilities
+	InputComp->BindAction(Input_PrimaryAttack, ETriggerEvent::Triggered, this, &ASCharacter::PrimaryAttack);
+	InputComp->BindAction(Input_SecondaryAttack, ETriggerEvent::Triggered, this, &ASCharacter::BlackHoleAttack);
+	InputComp->BindAction(Input_Dash, ETriggerEvent::Triggered, this, &ASCharacter::Dash);
 }
 
 
-void ASCharacter::HealSelf(float Amount /* = 100 */)
-{
-	AttributeComp->ApplyHealthChange(this, Amount);
-}
-
-
-void ASCharacter::MoveForward(float Value)
+void ASCharacter::Move(const FInputActionInstance& Instance)
 {
 	FRotator ControlRot = GetControlRotation();
 	ControlRot.Pitch = 0.0f;
 	ControlRot.Roll = 0.0f;
 
-	AddMovementInput(ControlRot.Vector(), Value);
+	// Get value from input (combined value from WASD keys or single Gamepad stick) and convert to Vector (x,y)
+	const FVector2D AxisValue = Instance.GetValue().Get<FVector2D>();
+
+	// Move forward/back
+	AddMovementInput(ControlRot.Vector(), AxisValue.Y);
+
+	// Move Right/Left strafe
+	const FVector RightVector = FRotationMatrix(ControlRot).GetScaledAxis(EAxis::Y);
+	AddMovementInput(RightVector, AxisValue.X);
+
+	// Alternative Copied from Lyra
+	/*
+	{
+		const FRotator MovementRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
+
+		if (Value.X != 0.0f)
+		{
+			const FVector MovementDirection = MovementRotation.RotateVector(FVector::RightVector);
+			Pawn->AddMovementInput(MovementDirection, Value.X);
+		}
+
+		if (Value.Y != 0.0f)
+		{
+			const FVector MovementDirection = MovementRotation.RotateVector(FVector::ForwardVector);
+			Pawn->AddMovementInput(MovementDirection, Value.Y);
+		}
+	}*/
+}
+
+void ASCharacter::LookMouse(const FInputActionValue& InputValue)
+{
+	const FVector2D Value = InputValue.Get<FVector2D>();
+
+	AddControllerYawInput(Value.X);
+	AddControllerPitchInput(Value.Y);
 }
 
 
-void ASCharacter::MoveRight(float Value)
+void ASCharacter::LookStick(const FInputActionValue& InputValue)
 {
-	FRotator ControlRot = GetControlRotation();
-	ControlRot.Pitch = 0.0f;
-	ControlRot.Roll = 0.0f;
+	FVector2D Value = InputValue.Get<FVector2D>();
 
-	// X = Forward (Red)
-	// Y = Right (Green)
-	// Z = Up (Blue)
+	// Track negative as we'll lose this during the conversion
+	bool XNegative = Value.X < 0.f;
+	bool YNegative = Value.Y < 0.f;
 
-	FVector RightVector = FRotationMatrix(ControlRot).GetScaledAxis(EAxis::Y);
+	// Can further modify with 'sensitivity' settings
+	static const float LookYawRate = 100.0f;
+	static const float LookPitchRate = 50.0f;
 
-	AddMovementInput(RightVector, Value);
+	// non-linear to make aiming a little easier
+	Value = Value * Value;
+
+	if (XNegative)
+	{
+		Value.X *= -1.f;
+	}
+	if (YNegative)
+	{
+		Value.Y *= -1.f;
+	}
+
+	// @todo: accelerate more the longer you hold > 0.0f input on an axis
+	
+	AddControllerYawInput(Value.X * LookYawRate * GetWorld()->GetDeltaSeconds());
+	AddControllerPitchInput(Value.Y * LookPitchRate * GetWorld()->GetDeltaSeconds());
 }
 
 
@@ -135,7 +198,6 @@ void ASCharacter::PrimaryAttack()
 }
 
 
-
 void ASCharacter::BlackHoleAttack()
 {
 	ActionComp->StartActionByName(this, "Blackhole");
@@ -150,10 +212,13 @@ void ASCharacter::Dash()
 
 void ASCharacter::PrimaryInteract()
 {
-	if (InteractionComp)
-	{
-		InteractionComp->PrimaryInteract();
-	}
+	InteractionComp->PrimaryInteract();
+}
+
+
+void ASCharacter::HealSelf(float Amount /* = 100 */)
+{
+	AttributeComp->ApplyHealthChange(this, Amount);
 }
 
 

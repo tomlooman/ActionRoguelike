@@ -4,8 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+
+// Included for struct FInputActionInstance (Enhanced Input)
+#include "InputAction.h"
 #include "SCharacter.generated.h"
 
+class UInputMappingContext;
 class UCameraComponent;
 class USpringArmComponent;
 class USInteractionComponent;
@@ -20,7 +24,37 @@ class ACTIONROGUELIKE_API ASCharacter : public ACharacter
 	GENERATED_BODY()
 
 protected:
+	
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputMappingContext* DefaultInputMapping;
 
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* Input_Move;
+
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* Input_LookMouse;
+
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* Input_LookStick;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* Input_Jump;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* Input_Interact;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* Input_Sprint;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* Input_Dash;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* Input_PrimaryAttack;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* Input_SecondaryAttack;
+	
 	/* VisibleAnywhere = read-only, still useful to view in-editor and enforce a convention. */
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	FName TimeToHitParamName;
@@ -40,10 +74,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USActionComponent> ActionComp;
 
-	void MoveForward(float Value);
+	// Enhanced Input
+	// Three parameter options available (FInputActionInstance, FInputActionValue, or none)
+	
+	void Move(const FInputActionInstance& Instance);
 
-	void MoveRight(float Value);
-
+	void LookMouse(const FInputActionValue& InputValue);
+	
+	void LookStick(const FInputActionValue& InputValue);
+	
 	void SprintStart();
 
 	void SprintStop();
