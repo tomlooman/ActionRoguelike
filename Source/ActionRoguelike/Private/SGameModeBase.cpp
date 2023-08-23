@@ -36,6 +36,10 @@ ASGameModeBase::ASGameModeBase()
 
 	DesiredPowerupCount = 10;
 	RequiredPowerupDistance = 2000;
+	InitialSpawnCredit = 50;
+
+	// We start spawning as the player walks on a button instead for convenient testing w/o bots.
+	bAutoStartBotSpawning = false;
 
 	PlayerStateClass = ASPlayerState::StaticClass();
 }
@@ -58,10 +62,13 @@ void ASGameModeBase::StartPlay()
 {
 	Super::StartPlay();
 
-	// Continuous timer to spawn in more bots.
-	// Actual amount of bots and whether its allowed to spawn determined by spawn logic later in the chain...
-	GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &ASGameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
+	AvailableSpawnCredit = InitialSpawnCredit;
 
+	if (bAutoStartBotSpawning)
+	{
+		StartSpawningBots();
+	}
+	
 	// Make sure we have assigned at least one power-up class
 	if (ensure(PowerupClasses.Num() > 0))
 	{
@@ -105,6 +112,19 @@ void ASGameModeBase::KillAll()
 	}
 }
 
+
+void ASGameModeBase::StartSpawningBots()
+{
+	if (TimerHandle_SpawnBots.IsValid())
+	{
+		// Already spawning bots.
+		return;
+	}
+	
+	// Continuous timer to spawn in more bots.
+	// Actual amount of bots and whether its allowed to spawn determined by spawn logic later in the chain...
+	GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &ASGameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
+}
 
 void ASGameModeBase::SpawnBotTimerElapsed()
 {

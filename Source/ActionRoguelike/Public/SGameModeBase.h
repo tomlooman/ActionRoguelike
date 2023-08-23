@@ -83,6 +83,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
 	int32 CreditsPerKill;
 
+	/* Amount available to start spawning some bots immediately */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
+	int32 InitialSpawnCredit;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
+	bool bAutoStartBotSpawning;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
 	TObjectPtr<UEnvQuery> PowerupSpawnQuery;
 
@@ -97,6 +104,9 @@ protected:
 	/* Amount of powerups to spawn during match start */
 	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
 	int32 DesiredPowerupCount;
+
+	UFUNCTION(BlueprintCallable)
+	void StartSpawningBots();
 
 	UFUNCTION()
 	void SpawnBotTimerElapsed();
