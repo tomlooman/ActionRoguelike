@@ -144,7 +144,7 @@ void ASCharacter::Move(const FInputActionInstance& Instance)
 void ASCharacter::LookMouse(const FInputActionValue& InputValue)
 {
 	const FVector2D Value = InputValue.Get<FVector2D>();
-
+	
 	AddControllerYawInput(Value.X);
 	AddControllerPitchInput(Value.Y);
 }
@@ -174,8 +174,6 @@ void ASCharacter::LookStick(const FInputActionValue& InputValue)
 		Value.Y *= -1.f;
 	}
 
-	// @todo: accelerate more the longer you hold > 0.0f input on an axis
-	
 	AddControllerYawInput(Value.X * LookYawRate * GetWorld()->GetDeltaSeconds());
 	AddControllerPitchInput(Value.Y * LookPitchRate * GetWorld()->GetDeltaSeconds());
 }

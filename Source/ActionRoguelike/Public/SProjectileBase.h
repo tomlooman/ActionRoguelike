@@ -13,6 +13,7 @@ class UAudioComponent;
 class USoundCue;
 class UCameraShakeBase;
 
+
 /* SparseData to reduce memory footprint, see class description for URL*/
 USTRUCT(BlueprintType)
 struct FProjectileSparseData
@@ -77,6 +78,10 @@ protected:
 
 public:	
 	ASProjectileBase();
+
+	virtual void BeginPlay() override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
 #if WITH_EDITORONLY_DATA
 	//~ These properties are moving out to the FMySparseClassData struct:

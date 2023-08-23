@@ -7,8 +7,9 @@
 #include "Net/UnrealNetwork.h"
 #include "Engine/ActorChannel.h"
 
-
-DECLARE_CYCLE_STAT(TEXT("StartActionByName"), STAT_StartActionByName, STATGROUP_STANFORD);
+// Can declare stat here once and use in multiple instances in code elsewhere using SCOPE_CYCLE_COUNTER(STAT_StartActionByName);
+// If used once, the line below can be placed in-line where you want to trace, see usage USActionComponent::StartActionByName
+//DECLARE_CYCLE_STAT(TEXT("StartActionByName"), STAT_StartActionByName, STATGROUP_STANFORD);
 
 
 USActionComponent::USActionComponent()
@@ -123,7 +124,12 @@ USAction* USActionComponent::GetAction(TSubclassOf<USAction> ActionClass) const
 
 bool USActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 {
-	SCOPE_CYCLE_COUNTER(STAT_StartActionByName);
+	//SCOPE_CYCLE_COUNTER(STAT_StartActionByName);
+	// Inline variant, convenient when only used once in code, visible in Viewport stats
+	DECLARE_SCOPE_CYCLE_COUNTER(TEXT("StartActionByName"), StartActionByName, STATGROUP_STANFORD);
+
+	// Visible in Unreal Insights
+	SCOPED_NAMED_EVENT(StartActionName, FColor::Green);
 
 	for (USAction* Action : Actions)
 	{
@@ -144,8 +150,14 @@ bool USActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 
 			// Bookmark for Unreal Insights
 			TRACE_BOOKMARK(TEXT("StartAction::%s"), *GetNameSafe(Action));
+			
+			{
+				// Scoped within the curly braces. the _FSTRING variant adds additional tracing overhead due to grabbing the class name every time
+				SCOPED_NAMED_EVENT_FSTRING(Action->GetClass()->GetName(), FColor::White);
 
-			Action->StartAction(Instigator);
+				Action->StartAction(Instigator);
+			}
+			
 			return true;
 		}
 	}

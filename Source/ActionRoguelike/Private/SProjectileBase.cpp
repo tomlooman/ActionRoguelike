@@ -8,9 +8,12 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
 #include "Sound/SoundCue.h"
+#include "ProfilingDebugging/CountersTrace.h"
 
 // NOTE: With SparseDataClass feature in use, some properties are replaced with "GetXXX()" which is generated automatically by UHT.
 // Example: DamageAmount becomes GetDamageAmount() without this function visible in our own header.
+
+TRACE_DECLARE_INT_COUNTER(COUNTER_GAME_ActiveProjectiles, TEXT("Game/ActiveProjectiles"));
 
 ASProjectileBase::ASProjectileBase()
 {
@@ -33,6 +36,18 @@ ASProjectileBase::ASProjectileBase()
 	// Directly set bool instead of going through SetReplicates(true) within constructor,
 	// Only use SetReplicates() outside constructor
 	bReplicates = true;
+}
+
+void ASProjectileBase::BeginPlay()
+{
+	Super::BeginPlay();
+	TRACE_COUNTER_INCREMENT(COUNTER_GAME_ActiveProjectiles);
+}
+
+void ASProjectileBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	TRACE_COUNTER_DECREMENT(COUNTER_GAME_ActiveProjectiles);
 }
 
 
