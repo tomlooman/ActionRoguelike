@@ -2,6 +2,7 @@
 
 
 #include "SAction_ProjectileAttack.h"
+#include "ActionRoguelike.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundBase.h"
 #include "GameFramework/Character.h"
@@ -67,20 +68,36 @@ void USAction_ProjectileAttack::AttackDelay_Elapsed(ACharacter* InstigatorCharac
 		FVector TraceDirection = InstigatorCharacter->GetControlRotation().Vector();
 
 		// Add sweep radius onto start to avoid the sphere clipping into floor/walls the camera is directly against.
-		FVector TraceStart = InstigatorCharacter->GetPawnViewLocation() + (TraceDirection * SweepRadius);
+		const FVector TraceStart = InstigatorCharacter->GetPawnViewLocation() + (TraceDirection * SweepRadius);
 		// endpoint far into the look-at distance (not too far, still adjust somewhat towards crosshair on a miss)
-		FVector TraceEnd = TraceStart + (TraceDirection * SweepDistanceFallback);
+		const FVector TraceEnd = TraceStart + (TraceDirection * SweepDistanceFallback);
+		FVector AdjustedTraceEnd = TraceEnd;
 
-		FHitResult Hit;
-		// returns true if we got to a blocking hit (Channel1="Projectile" defined in DefaultGame.ini)
-		if (GetWorld()->SweepSingleByChannel(Hit, TraceStart, TraceEnd, FQuat::Identity, ECC_GameTraceChannel1, Shape, Params))
+		TArray<FHitResult> Hits;
+		// Enemies are using Overlap response to Projectiles, we cant look for single Blocking hits and instead look for all overlaps and filter after
+		if (GetWorld()->SweepMultiByChannel(Hits, TraceStart, TraceEnd, FQuat::Identity, COLLISION_PROJECTILE, Shape, Params))
 		{
 			// Overwrite trace end with impact point in world
-			TraceEnd = Hit.ImpactPoint;
+			// First entry must exist and first entry will be first overlap or block
+			// Could filter further, eg. ignoring friendly players between us and the enemy
+			AdjustedTraceEnd = Hits[0].ImpactPoint;
 		}
 
+// Removes debug code from shipping builds		
+#if !UE_BUILD_SHIPPING
+		//const float DrawDuration = 5.0f;
+		// Start
+		//DrawDebugPoint(GetWorld(), TraceStart, 8, FColor::Green, false, DrawDuration);
+		// End - possibly adjusted based on hit
+		//DrawDebugPoint(GetWorld(), AdjustedTraceEnd, 8, FColor::Green, false, DrawDuration);
+		//DrawDebugLine(GetWorld(), TraceStart, AdjustedTraceEnd, FColor::Green, false, DrawDuration);
+		// End - Original
+		//DrawDebugPoint(GetWorld(), TraceEnd, 8, FColor::Red, false, DrawDuration);
+		//DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, DrawDuration);
+#endif
+
 		// find new direction/rotation from Hand pointing to impact point in world.
-		FRotator ProjRotation = (TraceEnd - HandLocation).Rotation();
+		FRotator ProjRotation = (AdjustedTraceEnd - HandLocation).Rotation();
 
 		FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
 		GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
