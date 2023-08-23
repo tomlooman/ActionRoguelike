@@ -1,6 +1,6 @@
 # Action Roguelike Game (Course Project)
 
-This project is part of the **[Professional Game Development in C++ and Unreal Engine](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)** Course where we build this entire game project step-by-step.
+This project is part of the **[Professional Game Development in C++ and Unreal Engine](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)** Course where we build this game project step-by-step.
 
 ![Course Header](https://i0.wp.com/www.tomlooman.com/wp-content/uploads/2023/05/coursecpp_banner_widenarrow-3.png)
 
@@ -49,7 +49,7 @@ This project is part of the **[Professional Game Development in C++ and Unreal E
 
 ![Combat Example Still](https://www.tomlooman.com/wp-content/uploads/2023/02/Course_HeroBanner_TwoSplit_Narrow_1200.jpg)
 
-# Unreal Engine 5.0
+# Unreal Engine 5
 
 With the release of UE5, some new rendering features have been enabled. For lower end machines it may be required to turn these off. You can do so via the Project Settings or the config INI.
 
@@ -62,9 +62,7 @@ r.DynamicGlobalIlluminationMethod=1 ;lumen global illumination
 r.Shadow.Virtual.Enable=1 ;virtual shadow maps
 
 [/Script/WindowsTargetPlatform.WindowsTargetSettings]
-DefaultGraphicsRHI=DefaultGraphicsRHI_DX12 // Forcing to use DX12 for improved performance
+DefaultGraphicsRHI=DefaultGraphicsRHI_DX12 // Use DX12 for new rendering features above
 ````
-
-Stanford University CS193U Reference Project (Fall '20) **Details: [Course Page](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)**
 
 **Game Assets:** Licensed for use with the Unreal Engine only. Without a custom license you cannot use to create sequels, remasters, or otherwise emulate the original game or use the original game’s trademarks, character names, or other IP to advertise or name your game. (Unreal Engine EULA applies) (Please note this applies to the Game Assets that refer to Epic's Paragon, you can still use the project code and content to build your own Unreal Engine game)
