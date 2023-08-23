@@ -14,6 +14,7 @@ This project is part of the **[Professional Game Development in C++ and Unreal E
 
 # Project Features
 - Third-person Action Character Movement
+- **Enhanced Input**
 - **Action System** (similar to Gameplay Ability System in design)
   - Dash Ability (Teleporting via projectile)
   - Blackhole Ability
