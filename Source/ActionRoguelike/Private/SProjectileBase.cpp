@@ -3,12 +3,13 @@
 
 #include "SProjectileBase.h"
 #include "Components/SphereComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
+#include "Components/SProjectileMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
 #include "Sound/SoundCue.h"
 #include "ProfilingDebugging/CountersTrace.h"
+#include "Subsystems/SActorPoolingSubsystem.h"
 
 // NOTE: With SparseDataClass feature in use, some properties are replaced with "GetXXX()" which is generated automatically by UHT.
 // Example: DamageAmount becomes GetDamageAmount() without this function visible in our own header.
@@ -19,6 +20,8 @@ ASProjectileBase::ASProjectileBase()
 {
 	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
 	SphereComp->SetCollisionProfileName("Projectile");
+	// Dont bother telling the nav system whenever we move
+	SphereComp->SetCanEverAffectNavigation(false);
 	RootComponent = SphereComp;
 
 	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
@@ -27,7 +30,8 @@ ASProjectileBase::ASProjectileBase()
 	AudioComp = CreateDefaultSubobject<UAudioComponent>("AudioComp");
 	AudioComp->SetupAttachment(RootComponent);
 
-	MoveComp = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMoveComp");
+	// Custom Projectile Component (for tick management & better homing)
+	MoveComp = CreateDefaultSubobject<USProjectileMovementComponent>("ProjectileMoveComp");
 	MoveComp->bRotationFollowsVelocity = true;
 	MoveComp->bInitialVelocityInLocalSpace = true;
 	MoveComp->ProjectileGravityScale = 0.0f;
@@ -37,6 +41,18 @@ ASProjectileBase::ASProjectileBase()
 	// Only use SetReplicates() outside constructor
 	bReplicates = true;
 }
+
+
+void ASProjectileBase::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	//SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
+	
+	// More consistent to bind here compared to Constructor which may fail to bind if Blueprint was created before adding this binding (or when using hotreload)
+	// PostInitializeComponent is the preferred way of binding any events.
+	SphereComp->OnComponentHit.AddDynamic(this, &ASProjectileBase::OnActorHit);
+}
+
 
 void ASProjectileBase::BeginPlay()
 {
@@ -48,6 +64,25 @@ void ASProjectileBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 	TRACE_COUNTER_DECREMENT(COUNTER_GAME_ActiveProjectiles);
+	
+	// Prepare for pool by disabling and resetting for the next time it will be re-used
+	{
+		// Complete any active PSCs (These may be pooled themselves by the particle manager) - old Cascade system since we dont use Niagara yet
+		TInlineComponentArray<UParticleSystemComponent*> ParticleComponents(this);
+		for (UParticleSystemComponent* const PSC  : ParticleComponents)
+		{
+			PSC->Complete();
+		}
+	}
+}
+
+
+void ASProjectileBase::LifeSpanExpired()
+{
+	// Skip destroy and instead release to pool
+	// This would need to be generically implemented for any pooled actor
+	USActorPoolingSubsystem* PoolingSubsystem = GetWorld()->GetSubsystem<USActorPoolingSubsystem>();
+	PoolingSubsystem->ReleaseToPool(this);
 }
 
 
@@ -70,18 +105,11 @@ void ASProjectileBase::Explode_Implementation()
 
 		UGameplayStatics::PlayWorldCameraShake(this, ImpactShake, GetActorLocation(), GetImpactShakeInnerRadius(), GetImpactShakeOuterRadius());
 
-		Destroy();
+		//Destroy();
+		// Release back to pool instead of destroying
+		USActorPoolingSubsystem* PoolingSubsystem = GetWorld()->GetSubsystem<USActorPoolingSubsystem>();
+		PoolingSubsystem->ReleaseToPool(this);
 	}
-}
-
-void ASProjectileBase::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-	//SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
-	
-	// More consistent to bind here compared to Constructor which may fail to bind if Blueprint was created before adding this binding (or when using hotreload)
-	// PostInitializeComponent is the preferred way of binding any events.
-	SphereComp->OnComponentHit.AddDynamic(this, &ASProjectileBase::OnActorHit);
 }
 
 

@@ -6,8 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundBase.h"
 #include "GameFramework/Character.h"
-
-
+#include "Subsystems/SActorPoolingSubsystem.h"
 
 
 USAction_ProjectileAttack::USAction_ProjectileAttack()
@@ -100,7 +99,10 @@ void USAction_ProjectileAttack::AttackDelay_Elapsed(ACharacter* InstigatorCharac
 		FRotator ProjRotation = (AdjustedTraceEnd - HandLocation).Rotation();
 
 		FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
-		GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+		//GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+
+		// re-use a pooled actor instead of always spawning new Actors
+		USActorPoolingSubsystem::GetPooledActor(this, ProjectileClass, SpawnTM, SpawnParams);
 	}
 
 	StopAction(InstigatorCharacter);

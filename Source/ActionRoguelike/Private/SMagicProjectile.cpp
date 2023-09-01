@@ -5,7 +5,7 @@
 #include "Components/SphereComponent.h"
 #include "SGameplayFunctionLibrary.h"
 #include "SActionComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
+#include "Components/SProjectileMovementComponent.h"
 #include "SActionEffect.h"
 
 // NOTE: With SparseDataClass feature in use, some properties are replaced with "GetXXX()" which is generated automatically by UHT.

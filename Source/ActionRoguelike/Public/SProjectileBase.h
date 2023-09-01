@@ -7,7 +7,7 @@
 #include "SProjectileBase.generated.h"
 
 class USphereComponent;
-class UProjectileMovementComponent;
+class USProjectileMovementComponent;
 class UParticleSystemComponent;
 class UAudioComponent;
 class USoundCue;
@@ -56,7 +56,7 @@ protected:
 	TObjectPtr<USphereComponent> SphereComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	TObjectPtr<UProjectileMovementComponent> MoveComp;
+	TObjectPtr<USProjectileMovementComponent> MoveComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UParticleSystemComponent> EffectComp;
@@ -82,6 +82,8 @@ public:
 	virtual void BeginPlay() override;
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	virtual void LifeSpanExpired();
 	
 #if WITH_EDITORONLY_DATA
 	//~ These properties are moving out to the FMySparseClassData struct:
