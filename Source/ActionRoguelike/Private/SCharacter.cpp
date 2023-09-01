@@ -41,6 +41,9 @@ ASCharacter::ASCharacter()
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
+
+	// Skip performing overlap queries on the Physics Asset after animation (7 queries in case of our Gideon mesh)
+	GetMesh()->bUpdateOverlapsOnAnimationFinalize = false;
 	
 	// Enabled on mesh to react to incoming projectiles
 	GetMesh()->SetGenerateOverlapEvents(true);
