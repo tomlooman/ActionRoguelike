@@ -27,7 +27,13 @@ ASAICharacter::ASAICharacter()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	// Enabled on mesh to react to incoming projectiles
-	GetMesh()->SetGenerateOverlapEvents(true);
+	USkeletalMeshComponent* SkelMesh = GetMesh();
+	SkelMesh->SetGenerateOverlapEvents(true);
+	// Skip performing overlap queries on the Physics Asset after animation (17 queries in case of our MinionRangedBP)
+	SkelMesh->bUpdateOverlapsOnAnimationFinalize = false;
+
+	// Skip bones when not visible, may miss anim notifies etc. if animation is skipped so these options must be tested per use case
+	SkelMesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
 
 	TimeToHitParamName = "TimeToHit";
 	TargetActorKey = "TargetActor";
