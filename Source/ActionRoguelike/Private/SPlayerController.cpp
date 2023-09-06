@@ -49,7 +49,17 @@ void ASPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
+	// @todo: replace with Enhanced Input
 	InputComponent->BindAction("PauseMenu", IE_Pressed, this, &ASPlayerController::TogglePauseMenu);
+
+	// Keeping as 'old' input for now until we figure out how to do this easily in Enhanced input
+	InputComponent->BindAction("AnyKey", IE_Pressed, this, &ASPlayerController::AnyKeyInput);
+}
+
+
+void ASPlayerController::AnyKeyInput(FKey PressedKey)
+{
+	bIsUsingGamepad = PressedKey.IsGamepadKey();
 }
 
 

@@ -102,12 +102,24 @@ protected:
 
 	virtual FVector GetPawnViewLocation() const override;
 
+	void FindCrosshairTarget();
+
+	void CrosshairTraceComplete(const FTraceHandle& InTraceHandle, FTraceDatum& InTraceDatum);
+
+	FTraceHandle TraceHandle;
+	
 public:	
 
 	ASCharacter();
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void Tick(float DeltaSeconds) override;
+
 	UFUNCTION(Exec)
 	void HealSelf(float Amount = 100);
+
+private:
+
+	bool bHasPawnTarget;
 };

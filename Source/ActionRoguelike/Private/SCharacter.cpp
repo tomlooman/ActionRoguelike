@@ -11,10 +11,13 @@
 #include "Kismet/GameplayStatics.h"
 #include "SActionComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "ActionRoguelike.h"
+#include "Logging/StructuredLog.h"
 
 // Enhanced Input
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "SPlayerController.h"
 
 
 // Sets default values
@@ -63,12 +66,6 @@ void ASCharacter::PostInitializeComponents()
 }
 
 
-FVector ASCharacter::GetPawnViewLocation() const
-{
-	return CameraComp->GetComponentLocation();
-}
-
-
 // Called to bind functionality to input
 void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -106,6 +103,63 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	InputComp->BindAction(Input_PrimaryAttack, ETriggerEvent::Triggered, this, &ASCharacter::PrimaryAttack);
 	InputComp->BindAction(Input_SecondaryAttack, ETriggerEvent::Triggered, this, &ASCharacter::BlackHoleAttack);
 	InputComp->BindAction(Input_Dash, ETriggerEvent::Triggered, this, &ASCharacter::Dash);
+
+	// Special
+	InputComp->BindAction(Input_PrimaryAttack, ETriggerEvent::Triggered, this, &ASCharacter::PrimaryAttack);
+}
+
+void ASCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	FindCrosshairTarget();
+}
+
+
+void ASCharacter::FindCrosshairTarget()
+{
+	// Ignore if not using GamePad
+	ASPlayerController* PC = Cast<ASPlayerController>(GetController());
+
+	// Only use aim assist when currently controlled and using gamepad
+	// Note: you *may* always want to line trace if using this result for other things like coloring crosshair or re-using this hit data for aim adjusting during projectile attacks
+	if (PC == nullptr || !PC->IsUsingGamepad())
+	{
+		bHasPawnTarget = false;
+		return;
+	}
+
+	FVector EyeLocation;
+	FRotator EyeRotation;
+	GetActorEyesViewPoint(EyeLocation, EyeRotation);
+
+	const float AimAssistDistance = 5000.f;
+	const FVector TraceEnd = EyeLocation + (EyeRotation.Vector() * AimAssistDistance);
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	FCollisionShape Shape;
+	Shape.SetSphere(50.f);
+
+	// Called next frame when the trace has completed
+	FTraceDelegate Delegate = FTraceDelegate::CreateUObject(this, &ASCharacter::CrosshairTraceComplete);
+	
+	TraceHandle = GetWorld()->AsyncSweepByChannel(EAsyncTraceType::Single, EyeLocation, TraceEnd, FQuat::Identity, ECC_Pawn, Shape, Params, FCollisionResponseParams::DefaultResponseParam, &Delegate);
+}
+
+
+void ASCharacter::CrosshairTraceComplete(const FTraceHandle& InTraceHandle, FTraceDatum& InTraceDatum)
+{
+	// at most expect one hit
+	if (InTraceDatum.OutHits.IsValidIndex(0))
+	{
+		FHitResult Hit = InTraceDatum.OutHits[0];
+		// Figure out if dealing with a Pawn, may want aim assist on other 'things', which requires a different check
+		bHasPawnTarget = Hit.IsValidBlockingHit() && Hit.GetActor()->IsA(APawn::StaticClass());
+
+		//UE_LOG(LogGame, Log, TEXT("has pawn target: %s"), bHasPawnTarget ? TEXT("true") : TEXT("false"));
+	}
 }
 
 
@@ -177,8 +231,16 @@ void ASCharacter::LookStick(const FInputActionValue& InputValue)
 		Value.Y *= -1.f;
 	}
 
-	AddControllerYawInput(Value.X * LookYawRate * GetWorld()->GetDeltaSeconds());
-	AddControllerPitchInput(Value.Y * LookPitchRate * GetWorld()->GetDeltaSeconds());
+	// Aim assist
+	// todo: may need to ease this out and/or change strength based on distance to target
+	float RateMultiplier = 1.0f;
+	if (bHasPawnTarget)
+	{
+		RateMultiplier = 0.5f;
+	}
+
+	AddControllerYawInput(Value.X * (LookYawRate * RateMultiplier) * GetWorld()->GetDeltaSeconds());
+	AddControllerPitchInput(Value.Y * (LookPitchRate * RateMultiplier) * GetWorld()->GetDeltaSeconds());
 }
 
 
@@ -243,4 +305,10 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 
 		SetLifeSpan(5.0f);
 	}
+}
+
+
+FVector ASCharacter::GetPawnViewLocation() const
+{
+	return CameraComp->GetComponentLocation();
 }

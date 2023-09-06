@@ -20,6 +20,14 @@ class ACTIONROGUELIKE_API ASPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
+public:
+
+	UFUNCTION(BlueprintPure, Category= "Input")
+	bool IsUsingGamepad() const
+	{
+		return bIsUsingGamepad;
+	}
+
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
@@ -32,6 +40,8 @@ protected:
 	void TogglePauseMenu();
 
 	virtual void SetupInputComponent() override;
+
+	void AnyKeyInput(FKey PressedKey);
 
 	UPROPERTY(BlueprintAssignable)
 	FOnPawnChanged OnPawnChanged;
@@ -51,4 +61,9 @@ protected:
 	void BlueprintBeginPlayingState();
 
 	virtual void OnRep_PlayerState() override;
+	
+private:
+
+	/* Was any input recently using GamePad */
+	bool bIsUsingGamepad;
 };
