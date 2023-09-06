@@ -3,9 +3,15 @@
 
 #include "Subsystems/STickablesSubsystem.h"
 
+#include "ActionRoguelike.h"
+
+
+static TAutoConsoleVariable<bool> CVarAggregateTicks(TEXT("game.AggregateTicks"), true, TEXT("Enable aggregate ticking for selected objects. Takes effect on next level load."), ECVF_Default);
+
+
 
 void FTickablesTickFunction::ExecuteTick(float DeltaTime, ELevelTick TickType, ENamedThreads::Type CurrentThread,
-	const FGraphEventRef& MyCompletionGraphEvent)
+                                         const FGraphEventRef& MyCompletionGraphEvent)
 {
 	Target->ExecuteTick(TickGroup, DeltaTime, TickType, CurrentThread, MyCompletionGraphEvent);
 }
@@ -18,35 +24,48 @@ void USTickablesSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	// Register for once to tick all components
 	// @todo: expand to have one option per tick group
 
-	ComponentsTick.bCanEverTick = true;
-	ComponentsTick.Target = this;
-	ComponentsTick.TickGroup = TG_PrePhysics;
 
-	// interesting to try async logic
-	ComponentsTick.bRunOnAnyThread = false;
-	
-	ComponentsTick.RegisterTickFunction(GetWorld()->PersistentLevel);
+	if (CVarAggregateTicks.GetValueOnGameThread())
+	{
+		ComponentsTick.bCanEverTick = true;
+        ComponentsTick.Target = this;
+		ComponentsTick.TickGroup = TG_PrePhysics;
+        
+        // interesting to try async logic
+        ComponentsTick.bRunOnAnyThread = false;
+        	
+        ComponentsTick.RegisterTickFunction(GetWorld()->PersistentLevel);
+	}
 }
 
 
 void USTickablesSubsystem::RegisterComponent(FActorComponentTickFunction* TickFunction)
 {
-	// Remove from the standard system
-	TickFunction->UnRegisterTickFunction();
+	if (CVarAggregateTicks.GetValueOnGameThread())
+	{
+		// Remove from the standard system
+		TickFunction->UnRegisterTickFunction();
 
-	check(!TickableComponents.Contains(TickFunction));
-	TickableComponents.Add(TickFunction);
+		check(!TickableComponents.Contains(TickFunction));
+		TickableComponents.Add(TickFunction);
+	}
 }
 
 void USTickablesSubsystem::DeRegisterComponent(FActorComponentTickFunction* TickFunction)
 {
-	// Cleanup
-	CleanupQueue.Add(TickFunction);
+	if (CVarAggregateTicks.GetValueOnGameThread())
+	{
+		// Cleanup
+		CleanupQueue.Add(TickFunction);
+	}
 }
 
 
 void USTickablesSubsystem::ExecuteTick(ETickingGroup TickGroup, float DeltaTime, ELevelTick TickType, ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent)
 {
+	// "Old" Stats system
+	DECLARE_SCOPE_CYCLE_COUNTER(TEXT("AggregateComponentTick"), AggregateComponentTick, STATGROUP_STANFORD)
+	
 	{
 		SCOPED_NAMED_EVENT(TickManagedComponents, FColor::Orange);
 	
