@@ -3,12 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SActorPoolingInterface.h"
 #include "GameFramework/Actor.h"
 #include "SProjectileBase.generated.h"
 
 class USphereComponent;
 class USProjectileMovementComponent;
-class UParticleSystemComponent;
+class UNiagaraComponent;
 class UAudioComponent;
 class USoundCue;
 class UCameraShakeBase;
@@ -37,7 +38,7 @@ struct FProjectileSparseData
  * Example of Implementing SparseClassData, reduces memory by specifying a set of properties that won't change per-instance. More info: https://docs.unrealengine.com/en-US/sparse-class-data-in-unreal-engine/
  */
 UCLASS(ABSTRACT, SparseClassDataTypes = ProjectileSparseData) // 'ABSTRACT' marks this class as incomplete, keeping this out of certain dropdowns windows like SpawnActor in Unreal Editor
-class ACTIONROGUELIKE_API ASProjectileBase : public AActor
+class ACTIONROGUELIKE_API ASProjectileBase : public AActor, public ISActorPoolingInterface
 {
 	GENERATED_BODY()
 
@@ -59,7 +60,7 @@ protected:
 	TObjectPtr<USProjectileMovementComponent> MoveComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	TObjectPtr<UParticleSystemComponent> EffectComp;
+	TObjectPtr<UNiagaraComponent> NiagaraLoopComp;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<UAudioComponent> AudioComp;
@@ -83,7 +84,11 @@ public:
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	virtual void LifeSpanExpired();
+	virtual void LifeSpanExpired() override;
+
+	virtual void PoolBeginPlay_Implementation() override;
+
+	virtual void PoolEndPlay_Implementation() override;
 	
 #if WITH_EDITORONLY_DATA
 	//~ These properties are moving out to the FMySparseClassData struct:

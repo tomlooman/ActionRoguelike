@@ -28,7 +28,9 @@ void USAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
 	{
 		Character->PlayAnimMontage(AttackAnim);
 
-		UGameplayStatics::SpawnEmitterAttached(CastingEffect, Character->GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
+		// Auto-released particle pooling
+		UGameplayStatics::SpawnEmitterAttached(CastingEffect, Character->GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator,
+			EAttachLocation::SnapToTarget, true, EPSCPoolMethod::AutoRelease);
 
 		UGameplayStatics::SpawnSoundAttached(CastingSound, Character->GetMesh());
 
@@ -102,7 +104,7 @@ void USAction_ProjectileAttack::AttackDelay_Elapsed(ACharacter* InstigatorCharac
 		//GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 
 		// re-use a pooled actor instead of always spawning new Actors
-		USActorPoolingSubsystem::GetPooledActor(this, ProjectileClass, SpawnTM, SpawnParams);
+		USActorPoolingSubsystem::AcquireFromPool(this, ProjectileClass, SpawnTM, SpawnParams);
 	}
 
 	StopAction(InstigatorCharacter);

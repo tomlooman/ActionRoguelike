@@ -128,6 +128,12 @@ protected:
 
 	FMonsterInfoRow* SelectedMonsterRow;
 
+	/* Allow per game mode actor pools and custom amount of primed instances */
+	UPROPERTY(EditDefaultsOnly, Category= "Actor Pooling")
+	TMap<TSubclassOf<AActor>, int32> ActorPoolClasses;
+
+	void RequestPrimedActors();
+
 public:
 
 	virtual void OnActorKilled(AActor* VictimActor, AActor* Killer);

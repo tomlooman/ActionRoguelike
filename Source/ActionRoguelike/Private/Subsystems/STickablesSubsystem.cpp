@@ -6,7 +6,11 @@
 #include "ActionRoguelike.h"
 
 
-static TAutoConsoleVariable<bool> CVarAggregateTicks(TEXT("game.AggregateTicks"), true, TEXT("Enable aggregate ticking for selected objects. Takes effect on next level load."), ECVF_Default);
+static TAutoConsoleVariable CVarAggregateTicks(
+	TEXT("game.AggregateTicks"),
+	true,
+	TEXT("Enable aggregate ticking for selected objects. Takes effect on next level load."),
+	ECVF_Default);
 
 
 

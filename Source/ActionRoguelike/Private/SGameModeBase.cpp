@@ -4,7 +4,6 @@
 #include "SGameModeBase.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "EnvironmentQuery/EnvQueryTypes.h"
-#include "EnvironmentQuery/EnvQueryInstanceBlueprintWrapper.h"
 #include "AI/SAICharacter.h"
 #include "SAttributeComponent.h"
 #include "EngineUtils.h"
@@ -21,7 +20,7 @@
 #include "SActionComponent.h"
 #include "SSaveGameSubsystem.h"
 #include "Engine/AssetManager.h"
-
+#include "Subsystems/SActorPoolingSubsystem.h"
 
 
 static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("game.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
@@ -82,6 +81,19 @@ void ASGameModeBase::StartPlay()
 		// Skip the Blueprint wrapper and use the direct C++ option which the Wrapper uses as well
 		FEnvQueryRequest Request(PowerupSpawnQuery, this);
 		Request.Execute(EEnvQueryRunMode::AllMatching, this, &ASGameModeBase::OnPowerupSpawnQueryCompleted);
+	}
+	
+	// We run the prime logic after the BeginPlay call to avoid accidentally running that on stored/primed actors
+	RequestPrimedActors();
+}
+
+
+void ASGameModeBase::RequestPrimedActors()
+{
+	USActorPoolingSubsystem* PoolingSystem = GetWorld()->GetSubsystem<USActorPoolingSubsystem>();
+	for (auto& Entry : ActorPoolClasses)
+	{
+		PoolingSystem->PrimeActorPool(Entry.Key, Entry.Value);
 	}
 }
 

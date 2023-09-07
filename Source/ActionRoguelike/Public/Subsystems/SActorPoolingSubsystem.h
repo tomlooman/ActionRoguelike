@@ -25,13 +25,22 @@ class ACTIONROGUELIKE_API USActorPoolingSubsystem : public UWorldSubsystem
 
 public:
 
-	bool ReleaseToPool(AActor* Actor);
+	UFUNCTION(BlueprintCallable, Category= "Actor Pooling", meta = (WorldContext="WorldContextObject"))
+	static AActor* SpawnActorPooled(const UObject* WorldContextObject, TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, ESpawnActorCollisionHandlingMethod SpawnHandling);
 
-	AActor* AquireFromPool(TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, FActorSpawnParameters SpawnParams);
+	static bool ReleaseToPool(AActor* Actor);
+	
+	static AActor* AcquireFromPool(const UObject* WorldContextObject, TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, FActorSpawnParameters SpawnParams);
 
-	/* Helper function to easily spawn or acquire a pooled actor, replaces the use of GetWorld()->SpawnActor() */
-	static AActor* GetPooledActor(UObject* WorldContextObject, TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, FActorSpawnParameters SpawnParams);
+	static bool IsPoolingEnabled(const UObject* WorldContextObject);
 
+	void PrimeActorPool(TSubclassOf<AActor> ActorClass, int32 Amount);
+
+protected:
+	
+	AActor* AcquireFromPool_Internal(TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, FActorSpawnParameters SpawnParams);
+
+	bool ReleaseToPool_Internal(AActor* Actor);
 
 protected:
 

@@ -13,10 +13,13 @@ UCLASS()
 class ACTIONROGUELIKE_API USProjectileMovementComponent : public UProjectileMovementComponent
 {
 	GENERATED_BODY()
-
-	virtual void InitializeComponent() override;
-
+	
 	virtual void BeginPlay() override;
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+public:
+	
+	void Reset();
+
 };

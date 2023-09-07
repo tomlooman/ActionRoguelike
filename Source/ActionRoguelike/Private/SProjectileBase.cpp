@@ -4,7 +4,8 @@
 #include "SProjectileBase.h"
 #include "Components/SphereComponent.h"
 #include "Components/SProjectileMovementComponent.h"
-#include "Particles/ParticleSystemComponent.h"
+#include "NiagaraComponent.h"
+#include "NiagaraComponentPoolMethodEnum.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
 #include "Sound/SoundCue.h"
@@ -24,8 +25,9 @@ ASProjectileBase::ASProjectileBase()
 	SphereComp->SetCanEverAffectNavigation(false);
 	RootComponent = SphereComp;
 
-	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
-	EffectComp->SetupAttachment(RootComponent);
+	NiagaraLoopComp = CreateDefaultSubobject<UNiagaraComponent>("EffectComp");
+	//NiagaraLoopComp->PoolingMethod = ENCPoolMethod::AutoRelease;
+	NiagaraLoopComp->SetupAttachment(RootComponent);
 
 	AudioComp = CreateDefaultSubobject<UAudioComponent>("AudioComp");
 	AudioComp->SetupAttachment(RootComponent);
@@ -46,7 +48,6 @@ ASProjectileBase::ASProjectileBase()
 void ASProjectileBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	//SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
 	
 	// More consistent to bind here compared to Constructor which may fail to bind if Blueprint was created before adding this binding (or when using hotreload)
 	// PostInitializeComponent is the preferred way of binding any events.
@@ -57,6 +58,8 @@ void ASProjectileBase::PostInitializeComponents()
 void ASProjectileBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Can use to fine-tune the pre allocated actor pool by checking how many projectiles are alive during gameplay
 	TRACE_COUNTER_INCREMENT(COUNTER_GAME_ActiveProjectiles);
 }
 
@@ -64,25 +67,40 @@ void ASProjectileBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 	TRACE_COUNTER_DECREMENT(COUNTER_GAME_ActiveProjectiles);
+}
+
+
+void ASProjectileBase::PoolBeginPlay_Implementation()
+{
+	MoveComp->Reset();
 	
-	// Prepare for pool by disabling and resetting for the next time it will be re-used
-	{
-		// Complete any active PSCs (These may be pooled themselves by the particle manager) - old Cascade system since we dont use Niagara yet
-		TInlineComponentArray<UParticleSystemComponent*> ParticleComponents(this);
-		for (UParticleSystemComponent* const PSC  : ParticleComponents)
-		{
-			PSC->Complete();
-		}
-	}
+	//NiagaraLoopComp->Activate();
+	//AudioComp->Play();
+	
+	// Unpausing is significantly faster than re-creating renderstates due to Deactivate()
+	// Does keep its state around which is OK for our loopable VFX that will mostly be active/in-use
+	// @todo: ribbon VFX will teleport and cause a large streak on screen as it catches up with the new actor location
+	NiagaraLoopComp->SetPaused(false);
+	// Reset to fix ribbon positions
+	//NiagaraLoopComp->ResetSystem();
+	AudioComp->SetPaused(false);
+
+}
+
+
+void ASProjectileBase::PoolEndPlay_Implementation()
+{
+	//NiagaraLoopComp->Deactivate();
+	//AudioComp->Stop();
+	NiagaraLoopComp->SetPaused(true);
+	AudioComp->SetPaused(true);
 }
 
 
 void ASProjectileBase::LifeSpanExpired()
 {
 	// Skip destroy and instead release to pool
-	// This would need to be generically implemented for any pooled actor
-	USActorPoolingSubsystem* PoolingSubsystem = GetWorld()->GetSubsystem<USActorPoolingSubsystem>();
-	PoolingSubsystem->ReleaseToPool(this);
+	USActorPoolingSubsystem::ReleaseToPool(this);
 }
 
 
@@ -99,7 +117,8 @@ void ASProjectileBase::Explode_Implementation()
 	// Adding ensure to see if we encounter this situation at all
 	if (ensure(IsValid(this)))
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
+		// Auto-managed particle pooling
+		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation(), true, EPSCPoolMethod::AutoRelease);
 
 		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 

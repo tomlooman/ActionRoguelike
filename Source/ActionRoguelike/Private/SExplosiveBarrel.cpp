@@ -48,7 +48,8 @@ void ASExplosiveBarrel::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Ot
 
 	UE_LOGFMT(LogGame, Log, "OnActorHit in Explosive Barrel");
 
-	UE_LOGFMT(LogGame, Warning, "OtherActor: {name}, at game time: {timeseconds}", GetNameSafe(OtherActor), GetWorld()->TimeSeconds);
+	// Warnings as structed logs even show up in the "Message Log" window of UnrealEd
+	UE_LOGFMT(LogGame, Warning, "OnActorHit, OtherActor: {name}, at game time: {timeseconds}", GetNameSafe(OtherActor), GetWorld()->TimeSeconds);
 
 	FString CombinedString = FString::Printf(TEXT("Hit at location: %s"), *Hit.ImpactPoint.ToString());
 	DrawDebugString(GetWorld(), Hit.ImpactPoint, CombinedString, nullptr, FColor::Green, 2.0f, true);

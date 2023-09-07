@@ -3,7 +3,7 @@
 
 #include "SDashProjectile.h"
 #include "Kismet/GameplayStatics.h"
-#include "Particles/ParticleSystemComponent.h"
+#include "NiagaraComponent.h"
 #include "Components/SProjectileMovementComponent.h"
 #include "Sound/SoundCue.h"
 
@@ -38,7 +38,7 @@ void ASDashProjectile::Explode_Implementation()
 
 	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 
-	EffectComp->DeactivateSystem();
+	NiagaraLoopComp->Deactivate();
 
 	MoveComp->StopMovementImmediately();
 	SetActorEnableCollision(false);

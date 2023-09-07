@@ -420,6 +420,10 @@
 		{
 			"Name": "StaticMeshEditorModeling",
 			"Enabled": true
+		},
+		{
+			"Name": "CascadeToNiagaraConverter",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
