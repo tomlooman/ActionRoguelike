@@ -33,8 +33,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FPrimaryAssetId MonsterId;
 
-	//TSubclassOf<AActor> MonsterClass;
-
 	/* Relative chance to pick this monster */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Weight;
@@ -46,7 +44,6 @@ public:
 	/* Amount of credits awarded to killer of this unit.  */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float KillReward;
-
 };
 
 /**
@@ -89,6 +86,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
 	bool bAutoStartBotSpawning;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ruleset")
+	bool bAutoRespawnPlayer;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
 	TObjectPtr<UEnvQuery> PowerupSpawnQuery;

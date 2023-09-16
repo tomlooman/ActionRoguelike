@@ -10,11 +10,8 @@
 #include "DrawDebugHelpers.h"
 #include "SCharacter.h"
 #include "SPlayerState.h"
-#include "SSaveGame.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameStateBase.h"
-#include "SGameplayInterface.h"
-#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 #include "SMonsterData.h"
 #include "../ActionRoguelike.h"
 #include "SActionComponent.h"
@@ -39,6 +36,8 @@ ASGameModeBase::ASGameModeBase()
 
 	// We start spawning as the player walks on a button instead for convenient testing w/o bots.
 	bAutoStartBotSpawning = false;
+
+	bAutoRespawnPlayer = false;
 
 	PlayerStateClass = ASPlayerState::StaticClass();
 }
@@ -71,13 +70,6 @@ void ASGameModeBase::StartPlay()
 	// Make sure we have assigned at least one power-up class
 	if (ensure(PowerupClasses.Num() > 0))
 	{
-		// Run EQS to find potential power-up spawn locations
-		//UEnvQueryInstanceBlueprintWrapper* QueryInstance = UEnvQueryManager::RunEQSQuery(this, PowerupSpawnQuery, this, EEnvQueryRunMode::AllMatching, nullptr);
-		//if (ensure(QueryInstance))
-		//{
-		//	QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ASGameModeBase::OnPowerupSpawnQueryCompleted);
-		//}
-
 		// Skip the Blueprint wrapper and use the direct C++ option which the Wrapper uses as well
 		FEnvQueryRequest Request(PowerupSpawnQuery, this);
 		Request.Execute(EEnvQueryRunMode::AllMatching, this, &ASGameModeBase::OnPowerupSpawnQueryCompleted);
@@ -170,7 +162,6 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 			NrOfAliveBots++;
 		}
 	}
-	
 
 	UE_LOGFMT(LogGame, Log, "Found {number} alive bots.", NrOfAliveBots);
 
@@ -224,13 +215,6 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 		}
 	}
 
-	// Run EQS to find valid spawn location
-	//UEnvQueryInstanceBlueprintWrapper* QueryInstance = UEnvQueryManager::RunEQSQuery(this, SpawnBotQuery, this, EEnvQueryRunMode::RandomBest5Pct, nullptr);
-	//if (ensure(QueryInstance))
-	//{
-	//	QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ASGameModeBase::OnBotSpawnQueryCompleted);
-	//}
-
 	// Skip the Blueprint wrapper and use the direct C++ option which the Wrapper uses as well
 	FEnvQueryRequest Request(SpawnBotQuery, this);
 	Request.Execute(EEnvQueryRunMode::RandomBest5Pct, this, &ASGameModeBase::OnBotSpawnQueryCompleted);
@@ -251,18 +235,17 @@ void ASGameModeBase::OnBotSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result
 	QueryResult->GetAllAsLocations(Locations);
 
 	if (Locations.IsValidIndex(0) && MonsterTable)
-	{	
-		if (UAssetManager* Manager = UAssetManager::GetIfValid())
-		{
-			// Apply spawn cost
-			AvailableSpawnCredit -= SelectedMonsterRow->SpawnCost;
+	{
+		UAssetManager& Manager = UAssetManager::Get();
+		
+		// Apply spawn cost
+		AvailableSpawnCredit -= SelectedMonsterRow->SpawnCost;
 
-			FPrimaryAssetId MonsterId = SelectedMonsterRow->MonsterId;
+		FPrimaryAssetId MonsterId = SelectedMonsterRow->MonsterId;
 
-			TArray<FName> Bundles;
-			FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ASGameModeBase::OnMonsterLoaded, MonsterId, Locations[0]);
-			Manager->LoadPrimaryAsset(MonsterId, Bundles, Delegate);
-		}	
+		TArray<FName> Bundles;
+		FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ASGameModeBase::OnMonsterLoaded, MonsterId, Locations[0]);
+		Manager.LoadPrimaryAsset(MonsterId, Bundles, Delegate);
 	}
 }
 
@@ -271,27 +254,24 @@ void ASGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLoca
 {
 	//LogOnScreen(this, "Finished loading.", FColor::Green);
 
-	UAssetManager* Manager = UAssetManager::GetIfValid();
-	if (Manager)
-	{
-		USMonsterData* MonsterData = Cast<USMonsterData>(Manager->GetPrimaryAssetObject(LoadedId));
-		if (MonsterData)
-		{
-			AActor* NewBot = GetWorld()->SpawnActor<AActor>(MonsterData->MonsterClass, SpawnLocation, FRotator::ZeroRotator);
-			if (NewBot)
-			{
-				LogOnScreen(this, FString::Printf(TEXT("Spawned enemy: %s (%s)"), *GetNameSafe(NewBot), *GetNameSafe(MonsterData)));
+	UAssetManager& Manager = UAssetManager::Get();
 
-				// Grant special actions, buffs etc.
-				USActionComponent* ActionComp = Cast<USActionComponent>(NewBot->GetComponentByClass(USActionComponent::StaticClass()));
-				if (ActionComp)
-				{
-					for (TSubclassOf<USAction> ActionClass : MonsterData->Actions)
-					{
-						ActionComp->AddAction(NewBot, ActionClass);
-					}
-				}
-			}
+	USMonsterData* MonsterData = Cast<USMonsterData>(Manager.GetPrimaryAssetObject(LoadedId));
+	check(MonsterData);
+	
+	AActor* NewBot = GetWorld()->SpawnActor<AActor>(MonsterData->MonsterClass, SpawnLocation, FRotator::ZeroRotator);
+	// Spawn might fail if colliding with environment
+	if (NewBot)
+	{
+		LogOnScreen(this, FString::Printf(TEXT("Spawned enemy: %s (%s)"), *GetNameSafe(NewBot), *GetNameSafe(MonsterData)));
+
+		// Grant special actions, buffs etc.
+		USActionComponent* ActionComp = Cast<USActionComponent>(NewBot->GetComponentByClass(USActionComponent::StaticClass()));
+		check(ActionComp);
+		
+		for (TSubclassOf<USAction> ActionClass : MonsterData->Actions)
+		{
+			ActionComp->AddAction(NewBot, ActionClass);
 		}
 	}
 }
@@ -379,13 +359,16 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 	ASCharacter* Player = Cast<ASCharacter>(VictimActor);
 	if (Player)
 	{
-		// Disabled auto-respawn
-// 		FTimerHandle TimerHandle_RespawnDelay;
-// 		FTimerDelegate Delegate;
-// 		Delegate.BindUFunction(this, "RespawnPlayerElapsed", Player->GetController());
-// 
-// 		float RespawnDelay = 2.0f;
-// 		GetWorldTimerManager().SetTimer(TimerHandle_RespawnDelay, Delegate, RespawnDelay, false);
+		// Auto-respawn
+		if (bAutoRespawnPlayer)
+		{
+			FTimerHandle TimerHandle_RespawnDelay;
+			FTimerDelegate Delegate;
+			Delegate.BindUFunction(this, "RespawnPlayerElapsed", Player->GetController());
+ 
+			float RespawnDelay = 2.0f;
+			GetWorldTimerManager().SetTimer(TimerHandle_RespawnDelay, Delegate, RespawnDelay, false);
+		}
 
 		// Store time if it was better than previous record
 		ASPlayerState* PS = Player->GetPlayerState<ASPlayerState>();
