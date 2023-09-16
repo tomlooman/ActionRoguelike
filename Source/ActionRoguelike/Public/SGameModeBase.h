@@ -107,8 +107,7 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void StartSpawningBots();
-
-	UFUNCTION()
+	
 	void SpawnBotTimerElapsed();
 
 	void OnBotSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result);

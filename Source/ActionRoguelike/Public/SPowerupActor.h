@@ -29,8 +29,7 @@ protected:
 	float RespawnTime;
 
 	FTimerHandle TimerHandle_RespawnTimer;
-
-	UFUNCTION()
+	
 	void ShowPowerup();
 
 	void HideAndCooldownPowerup();
