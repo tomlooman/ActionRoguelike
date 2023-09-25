@@ -26,34 +26,34 @@ class ACTIONROGUELIKE_API ASCharacter : public ACharacter
 protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	UInputMappingContext* DefaultInputMapping;
+	TObjectPtr<UInputMappingContext> DefaultInputMapping;
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	UInputAction* Input_Move;
+	TObjectPtr<UInputAction> Input_Move;
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	UInputAction* Input_LookMouse;
+	TObjectPtr<UInputAction> Input_LookMouse;
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	UInputAction* Input_LookStick;
+	TObjectPtr<UInputAction> Input_LookStick;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	UInputAction* Input_Jump;
+	TObjectPtr<UInputAction> Input_Jump;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	UInputAction* Input_Interact;
+	TObjectPtr<UInputAction> Input_Interact;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	UInputAction* Input_Sprint;
+	TObjectPtr<UInputAction> Input_Sprint;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	UInputAction* Input_Dash;
+	TObjectPtr<UInputAction> Input_Dash;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	UInputAction* Input_PrimaryAttack;
+	TObjectPtr<UInputAction> Input_PrimaryAttack;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	UInputAction* Input_SecondaryAttack;
+	TObjectPtr<UInputAction> Input_SecondaryAttack;
 	
 	/* VisibleAnywhere = read-only, still useful to view in-editor and enforce a convention. */
 	UPROPERTY(VisibleAnywhere, Category = "Effects")

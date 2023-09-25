@@ -36,7 +36,6 @@ bool USAction::CanStart_Implementation(AActor* Instigator)
 void USAction::StartAction_Implementation(AActor* Instigator)
 {
 	UE_LOGFMT(LogGame, Log, "Started: {ActionName}", GetName());
-	//LogOnScreen(this, FString::Printf(TEXT("Started: %s"), *ActionName.ToString()), FColor::Green);
 
 	USActionComponent* Comp = GetOwningComponent();	
 	Comp->ActiveGameplayTags.AppendTags(GrantsTags);
@@ -56,7 +55,6 @@ void USAction::StartAction_Implementation(AActor* Instigator)
 void USAction::StopAction_Implementation(AActor* Instigator)
 {
 	UE_LOGFMT(LogGame, Log, "Stopped: {name}", GetName());
-	//LogOnScreen(this, FString::Printf(TEXT("Stopped: %s"), *ActionName.ToString()), FColor::White);
 
 	//ensureAlways(bIsRunning);
 
@@ -85,9 +83,6 @@ UWorld* USAction::GetWorld() const
 
 USActionComponent* USAction::GetOwningComponent() const
 {
-	//AActor* Actor = Cast<AActor>(GetOuter());
-	//return Actor->GetComponentByClass(USActionComponent::StaticClass());
-
 	return ActionComp;
 }
 

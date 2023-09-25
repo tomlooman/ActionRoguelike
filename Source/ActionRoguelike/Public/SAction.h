@@ -89,7 +89,7 @@ public:
 
 	/* Action nickname to start/stop without a reference to the object */
 	UPROPERTY(EditDefaultsOnly, Category = "Action")
-	FName ActionName;
+	FGameplayTag ActivationTag;
 
 	virtual UWorld* GetWorld() const override;
 

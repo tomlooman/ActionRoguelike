@@ -14,7 +14,7 @@
 
 USActionComponent::USActionComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	SetIsReplicatedByDefault(true);
 }
@@ -122,7 +122,7 @@ USAction* USActionComponent::GetAction(TSubclassOf<USAction> ActionClass) const
 }
 
 
-bool USActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
+bool USActionComponent::StartActionByName(AActor* Instigator, FGameplayTag ActionName)
 {
 	//SCOPE_CYCLE_COUNTER(STAT_StartActionByName);
 	// Inline variant, convenient when only used once in code, visible in Viewport stats
@@ -133,7 +133,7 @@ bool USActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 
 	for (USAction* Action : Actions)
 	{
-		if (Action && Action->ActionName == ActionName)
+		if (Action && Action->ActivationTag == ActionName)
 		{
 			if (!Action->CanStart(Instigator))
 			{
@@ -166,11 +166,11 @@ bool USActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 }
 
 
-bool USActionComponent::StopActionByName(AActor* Instigator, FName ActionName)
+bool USActionComponent::StopActionByName(AActor* Instigator, FGameplayTag ActionName)
 {
 	for (USAction* Action : Actions)
 	{
-		if (Action && Action->ActionName == ActionName)
+		if (Action && Action->ActivationTag == ActionName)
 		{
 			if (Action->IsRunning())
 			{
@@ -190,13 +190,13 @@ bool USActionComponent::StopActionByName(AActor* Instigator, FName ActionName)
 }
 
 
-void USActionComponent::ServerStartAction_Implementation(AActor* Instigator, FName ActionName)
+void USActionComponent::ServerStartAction_Implementation(AActor* Instigator, FGameplayTag ActionName)
 {
 	StartActionByName(Instigator, ActionName);
 }
 
 
-void USActionComponent::ServerStopAction_Implementation(AActor* Instigator, FName ActionName)
+void USActionComponent::ServerStopAction_Implementation(AActor* Instigator, FGameplayTag ActionName)
 {
 	StopActionByName(Instigator, ActionName);
 }

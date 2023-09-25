@@ -15,7 +15,7 @@ class ACTIONROGUELIKE_API UBTTask_StartAction : public UBTTaskNode
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "Action")
-	FName ActionName;
+	FGameplayTag ActionName;
 			
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 

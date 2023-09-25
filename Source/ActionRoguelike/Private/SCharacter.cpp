@@ -13,6 +13,7 @@
 #include "Components/CapsuleComponent.h"
 #include "ActionRoguelike.h"
 #include "Logging/StructuredLog.h"
+#include "SharedGameplayTags.h"
 
 // Enhanced Input
 #include "EnhancedInputComponent.h"
@@ -246,30 +247,35 @@ void ASCharacter::LookStick(const FInputActionValue& InputValue)
 
 void ASCharacter::SprintStart()
 {
-	ActionComp->StartActionByName(this, "Sprint");
+	ActionComp->StartActionByName(this, SharedGameplayTags::Action_Sprint);
 }
 
 void ASCharacter::SprintStop()
 {
-	ActionComp->StopActionByName(this, "Sprint");
+	ActionComp->StopActionByName(this, SharedGameplayTags::Action_Sprint);
 }
 
 
 void ASCharacter::PrimaryAttack()
 {
-	ActionComp->StartActionByName(this, "PrimaryAttack");
+	static FGameplayTag ActivationTag = FGameplayTag::RequestGameplayTag("Action.PrimaryAttack");
+	
+	ActionComp->StartActionByName(this, ActivationTag);
 }
 
 
 void ASCharacter::BlackHoleAttack()
 {
-	ActionComp->StartActionByName(this, "Blackhole");
+	static FGameplayTag ActivationTag = FGameplayTag::RequestGameplayTag("Action.Blackhole");
+	ActionComp->StartActionByName(this, ActivationTag);
 }
 
 
 void ASCharacter::Dash()
 {
-	ActionComp->StartActionByName(this, "Dash");
+	static FGameplayTag ActivationTag = FGameplayTag::RequestGameplayTag("Action.Dash");
+	
+	ActionComp->StartActionByName(this, ActivationTag);
 }
 
 

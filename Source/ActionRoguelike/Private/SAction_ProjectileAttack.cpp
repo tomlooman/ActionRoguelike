@@ -101,6 +101,8 @@ void USAction_ProjectileAttack::AttackDelay_Elapsed(ACharacter* InstigatorCharac
 		FRotator ProjRotation = (AdjustedTraceEnd - HandLocation).Rotation();
 
 		FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
+
+		// Standard spawning, replaced by pooling system below
 		//GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 
 		// re-use a pooled actor instead of always spawning new Actors
