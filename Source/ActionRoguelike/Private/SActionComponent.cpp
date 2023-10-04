@@ -7,6 +7,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Engine/ActorChannel.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SActionComponent)
+
 // Can declare stat here once and use in multiple instances in code elsewhere using SCOPE_CYCLE_COUNTER(STAT_StartActionByName);
 // If used once, the line below can be placed in-line where you want to trace, see usage USActionComponent::StartActionByName
 //DECLARE_CYCLE_STAT(TEXT("StartActionByName"), STAT_StartActionByName, STATGROUP_STANFORD);

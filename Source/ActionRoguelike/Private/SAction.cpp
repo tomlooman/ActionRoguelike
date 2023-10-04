@@ -6,7 +6,7 @@
 #include "ActionRoguelike.h"
 #include "Net/UnrealNetwork.h"
 
-
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SAction)
 
 
 void USAction::Initialize(USActionComponent* NewActionComp)

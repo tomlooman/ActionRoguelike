@@ -7,7 +7,7 @@
 #include "Components/SProjectileMovementComponent.h"
 #include "Sound/SoundCue.h"
 
-
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SDashProjectile)
 
 
 

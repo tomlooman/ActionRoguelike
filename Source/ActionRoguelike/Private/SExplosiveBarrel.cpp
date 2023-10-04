@@ -8,6 +8,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "DrawDebugHelpers.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SExplosiveBarrel)
+
 
 ASExplosiveBarrel::ASExplosiveBarrel()
 {

@@ -6,6 +6,7 @@
 #include "SActionComponent.h"
 #include "SGameplayFunctionLibrary.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SActionEffect_Thorns)
 
 
 USActionEffect_Thorns::USActionEffect_Thorns()

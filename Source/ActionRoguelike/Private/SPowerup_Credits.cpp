@@ -4,6 +4,7 @@
 #include "SPowerup_Credits.h"
 #include "SPlayerState.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SPowerup_Credits)
 
 
 ASPowerup_Credits::ASPowerup_Credits()

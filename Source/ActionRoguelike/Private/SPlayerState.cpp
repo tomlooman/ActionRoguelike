@@ -7,7 +7,7 @@
 #include "SSaveGame.h"
 #include "Net/UnrealNetwork.h"
 
-
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SPlayerState)
 
 
 void ASPlayerState::AddCredits(int32 Delta)

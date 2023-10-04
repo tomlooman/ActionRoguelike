@@ -6,6 +6,8 @@
 #include "SignificanceManager.h"
 #include "Kismet/GameplayStatics.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SGameViewportClient)
+
 void USGameViewportClient::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

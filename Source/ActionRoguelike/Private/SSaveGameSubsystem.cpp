@@ -13,6 +13,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SSaveGameSubsystem)
+
 
 
 void USSaveGameSubsystem::Initialize(FSubsystemCollectionBase& Collection)

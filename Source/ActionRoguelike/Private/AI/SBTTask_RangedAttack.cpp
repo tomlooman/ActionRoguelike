@@ -7,6 +7,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "SAttributeComponent.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SBTTask_RangedAttack)
 
 
 USBTTask_RangedAttack::USBTTask_RangedAttack()

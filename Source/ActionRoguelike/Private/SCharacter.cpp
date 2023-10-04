@@ -8,7 +8,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "SInteractionComponent.h"
 #include "SAttributeComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "SActionComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "ActionRoguelike.h"
@@ -19,6 +18,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "SPlayerController.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SCharacter)
 
 
 // Sets default values

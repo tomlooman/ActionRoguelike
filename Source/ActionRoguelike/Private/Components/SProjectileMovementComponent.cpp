@@ -4,6 +4,8 @@
 #include "Components/SProjectileMovementComponent.h"
 #include "Subsystems/STickablesSubsystem.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SProjectileMovementComponent)
+
 
 void USProjectileMovementComponent::BeginPlay()
 {

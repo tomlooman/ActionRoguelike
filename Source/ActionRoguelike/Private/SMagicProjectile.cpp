@@ -8,6 +8,8 @@
 #include "Components/SProjectileMovementComponent.h"
 #include "SActionEffect.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SMagicProjectile)
+
 // NOTE: With SparseDataClass feature in use, some properties are replaced with "GetXXX()" which is generated automatically by UHT.
 // Example: DamageAmount becomes GetDamageAmount() without this function visible in our own header.
 

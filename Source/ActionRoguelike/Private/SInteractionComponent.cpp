@@ -6,6 +6,7 @@
 #include "DrawDebugHelpers.h"
 #include "SWorldUserWidget.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SInteractionComponent)
 
 static TAutoConsoleVariable<bool> CVarDebugDrawInteraction(TEXT("su.InteractionDebugDraw"), false, TEXT("Enable Debug Lines for Interact Component."), ECVF_Cheat);
 

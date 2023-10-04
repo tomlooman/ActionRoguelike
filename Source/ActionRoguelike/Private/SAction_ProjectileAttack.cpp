@@ -8,6 +8,8 @@
 #include "GameFramework/Character.h"
 #include "Subsystems/SActorPoolingSubsystem.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SAction_ProjectileAttack)
+
 
 USAction_ProjectileAttack::USAction_ProjectileAttack()
 {

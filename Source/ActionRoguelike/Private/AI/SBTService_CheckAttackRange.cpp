@@ -5,7 +5,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 
-
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SBTService_CheckAttackRange)
 
 
 USBTService_CheckAttackRange::USBTService_CheckAttackRange()

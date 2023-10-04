@@ -12,6 +12,8 @@
 #include "ProfilingDebugging/CountersTrace.h"
 #include "Subsystems/SActorPoolingSubsystem.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SProjectileBase)
+
 // NOTE: With SparseDataClass feature in use, some properties are replaced with "GetXXX()" which is generated automatically by UHT.
 // Example: DamageAmount becomes GetDamageAmount() without this function visible in our own header.
 
@@ -79,7 +81,6 @@ void ASProjectileBase::PoolBeginPlay_Implementation()
 	
 	// Unpausing is significantly faster than re-creating renderstates due to Deactivate()
 	// Does keep its state around which is OK for our loopable VFX that will mostly be active/in-use
-	// @todo: ribbon VFX will teleport and cause a large streak on screen as it catches up with the new actor location
 	NiagaraLoopComp->SetPaused(false);
 	// Reset to fix ribbon positions
 	//NiagaraLoopComp->ResetSystem();

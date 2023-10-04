@@ -5,6 +5,8 @@
 #include "SActionComponent.h"
 #include "GameFramework/GameStateBase.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SActionEffect)
+
 
 
 

@@ -19,6 +19,8 @@
 #include "Engine/AssetManager.h"
 #include "Subsystems/SActorPoolingSubsystem.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SGameModeBase)
+
 
 static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("game.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
 

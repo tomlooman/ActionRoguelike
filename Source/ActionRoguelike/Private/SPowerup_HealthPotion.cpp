@@ -5,7 +5,7 @@
 #include "SAttributeComponent.h"
 #include "SPlayerState.h"
 
-
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SPowerup_HealthPotion)
 
 
 #define LOCTEXT_NAMESPACE "InteractableActors"

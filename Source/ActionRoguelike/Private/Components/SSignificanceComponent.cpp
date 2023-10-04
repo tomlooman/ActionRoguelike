@@ -7,6 +7,8 @@
 #include "ParticleHelper.h"
 #include "Particles/ParticleSystemComponent.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SSignificanceComponent)
+
 /* Allows us to force significance on all classes to quickly compare the performance differences as if the system was disabled */
 static float GForcedSignificance = -1;
 static FAutoConsoleVariableRef CVarSignificanceManager_ForceSignificance(

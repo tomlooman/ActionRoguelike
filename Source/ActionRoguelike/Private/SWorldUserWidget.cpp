@@ -8,7 +8,7 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/SizeBox.h"
 
-
+#include UE_INLINE_GENERATED_CPP_BY_NAME(SWorldUserWidget)
 
 
 

@@ -5,6 +5,8 @@
 #include "AIController.h"
 #include "SActionComponent.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(BTTask_StartAction)
+
 
 EBTNodeResult::Type UBTTask_StartAction::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
