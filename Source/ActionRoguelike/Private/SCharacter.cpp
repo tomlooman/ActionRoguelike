@@ -56,7 +56,8 @@ ASCharacter::ASCharacter()
 	// Once from the mesh, and 2nd time from capsule
 	GetCapsuleComponent()->SetGenerateOverlapEvents(false);
 
-	TimeToHitParamName = "TimeToHit";
+	//TimeToHitParamName = "TimeToHit";
+	HitFlash_CustomPrimitiveIndex = 0;
 }
 
 
@@ -297,10 +298,13 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 	// Damaged
 	if (Delta < 0.0f)
 	{
-		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
+		//GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
+
+		// Replaces the above "old" method of requiring unique material instances for every mesh element on the player 
+		GetMesh()->SetCustomPrimitiveDataFloat(HitFlash_CustomPrimitiveIndex, GetWorld()->TimeSeconds);
 
 		// Rage added equal to damage received (Abs to turn into positive rage number)
-		float RageDelta = FMath::Abs(Delta);
+		const float RageDelta = FMath::Abs(Delta);
 		AttributeComp->ApplyRage(InstigatorActor, RageDelta);
 	}
 

@@ -37,7 +37,8 @@ ASAICharacter::ASAICharacter()
 	// Skip bones when not visible, may miss anim notifies etc. if animation is skipped so these options must be tested per use case
 	SkelMesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
 
-	TimeToHitParamName = "TimeToHit";
+	//TimeToHitParamName = "TimeToHit";
+	HitFlash_CustomPrimitiveIndex = 0;
 	TargetActorKey = "TargetActor";
 }
 
@@ -70,7 +71,11 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 			}
 		}
 
-		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
+		//GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
+
+		// Replaces the above "old" method of requiring unique material instances for every mesh element on the player 
+		GetMesh()->SetCustomPrimitiveDataFloat(HitFlash_CustomPrimitiveIndex, GetWorld()->TimeSeconds);
+
 
 		// Died
 		if (NewHealth <= 0.0f)

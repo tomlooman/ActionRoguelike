@@ -35,8 +35,12 @@ protected:
 	TSubclassOf<UUserWidget> SpottedWidgetClass;
 
 	/* Material parameter for Hitflashes */
+	//UPROPERTY(VisibleAnywhere, Category = "Effects")
+	//FName TimeToHitParamName;
+	
+	/* Index must match the CustomPrimitiveData index used in the Overlay material */
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
-	FName TimeToHitParamName;
+	int32 HitFlash_CustomPrimitiveIndex;
 
 	/* Key for AI Blackboard 'TargetActor' */
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
