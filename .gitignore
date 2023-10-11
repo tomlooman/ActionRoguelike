@@ -57,9 +57,14 @@ Plugins/*/Binaries/*
 # Builds
 Build/*
 
+# File Open Order
+Build/Windows/FileOpenOrder/*
+
+# pso cache files
+!Build/Windows/PipelineCaches/*
+
 # Whitelist PakBlacklist-<BuildConfiguration>.txt files
 !Build/*/
-Build/*/**
 !Build/*/PakBlacklist*.txt
 
 # Don't ignore icon files in Build

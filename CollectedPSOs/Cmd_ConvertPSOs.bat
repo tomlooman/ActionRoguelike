@@ -1,0 +1,3 @@
+:: commandlet to convert all the gathered PSOs (can be multiple files across multiple runs) from a cooked build and inject it into the game to be included the next time its cooked.
+:: using full paths here on my local machine...ofc update this to your own paths (was having some issues with relative paths so just used full paths for now)
+E:\Epic\UE_5.3\Engine\Binaries\Win64\UnrealEditor-Cmd.exe -run=ShaderPipelineCacheTools expand E:\GitHub\ActionRoguelike\CollectedPSOs\*.rec.upipelinecache E:\GitHub\ActionRoguelike\CollectedPSOs\*.shk E:\GitHub\ActionRoguelike\CollectedPSOs\PSO_ActionRoguelike_PCD3D_SM6.spc
