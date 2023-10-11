@@ -48,6 +48,7 @@ This project is part of the **[Professional Game Development in C++ and Unreal E
   - Aggregate Ticking (Projectiles)
   - Actor Pooling (Projectiles)
 - Async Line tracing Example
+- PSO Precaching & Bundled PSOs Setup for Windows DX12
 
 
 This project is part of the **[Professional Game Development in C++ and Unreal Engine](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)** Course where we build this entire game project step-by-step.
