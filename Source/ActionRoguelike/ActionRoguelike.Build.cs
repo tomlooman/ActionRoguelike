@@ -32,6 +32,9 @@ public class ActionRoguelike : ModuleRules
 			"Niagara"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PrivateDependencyModuleNames.AddRange(new string[]
+		{
+			"MoviePlayer"
+		});
 	}
 }
