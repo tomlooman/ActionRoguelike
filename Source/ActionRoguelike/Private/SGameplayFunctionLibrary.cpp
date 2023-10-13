@@ -3,6 +3,7 @@
 
 #include "SGameplayFunctionLibrary.h"
 #include "SAttributeComponent.h"
+#include "ShaderPipelineCache.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SGameplayFunctionLibrary)
 
@@ -35,4 +36,11 @@ bool USGameplayFunctionLibrary::ApplyDirectionalDamage(AActor* DamageCauser, AAc
 	}
 
 	return false;
+}
+
+
+int32 USGameplayFunctionLibrary::GetRemainingBundledPSOs()
+{
+	// Counts Bundled PSOs remaining, exposed for UI access
+	return FShaderPipelineCache::NumPrecompilesRemaining();
 }

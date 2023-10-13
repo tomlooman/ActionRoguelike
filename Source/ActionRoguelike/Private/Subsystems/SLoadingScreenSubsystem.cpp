@@ -21,8 +21,8 @@ void USLoadingScreenSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 void USLoadingScreenSubsystem::BeginLoadingScreen(const FString& MapName)
 {
 	FLoadingScreenAttributes LoadingScreen;
-	// Don't autocomplete so we can wait for PSO compilation to finish
-	LoadingScreen.bAutoCompleteWhenLoadingCompletes = true;
+	//LoadingScreen.bAutoCompleteWhenLoadingCompletes = false;
+	//LoadingScreen.bWaitForManualStop = true;
 	LoadingScreen.WidgetLoadingScreen = FLoadingScreenAttributes::NewTestLoadingScreenWidget();
 
 	GetMoviePlayer()->SetupLoadingScreen(LoadingScreen);

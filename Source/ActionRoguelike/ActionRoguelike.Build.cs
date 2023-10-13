@@ -34,7 +34,8 @@ public class ActionRoguelike : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
-			"MoviePlayer"
+			"MoviePlayer", // loading screen
+			"RenderCore" // for PSO caching code access
 		});
 	}
 }
