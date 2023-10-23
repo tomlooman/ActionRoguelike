@@ -61,7 +61,8 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 			SetTargetActor(InstigatorActor);
 		}
 
-		if (ActiveHealthBar == nullptr)
+		// Create once, and skip creating if its an instant kill
+		if (ActiveHealthBar == nullptr && NewHealth > 0.0)
 		{
 			ActiveHealthBar = CreateWidget<USWorldUserWidget>(GetWorld(), HealthBarWidgetClass);
 			if (ActiveHealthBar)
