@@ -10,11 +10,7 @@
 
 EBTNodeResult::Type USBTTask_HealSelf::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	APawn* MyPawn = Cast<APawn>(OwnerComp.GetAIOwner()->GetPawn());
-	if (MyPawn == nullptr)
-	{
-		return EBTNodeResult::Failed;
-	}
+	APawn* MyPawn = OwnerComp.GetAIOwner()->GetPawn();
 
 	USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(MyPawn);
 	if (ensure(AttributeComp))

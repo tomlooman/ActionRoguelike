@@ -114,22 +114,17 @@ void ASProjectileBase::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Oth
 // _Implementation from it being marked as BlueprintNativeEvent
 void ASProjectileBase::Explode_Implementation()
 {
-	// Check to make sure we aren't already being 'destroyed'
-	// Adding ensure to see if we encounter this situation at all
-	if (ensure(IsValid(this)))
-	{
-		// Auto-managed particle pooling
-		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation(), true, EPSCPoolMethod::AutoRelease);
+	// Auto-managed particle pooling
+	UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation(), true, EPSCPoolMethod::AutoRelease);
 
-		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
+	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 
-		UGameplayStatics::PlayWorldCameraShake(this, ImpactShake, GetActorLocation(), GetImpactShakeInnerRadius(), GetImpactShakeOuterRadius());
+	UGameplayStatics::PlayWorldCameraShake(this, ImpactShake, GetActorLocation(), GetImpactShakeInnerRadius(), GetImpactShakeOuterRadius());
 
-		//Destroy();
-		// Release back to pool instead of destroying
-		USActorPoolingSubsystem* PoolingSubsystem = GetWorld()->GetSubsystem<USActorPoolingSubsystem>();
-		PoolingSubsystem->ReleaseToPool(this);
-	}
+	//Destroy();
+	// Release back to pool instead of destroying
+	USActorPoolingSubsystem* PoolingSubsystem = GetWorld()->GetSubsystem<USActorPoolingSubsystem>();
+	PoolingSubsystem->ReleaseToPool(this);
 }
 
 

@@ -122,7 +122,7 @@ void ASCharacter::Tick(float DeltaSeconds)
 void ASCharacter::FindCrosshairTarget()
 {
 	// Ignore if not using GamePad
-	ASPlayerController* PC = Cast<ASPlayerController>(GetController());
+	ASPlayerController* PC = GetController<ASPlayerController>();
 
 	// Only use aim assist when currently controlled and using gamepad
 	// Note: you *may* always want to line trace if using this result for other things like coloring crosshair or re-using this hit data for aim adjusting during projectile attacks
@@ -259,25 +259,20 @@ void ASCharacter::SprintStop()
 
 
 void ASCharacter::PrimaryAttack()
-{
-	static FGameplayTag ActivationTag = FGameplayTag::RequestGameplayTag("Action.PrimaryAttack");
-	
-	ActionComp->StartActionByName(this, ActivationTag);
+{	
+	ActionComp->StartActionByName(this, SharedGameplayTags::Action_PrimaryAttack);
 }
 
 
 void ASCharacter::BlackHoleAttack()
 {
-	static FGameplayTag ActivationTag = FGameplayTag::RequestGameplayTag("Action.Blackhole");
-	ActionComp->StartActionByName(this, ActivationTag);
+	ActionComp->StartActionByName(this, SharedGameplayTags::Action_Blackhole);
 }
 
 
 void ASCharacter::Dash()
-{
-	static FGameplayTag ActivationTag = FGameplayTag::RequestGameplayTag("Action.Dash");
-	
-	ActionComp->StartActionByName(this, ActivationTag);
+{	
+	ActionComp->StartActionByName(this, SharedGameplayTags::Action_Dash);
 }
 
 
@@ -311,7 +306,7 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 	// Died
 	if (NewHealth <= 0.0f && Delta < 0.0f)
 	{
-		APlayerController* PC = Cast<APlayerController>(GetController());
+		APlayerController* PC = GetController<ASPlayerController>();
 		DisableInput(PC);
 
 		SetLifeSpan(5.0f);

@@ -66,14 +66,30 @@ protected:
 
 	UFUNCTION()
 	void OnRep_RepData();
-	
-public:
-
-	void Initialize(USActionComponent* NewActionComp);
 
 	/* Start immediately when added to an action component */
 	UPROPERTY(EditDefaultsOnly, Category = "Action")
 	bool bAutoStart;
+
+	/* Action nickname to start/stop without a reference to the object */
+	UPROPERTY(EditDefaultsOnly, Category = "Action")
+	FGameplayTag ActivationTag;
+	
+public:
+
+	UFUNCTION(BlueprintPure)
+	FGameplayTag GetActivationTag() const
+	{
+		return ActivationTag;
+	}
+
+	UFUNCTION(BlueprintPure)
+	bool IsAutoStart() const
+	{
+		return bAutoStart;
+	}
+
+	void Initialize(USActionComponent* NewActionComp);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool IsRunning() const;
@@ -86,10 +102,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void StopAction(AActor* Instigator);
-
-	/* Action nickname to start/stop without a reference to the object */
-	UPROPERTY(EditDefaultsOnly, Category = "Action")
-	FGameplayTag ActivationTag;
 
 	virtual UWorld* GetWorld() const override;
 

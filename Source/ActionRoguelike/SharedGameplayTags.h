@@ -10,4 +10,5 @@ namespace SharedGameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Action_PrimaryAttack);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Action_Blackhole);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Action_Dash);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Action_Stunned);
 }

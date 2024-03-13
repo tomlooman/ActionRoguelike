@@ -19,6 +19,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "AI")
 	FBlackboardKeySelector AttackRangeKey;
 
+	UPROPERTY(EditAnywhere, Category = "AI")
+	FBlackboardKeySelector TargetActorKey;
+
 	/* Max desired attack range of AI pawn */
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float MaxAttackRange;

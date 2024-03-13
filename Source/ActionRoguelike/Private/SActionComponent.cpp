@@ -43,7 +43,7 @@ void USActionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	TArray<USAction*> ActionsCopy = Actions;
 	for (USAction* Action : ActionsCopy)
 	{
-		if (Action && Action->IsRunning())
+		if (Action->IsRunning())
 		{
 			Action->StopAction(GetOwner());
 		}
@@ -85,16 +85,15 @@ void USActionComponent::AddAction(AActor* Instigator, TSubclassOf<USAction> Acti
 	}
 
 	USAction* NewAction = NewObject<USAction>(GetOwner(), ActionClass);
-	if (ensure(NewAction))
+	check(NewAction);
+
+	NewAction->Initialize(this);
+
+	Actions.Add(NewAction);
+
+	if (NewAction->IsAutoStart() && ensure(NewAction->CanStart(Instigator)))
 	{
-		NewAction->Initialize(this);
-
-		Actions.Add(NewAction);
-
-		if (NewAction->bAutoStart && ensure(NewAction->CanStart(Instigator)))
-		{
-			NewAction->StartAction(Instigator);
-		}
+		NewAction->StartAction(Instigator);
 	}
 }
 
@@ -114,7 +113,7 @@ USAction* USActionComponent::GetAction(TSubclassOf<USAction> ActionClass) const
 {
 	for (USAction* Action : Actions)
 	{
-		if (Action && Action->IsA(ActionClass))
+		if (Action->IsA(ActionClass))
 		{
 			return Action;
 		}
@@ -135,7 +134,7 @@ bool USActionComponent::StartActionByName(AActor* Instigator, FGameplayTag Actio
 
 	for (USAction* Action : Actions)
 	{
-		if (Action && Action->ActivationTag == ActionName)
+		if (Action->GetActivationTag() == ActionName)
 		{
 			if (!Action->CanStart(Instigator))
 			{
@@ -172,7 +171,7 @@ bool USActionComponent::StopActionByName(AActor* Instigator, FGameplayTag Action
 {
 	for (USAction* Action : Actions)
 	{
-		if (Action && Action->ActivationTag == ActionName)
+		if (Action->GetActivationTag() == ActionName)
 		{
 			if (Action->IsRunning())
 			{

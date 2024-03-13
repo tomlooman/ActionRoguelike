@@ -4,6 +4,7 @@
 #include "SDashProjectile.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraComponent.h"
+#include "SPlayerController.h"
 #include "Components/SProjectileMovementComponent.h"
 #include "Sound/SoundCue.h"
 
@@ -54,6 +55,7 @@ void ASDashProjectile::Explode_Implementation()
 void ASDashProjectile::TeleportInstigator()
 {
 	AActor* ActorToTeleport = GetInstigator();
+	// Set properly in spawning code (also good for things like knowing who caused the damage)
 	if (ensure(ActorToTeleport))
 	{
 		// Keep instigator rotation or it may end up jarring
@@ -61,12 +63,12 @@ void ASDashProjectile::TeleportInstigator()
 
 		// Play shake on the player we teleported
 		APawn* InstigatorPawn = Cast<APawn>(ActorToTeleport);
-		APlayerController* PC = Cast<APlayerController>(InstigatorPawn->GetController());
+		APlayerController* PC = InstigatorPawn->GetController<ASPlayerController>();
+		// Controller can be nullptr if we died (and detached the pawn) just after launching the dash projectile
 		if (PC && PC->IsLocalController())
 		{
 			PC->ClientStartCameraShake(ImpactShake);
 		}
-
 	}
 
 	// Now we're ready to destroy self

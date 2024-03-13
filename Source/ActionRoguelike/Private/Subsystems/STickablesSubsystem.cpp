@@ -75,7 +75,8 @@ void USTickablesSubsystem::ExecuteTick(ETickingGroup TickGroup, float DeltaTime,
 	{
 		SCOPED_NAMED_EVENT(TickManagedComponents, FColor::Orange);
 	
-		// @todo: want one of these loops for every class to keep them sorted
+		// @todo: want one of these loops for every class to keep them sorted (otherwise this entire concept of "aggregating ticks" fails)
+		// In the example only 1 type of components is ticked here. For multiple types you should store them as discrete lists or sorted
 		for (FActorComponentTickFunction* Func : TickableComponents)
 		{
 			Func->ExecuteTick(DeltaTime, TickType, CurrentThread, MyCompletionGraphEvent);

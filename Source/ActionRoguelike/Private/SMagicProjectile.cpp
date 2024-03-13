@@ -34,10 +34,8 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 {
 	if (OtherActor && OtherActor != GetInstigator())
 	{
-		//static FGameplayTag Tag = FGameplayTag::RequestGameplayTag("Status.Parrying");
-
 		// Parry Ability (GameplayTag Example)
-		USActionComponent* ActionComp = Cast<USActionComponent>(OtherActor->GetComponentByClass(USActionComponent::StaticClass()));
+		USActionComponent* ActionComp = OtherActor->FindComponentByClass<USActionComponent>();
 		if (ActionComp && ActionComp->ActiveGameplayTags.HasTag(GetParryTag()))
 		{
 			MoveComp->Velocity = -MoveComp->Velocity;

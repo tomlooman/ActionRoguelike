@@ -72,6 +72,7 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 			}
 		}
 
+		// Old way via MaterialInstanceDynamic, below implementation uses CustomPrimitiveData instead
 		//GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
 
 		// Replaces the above "old" method of requiring unique material instances for every mesh element on the player 
@@ -82,11 +83,8 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 		if (NewHealth <= 0.0f)
 		{
 			// stop BT
-			AAIController* AIC = Cast<AAIController>(GetController());
-			if (AIC)
-			{
-				AIC->GetBrainComponent()->StopLogic("Killed");
-			}
+			AAIController* AIC = GetController<AAIController>();
+			AIC->GetBrainComponent()->StopLogic("Killed");
 
 			// ragdoll
 			GetMesh()->SetAllBodiesSimulatePhysics(true);
@@ -104,23 +102,15 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 
 void ASAICharacter::SetTargetActor(AActor* NewTarget)
 {
-	AAIController* AIC = Cast<AAIController>(GetController());
-	if (AIC)
-	{
-		AIC->GetBlackboardComponent()->SetValueAsObject(TargetActorKey, NewTarget);
-	}
+	AAIController* AIC = GetController<AAIController>();
+	AIC->GetBlackboardComponent()->SetValueAsObject(TargetActorKey, NewTarget);
 }
 
 
 AActor* ASAICharacter::GetTargetActor() const
 {
-	AAIController* AIC = Cast<AAIController>(GetController());
-	if (AIC)
-	{
-		return Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject(TargetActorKey));
-	}
-
-	return nullptr;
+	AAIController* AIC = GetController<AAIController>();
+	return Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject(TargetActorKey));
 }
 
 
@@ -140,6 +130,7 @@ void ASAICharacter::OnPawnSeen(APawn* Pawn)
 void ASAICharacter::MulticastPawnSeen_Implementation()
 {
 	USWorldUserWidget* NewWidget = CreateWidget<USWorldUserWidget>(GetWorld(), SpottedWidgetClass);
+	// Can be nullptr if we didnt specify a class to use in Blueprint
 	if (NewWidget)
 	{
 		NewWidget->AttachedActor = this;

@@ -167,7 +167,7 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 
 	UE_LOGFMT(LogGame, Log, "Found {number} alive bots.", NrOfAliveBots);
 
-	const float MaxBotCount = 40.0f;
+	const float MaxBotCount = 10.0f;
 	if (NrOfAliveBots >= MaxBotCount)
 	{
 		UE_LOGFMT(LogGame, Log, "At maximum bot capacity. Skipping bot spawn.");
@@ -216,6 +216,8 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 			return;
 		}
 	}
+
+	UE_LOG(LogGame, Log, TEXT("Spawning New Bot"));
 
 	// Skip the Blueprint wrapper and use the direct C++ option which the Wrapper uses as well
 	FEnvQueryRequest Request(SpawnBotQuery, this);
@@ -268,7 +270,7 @@ void ASGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLoca
 		LogOnScreen(this, FString::Printf(TEXT("Spawned enemy: %s (%s)"), *GetNameSafe(NewBot), *GetNameSafe(MonsterData)));
 
 		// Grant special actions, buffs etc.
-		USActionComponent* ActionComp = Cast<USActionComponent>(NewBot->GetComponentByClass(USActionComponent::StaticClass()));
+		USActionComponent* ActionComp = NewBot->FindComponentByClass<USActionComponent>();
 		check(ActionComp);
 		
 		for (TSubclassOf<USAction> ActionClass : MonsterData->Actions)
