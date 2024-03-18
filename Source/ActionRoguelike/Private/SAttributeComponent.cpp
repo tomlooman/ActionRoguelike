@@ -7,7 +7,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SAttributeComponent)
 
-static TAutoConsoleVariable<float> CVarDamageMultiplier(TEXT("su.DamageMultiplier"), 1.0f, TEXT("Global Damage Modifier for Attribute Component."), ECVF_Cheat);
+static TAutoConsoleVariable<float> CVarDamageMultiplier(TEXT("game.DamageMultiplier"), 1.0f, TEXT("Global Damage Modifier for Attribute Component."), ECVF_Cheat);
 
 
 USAttributeComponent::USAttributeComponent()
@@ -22,35 +22,6 @@ USAttributeComponent::USAttributeComponent()
 }
 
 
-bool USAttributeComponent::Kill(AActor* InstigatorActor)
-{
-	return ApplyHealthChange(InstigatorActor, -GetHealthMax());
-}
-
-
-bool USAttributeComponent::IsAlive() const
-{
-	return Health > 0.0f;
-}
-
-
-bool USAttributeComponent::IsFullHealth() const
-{
-	return Health == HealthMax;
-}
-
-
-float USAttributeComponent::GetHealth() const
-{
-	return Health;
-}
-
-float USAttributeComponent::GetHealthMax() const
-{
-	return HealthMax;
-}
-
-
 bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {
 	if (!GetOwner()->CanBeDamaged() && Delta < 0.0f)
@@ -60,8 +31,7 @@ bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 
 	if (Delta < 0.0f)
 	{
-		float DamageMultiplier = CVarDamageMultiplier.GetValueOnGameThread();
-
+		const float DamageMultiplier = CVarDamageMultiplier.GetValueOnGameThread();
 		Delta *= DamageMultiplier;
 	}
 
@@ -103,7 +73,7 @@ float USAttributeComponent::GetRage() const
 
 bool USAttributeComponent::ApplyRage(AActor* InstigatorActor, float Delta)
 {
-	float OldRage = Rage;
+	const float OldRage = Rage;
 
 	Rage = FMath::Clamp(Rage + Delta, 0.0f, RageMax);
 
@@ -140,10 +110,41 @@ bool USAttributeComponent::IsActorAlive(AActor* Actor)
 }
 
 
+bool USAttributeComponent::Kill(AActor* InstigatorActor)
+{
+	return ApplyHealthChange(InstigatorActor, -GetHealthMax());
+}
+
+
+bool USAttributeComponent::IsAlive() const
+{
+	return Health > 0.0f;
+}
+
+
+bool USAttributeComponent::IsFullHealth() const
+{
+	return Health == HealthMax;
+}
+
+
+float USAttributeComponent::GetHealth() const
+{
+	return Health;
+}
+
+
+float USAttributeComponent::GetHealthMax() const
+{
+	return HealthMax;
+}
+
+
 void USAttributeComponent::MulticastHealthChanged_Implementation(AActor* InstigatorActor, float NewHealth, float Delta)
 {
 	OnHealthChanged.Broadcast(InstigatorActor, this, NewHealth, Delta);
 }
+
 
 void USAttributeComponent::MulticastRageChanged_Implementation(AActor* InstigatorActor, float NewRage, float Delta)
 {

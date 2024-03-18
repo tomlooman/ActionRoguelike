@@ -260,8 +260,7 @@ void ASGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLoca
 
 	UAssetManager& Manager = UAssetManager::Get();
 
-	USMonsterData* MonsterData = Cast<USMonsterData>(Manager.GetPrimaryAssetObject(LoadedId));
-	check(MonsterData);
+	USMonsterData* MonsterData = CastChecked<USMonsterData>(Manager.GetPrimaryAssetObject(LoadedId));
 	
 	AActor* NewBot = GetWorld()->SpawnActor<AActor>(MonsterData->MonsterClass, SpawnLocation, FRotator::ZeroRotator);
 	// Spawn might fail if colliding with environment

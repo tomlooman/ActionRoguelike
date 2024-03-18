@@ -8,7 +8,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SInteractionComponent)
 
-static TAutoConsoleVariable<bool> CVarDebugDrawInteraction(TEXT("su.InteractionDebugDraw"), false, TEXT("Enable Debug Lines for Interact Component."), ECVF_Cheat);
+static TAutoConsoleVariable<bool> CVarDebugDrawInteraction(TEXT("game.InteractionDebugDraw"), false, TEXT("Enable Debug Lines for Interact Component."), ECVF_Cheat);
 
 
 
@@ -23,19 +23,15 @@ USInteractionComponent::USInteractionComponent()
 	CollisionChannel = ECC_WorldDynamic;
 }
 
-void USInteractionComponent::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 
 void USInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-
-	APawn* MyPawn = Cast<APawn>(GetOwner());
-	if (MyPawn->IsLocallyControlled())
+	
+	// Cast checked acts like static_cast in shipping builds. Less overhead compared to regular Cast<T> which does have safety nets.
+	// Can use this in places where the cast object should never be nullptr by design and we know exactly the base class it is.
+	const APawn* MyPawn = CastChecked<APawn>(GetOwner());
+	if (MyPawn->IsLocallyControlled()) // Todo: Ideally just disable tick on this component when owner is not locally controlled.
 	{
 		FindBestInteractable();
 	}
@@ -44,16 +40,14 @@ void USInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void USInteractionComponent::FindBestInteractable()
 {
-	bool bDebugDraw = CVarDebugDrawInteraction.GetValueOnGameThread();
+	const bool bDebugDraw = CVarDebugDrawInteraction.GetValueOnGameThread();
 
 	FCollisionObjectQueryParams ObjectQueryParams;
 	ObjectQueryParams.AddObjectTypesToQuery(CollisionChannel);
 
-	AActor* MyOwner = GetOwner();
-
 	FVector EyeLocation;
 	FRotator EyeRotation;
-	MyOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
+	GetOwner()->GetActorEyesViewPoint(EyeLocation, EyeRotation);
 
 	FVector End = EyeLocation + (EyeRotation.Vector() * TraceDistance);
 
@@ -134,7 +128,7 @@ void USInteractionComponent::ServerInteract_Implementation(AActor* InFocus)
 		return;
 	}
 
-	APawn* MyPawn = Cast<APawn>(GetOwner());
+	APawn* MyPawn = CastChecked<APawn>(GetOwner());
 	ISGameplayInterface::Execute_Interact(InFocus, MyPawn);
 }
 

@@ -25,31 +25,29 @@ void USAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
 {
 	Super::StartAction_Implementation(Instigator);
 
-	ACharacter* Character = Cast<ACharacter>(Instigator);
-	if (Character)
+	ACharacter* Character = CastChecked<ACharacter>(Instigator);
+	Character->PlayAnimMontage(AttackAnim);
+
+	// Auto-released particle pooling
+	UGameplayStatics::SpawnEmitterAttached(CastingEffect, Character->GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator,
+		EAttachLocation::SnapToTarget, true, EPSCPoolMethod::AutoRelease);
+
+	UGameplayStatics::SpawnSoundAttached(CastingSound, Character->GetMesh());
+
+	if (Character->HasAuthority())
 	{
-		Character->PlayAnimMontage(AttackAnim);
+		FTimerHandle TimerHandle_AttackDelay;
+		FTimerDelegate Delegate;
+		Delegate.BindUFunction(this, "AttackDelay_Elapsed", Character);
 
-		// Auto-released particle pooling
-		UGameplayStatics::SpawnEmitterAttached(CastingEffect, Character->GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator,
-			EAttachLocation::SnapToTarget, true, EPSCPoolMethod::AutoRelease);
-
-		UGameplayStatics::SpawnSoundAttached(CastingSound, Character->GetMesh());
-
-		if (Character->HasAuthority())
-		{
-			FTimerHandle TimerHandle_AttackDelay;
-			FTimerDelegate Delegate;
-			Delegate.BindUFunction(this, "AttackDelay_Elapsed", Character);
-
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, AttackAnimDelay, false);
-		}
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, AttackAnimDelay, false);
 	}
 }
 
 
 void USAction_ProjectileAttack::AttackDelay_Elapsed(ACharacter* InstigatorCharacter)
 {
+	// Blueprint has not been properly configured yet if this fails
 	if (ensureAlways(ProjectileClass))
 	{
 		FVector HandLocation = InstigatorCharacter->GetMesh()->GetSocketLocation(HandSocketName);

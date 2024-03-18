@@ -63,7 +63,7 @@ bool USSaveGameSubsystem::OverrideSpawnTransform(AController* NewPlayer)
 			MyPawn->SetActorRotation(FoundData->Rotation);
 
 			// PlayerState owner is a (Player)Controller
-			AController* PC = Cast<AController>(PS->GetOwner());
+			AController* PC = CastChecked<AController>(PS->GetOwner());
 			// Set control rotation to change camera direction, setting Pawn rotation is not enough
 			PC->SetControlRotation(FoundData->Rotation);
 			
@@ -103,11 +103,11 @@ void USSaveGameSubsystem::WriteSaveGame()
 	// Iterate all player states, we don't have proper ID to match yet (requires Steam or EOS)
 	for (int32 i = 0; i < GS->PlayerArray.Num(); i++)
 	{
-		ASPlayerState* PS = Cast<ASPlayerState>(GS->PlayerArray[i]);
+		ASPlayerState* PS = CastChecked<ASPlayerState>(GS->PlayerArray[i]);
 		if (PS)
 		{
 			PS->SavePlayerState(CurrentSaveGame);
-			break; // single player only at this point
+			break; // single player only supported at this point
 		}
 	}
 
@@ -195,7 +195,7 @@ void USSaveGameSubsystem::LoadSaveGame(FString InSlotName /*= ""*/)
 	}
 	else
 	{
-		CurrentSaveGame = Cast<USSaveGame>(UGameplayStatics::CreateSaveGameObject(USSaveGame::StaticClass()));
+		CurrentSaveGame = CastChecked<USSaveGame>(UGameplayStatics::CreateSaveGameObject(USSaveGame::StaticClass()));
 
 		UE_LOGFMT(LogGame, Log, "Created New SaveGame Data.");
 	}

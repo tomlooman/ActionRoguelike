@@ -27,8 +27,6 @@ protected:
 
 	void FindBestInteractable();
 
-	virtual void BeginPlay() override;
-
 	UPROPERTY()
 	TObjectPtr<AActor> FocusedActor;
 

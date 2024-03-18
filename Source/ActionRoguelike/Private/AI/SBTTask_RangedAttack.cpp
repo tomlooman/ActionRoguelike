@@ -21,8 +21,7 @@ USBTTask_RangedAttack::USBTTask_RangedAttack()
 
 EBTNodeResult::Type USBTTask_RangedAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	ACharacter* MyPawn = Cast<ACharacter>(OwnerComp.GetAIOwner()->GetPawn());
-	check(MyPawn);
+	ACharacter* MyPawn = CastChecked<ACharacter>(OwnerComp.GetAIOwner()->GetPawn());
 
 	AActor* TargetActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TargetActorKey.SelectedKeyName));
 	if (TargetActor == nullptr)
