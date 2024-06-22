@@ -12,6 +12,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "SActionComponent.h"
+#include "Components/SSignificanceComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SAICharacter)
@@ -24,6 +25,9 @@ ASAICharacter::ASAICharacter()
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
 
 	ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
+
+	// Make sure to configure the distance values in Blueprint
+	SigManComp = CreateDefaultSubobject<USSignificanceComponent>("SigManComp");
 
 	// Ensures we receive a controlled when spawned in the level by our gamemode
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
@@ -49,6 +53,8 @@ void ASAICharacter::PostInitializeComponents()
 
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &ASAICharacter::OnPawnSeen);
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ASAICharacter::OnHealthChanged);
+
+	SigManComp->OnSignificanceChanged.AddDynamic(this, &ASAICharacter::OnSignificanceChanged);
 }
 
 
@@ -138,4 +144,43 @@ void ASAICharacter::MulticastPawnSeen_Implementation()
 		// May end up behind the minion health bar otherwise.
 		NewWidget->AddToViewport(10);
 	}
+}
+
+
+void ASAICharacter::OnSignificanceChanged(ESignificanceValue Significance)
+{
+	// @todo: this may not work perfectly with falling and similar movement modes. (We don't support this on the AI character anyway)
+	// NavMesh based walking instead of using world geo
+	if (Significance <= ESignificanceValue::Medium)
+	{
+		GetCharacterMovement()->SetMovementMode(MOVE_NavWalking);
+	}
+	else
+	{
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	}
+	
+	// Set as 'dormant' if actor is hidden, otherwise we continue ticking the entire character
+	const bool bHiddenSignificance = Significance == ESignificanceValue::Hidden;
+	SetActorTickEnabled(!bHiddenSignificance);
+	GetCharacterMovement()->SetComponentTickEnabled(!bHiddenSignificance);
+
+
+	EVisibilityBasedAnimTickOption AnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
+	switch (Significance)
+	{
+		// Example, force to always tick pose when really nearby. might need the pose even while offscreen
+		case ESignificanceValue::Highest:
+			AnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+			break;
+		case ESignificanceValue::Medium:
+			AnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
+			break;
+		case ESignificanceValue::Lowest:
+		case ESignificanceValue::Hidden:
+		case ESignificanceValue::Invalid:
+			AnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
+	}
+	
+	GetMesh()->VisibilityBasedAnimTickOption = AnimTickOption;
 }
