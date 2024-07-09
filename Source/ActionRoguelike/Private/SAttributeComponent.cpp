@@ -127,7 +127,7 @@ bool USAttributeComponent::IsAlive() const
 
 bool USAttributeComponent::IsFullHealth() const
 {
-	return Health == HealthMax;
+	return FMath::IsNearlyEqual(Health, HealthMax);
 }
 
 
