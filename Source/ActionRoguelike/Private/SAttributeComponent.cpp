@@ -45,13 +45,13 @@ bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 	{
 		Health = NewHealth;
 
-		if (ActualDelta != 0.0f)
+		if (!FMath::IsNearlyZero(ActualDelta))
 		{
 			MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
 		}
 
 		// Died
-		if (ActualDelta < 0.0f && Health == 0.0f)
+		if (ActualDelta < 0.0f && FMath::IsNearlyZero(Health))
 		{
 			ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
 			if (GM)
@@ -60,8 +60,8 @@ bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 			}
 		}
 	}
-
-	return ActualDelta != 0;
+	
+	return !FMath::IsNearlyZero(ActualDelta);
 }
 
 
@@ -78,12 +78,15 @@ bool USAttributeComponent::ApplyRage(AActor* InstigatorActor, float Delta)
 	Rage = FMath::Clamp(Rage + Delta, 0.0f, RageMax);
 
 	float ActualDelta = Rage - OldRage;
-	if (ActualDelta != 0.0f)
+
+	// Will be zero delta if we already at max or min
+	if (!FMath::IsNearlyZero(ActualDelta))
 	{
 		OnRageChanged.Broadcast(InstigatorActor, this, Rage, ActualDelta);
+		return true;
 	}
 
-	return ActualDelta != 0;
+	return false;
 }
 
 
