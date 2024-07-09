@@ -367,9 +367,9 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 		{
 			FTimerHandle TimerHandle_RespawnDelay;
 			FTimerDelegate Delegate;
-			Delegate.BindUFunction(this, "RespawnPlayerElapsed", Player->GetController());
+			Delegate.BindUObject(this, &ThisClass::RespawnPlayerElapsed, Player->GetController());
  
-			float RespawnDelay = 2.0f;
+			const float RespawnDelay = 2.0f;
 			GetWorldTimerManager().SetTimer(TimerHandle_RespawnDelay, Delegate, RespawnDelay, false);
 		}
 
