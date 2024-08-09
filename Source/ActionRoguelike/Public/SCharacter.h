@@ -104,8 +104,6 @@ protected:
 
 	virtual void PostInitializeComponents() override;
 
-	virtual FVector GetPawnViewLocation() const override;
-
 	void FindCrosshairTarget();
 
 	void CrosshairTraceComplete(const FTraceHandle& InTraceHandle, FTraceDatum& InTraceDatum);
@@ -115,6 +113,8 @@ protected:
 public:	
 
 	ASCharacter();
+
+	virtual FVector GetPawnViewLocation() const override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
