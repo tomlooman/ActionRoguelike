@@ -66,8 +66,6 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnActionStateChanged OnActionStopped;
 
-	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
-
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 };

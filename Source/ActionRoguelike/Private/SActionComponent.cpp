@@ -19,6 +19,9 @@ USActionComponent::USActionComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	SetIsReplicatedByDefault(true);
+
+	// See GDefaultUseSubObjectReplicationList for CVAR to enable by default project-wide
+	bReplicateUsingRegisteredSubObjectList = true;
 }
 
 
@@ -90,6 +93,9 @@ void USActionComponent::AddAction(AActor* Instigator, TSubclassOf<USAction> Acti
 	NewAction->Initialize(this);
 
 	Actions.Add(NewAction);
+
+	// New Replicated Objects list (for networking)
+	AddReplicatedSubObject(NewAction);
 
 	if (NewAction->IsAutoStart() && ensure(NewAction->CanStart(Instigator)))
 	{
@@ -200,21 +206,6 @@ void USActionComponent::ServerStartAction_Implementation(AActor* Instigator, FGa
 void USActionComponent::ServerStopAction_Implementation(AActor* Instigator, FGameplayTag ActionName)
 {
 	StopActionByName(Instigator, ActionName);
-}
-
-
-bool USActionComponent::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags)
-{
-	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
-	for (USAction* Action : Actions)
-	{
-		if (Action)
-		{
-			WroteSomething |= Channel->ReplicateSubobject(Action, *Bunch, *RepFlags);
-		}
-	}
-
-	return WroteSomething;
 }
 
 
