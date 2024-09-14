@@ -112,9 +112,8 @@ void USSaveGameSubsystem::WriteSaveGame()
 	}
 
 	// Iterate the entire world of actors
-	for (FActorIterator It(GetWorld()); It; ++It)
+	for (AActor* Actor : TActorRange<AActor>(GetWorld()))
 	{
-		AActor* Actor = *It;
 		// Only interested in our 'gameplay actors', skip actors that are being destroyed
 		// Note: You might instead use a dedicated SavableObject interface for Actors you want to save instead of re-using GameplayInterface
 		if (!IsValid(Actor) || !Actor->Implements<USGameplayInterface>())
@@ -162,9 +161,8 @@ void USSaveGameSubsystem::LoadSaveGame(FString InSlotName /*= ""*/)
 
 
 		// Iterate the entire world of actors
-		for (FActorIterator It(GetWorld()); It; ++It)
+		for (AActor* Actor : TActorRange<AActor>(GetWorld()))
 		{
-			AActor* Actor = *It;
 			// Only interested in our 'gameplay actors'
 			if (!Actor->Implements<USGameplayInterface>())
 			{
