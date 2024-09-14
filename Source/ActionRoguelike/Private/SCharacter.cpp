@@ -27,7 +27,7 @@ ASCharacter::ASCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>("SpringArmComp");
+	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->SetupAttachment(RootComponent);
 	// We control the rotation of spring arm with pawn control rotation already, this disables a subtle side effect
@@ -35,14 +35,14 @@ ASCharacter::ASCharacter()
 	// This may cause unwanted effects when using CameraLocation during Tick as it may be slightly offset from our final camera position.
 	SpringArmComp->SetUsingAbsoluteRotation(true);
 
-	CameraComp = CreateDefaultSubobject<UCameraComponent>("CameraComp");
+	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
 
-	InteractionComp = CreateDefaultSubobject<USInteractionComponent>("InteractionComp");
+	InteractionComp = CreateDefaultSubobject<USInteractionComponent>(TEXT("InteractionComp"));
 
-	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
+	AttributeComp = CreateDefaultSubobject<USAttributeComponent>(TEXT("AttributeComp"));
 
-	ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
+	ActionComp = CreateDefaultSubobject<USActionComponent>(TEXT("ActionComp"));
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;

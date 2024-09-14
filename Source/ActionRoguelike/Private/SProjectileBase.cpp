@@ -21,21 +21,21 @@ TRACE_DECLARE_INT_COUNTER(COUNTER_GAME_ActiveProjectiles, TEXT("Game/ActiveProje
 
 ASProjectileBase::ASProjectileBase()
 {
-	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
+	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	SphereComp->SetCollisionProfileName("Projectile");
 	// Dont bother telling the nav system whenever we move
 	SphereComp->SetCanEverAffectNavigation(false);
 	RootComponent = SphereComp;
 
-	NiagaraLoopComp = CreateDefaultSubobject<UNiagaraComponent>("EffectComp");
+	NiagaraLoopComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EffectComp"));
 	//NiagaraLoopComp->PoolingMethod = ENCPoolMethod::AutoRelease;
 	NiagaraLoopComp->SetupAttachment(RootComponent);
 
-	AudioComp = CreateDefaultSubobject<UAudioComponent>("AudioComp");
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComp"));
 	AudioComp->SetupAttachment(RootComponent);
 
 	// Custom Projectile Component (for tick management & better homing)
-	MoveComp = CreateDefaultSubobject<USProjectileMovementComponent>("ProjectileMoveComp");
+	MoveComp = CreateDefaultSubobject<USProjectileMovementComponent>(TEXT("ProjectileMoveComp"));
 	MoveComp->bRotationFollowsVelocity = true;
 	MoveComp->bInitialVelocityInLocalSpace = true;
 	MoveComp->ProjectileGravityScale = 0.0f;

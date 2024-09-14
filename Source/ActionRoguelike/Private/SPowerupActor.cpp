@@ -11,11 +11,11 @@
 
 ASPowerupActor::ASPowerupActor()
 {
-	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
+	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	SphereComp->SetCollisionProfileName("Powerup");
 	RootComponent = SphereComp;
 
-	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
+	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	// Disable collision, instead we use SphereComp to handle interaction queries
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	MeshComp->SetupAttachment(RootComponent);

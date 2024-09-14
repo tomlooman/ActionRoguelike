@@ -13,13 +13,13 @@
 
 ASExplosiveBarrel::ASExplosiveBarrel()
 {
-	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
+	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetSimulatePhysics(true);
 	// Enabling Simulate physics automatically changes the Profile to PhysicsActor in Blueprint, in C++ we need to change this manually.
 	MeshComp->SetCollisionProfileName(UCollisionProfile::PhysicsActor_ProfileName); 
 	RootComponent = MeshComp;
 
-	ForceComp = CreateDefaultSubobject<URadialForceComponent>("ForceComp");
+	ForceComp = CreateDefaultSubobject<URadialForceComponent>(TEXT("ForceComp"));
 	ForceComp->SetupAttachment(MeshComp);
 
 	// Leaving this on applies small constant force via component 'tick' (Optional)

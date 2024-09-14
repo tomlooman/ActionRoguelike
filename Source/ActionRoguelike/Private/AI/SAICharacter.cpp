@@ -20,14 +20,14 @@
 
 ASAICharacter::ASAICharacter()
 {
-	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>("PawnSensingComp");
+	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
 
-	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
+	AttributeComp = CreateDefaultSubobject<USAttributeComponent>(TEXT("AttributeComp"));
 
-	ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
+	ActionComp = CreateDefaultSubobject<USActionComponent>(TEXT("ActionComp"));
 
 	// Make sure to configure the distance values in Blueprint
-	SigManComp = CreateDefaultSubobject<USSignificanceComponent>("SigManComp");
+	SigManComp = CreateDefaultSubobject<USSignificanceComponent>(TEXT("SigManComp"));
 
 	// Ensures we receive a controlled when spawned in the level by our gamemode
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
