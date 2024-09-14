@@ -40,7 +40,7 @@ This project is part of the **[Professional Game Development in C++ and Unreal E
   - EQS for attack/cover locations by AI
 - Powerups
   - Powerup pickups to heal, gain credits/actions.
--UMG
+- UI (UMG)
   - Main menu to host/join game
   - UI elements for player attributes and projected widgets for powerups and enemy health.
   - C++ Localized Text
