@@ -8,14 +8,20 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SInteractionComponent)
 
-static TAutoConsoleVariable<bool> CVarDebugDrawInteraction(TEXT("game.InteractionDebugDraw"), false, TEXT("Enable Debug Lines for Interact Component."), ECVF_Cheat);
-
+namespace DebugDrawing
+{
+	static bool bDrawInteractionVisualize = false;
+	static FAutoConsoleVariableRef CVarDebugDrawInteraction(TEXT("game.InteractionDebugDraw"),
+		bDrawInteractionVisualize,
+		TEXT("Enable Debug Lines for Interaction Component."),
+		ECVF_Cheat);
+}
 
 
 USInteractionComponent::USInteractionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	// Since we use Camera info in Tick we want the most up to date camera position for tracing
+	// Since we use Camera info in Tick we want the most up-to-date camera position for tracing
 	PrimaryComponentTick.TickGroup = TG_PostUpdateWork;
 
 	TraceRadius = 30.0f;
@@ -40,8 +46,6 @@ void USInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void USInteractionComponent::FindBestInteractable()
 {
-	const bool bDebugDraw = CVarDebugDrawInteraction.GetValueOnGameThread();
-
 	FCollisionObjectQueryParams ObjectQueryParams;
 	ObjectQueryParams.AddObjectTypesToQuery(CollisionChannel);
 
@@ -49,29 +53,28 @@ void USInteractionComponent::FindBestInteractable()
 	FRotator EyeRotation;
 	GetOwner()->GetActorEyesViewPoint(EyeLocation, EyeRotation);
 
-	FVector End = EyeLocation + (EyeRotation.Vector() * TraceDistance);
+	const FVector TraceEnd = EyeLocation + (EyeRotation.Vector() * TraceDistance);
 
 	TArray<FHitResult> Hits;
 
 	FCollisionShape Shape;
 	Shape.SetSphere(TraceRadius);
 
-	bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, EyeLocation, End, FQuat::Identity, ObjectQueryParams, Shape);
+	bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, EyeLocation, TraceEnd, FQuat::Identity, ObjectQueryParams, Shape);
 
 	FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red;
 
 	// Clear ref before trying to fill
 	FocusedActor = nullptr;
 
-	for (FHitResult Hit : Hits)
+	for (const FHitResult& Hit : Hits)
 	{
-		if (bDebugDraw)
+		if (DebugDrawing::bDrawInteractionVisualize)
 		{
 			DrawDebugSphere(GetWorld(), Hit.ImpactPoint, TraceRadius, 32, LineColor, false, 0.0f);
 		}
 
-		AActor* HitActor = Hit.GetActor();
-		if (HitActor)
+		if (AActor* HitActor = Hit.GetActor())
 		{
 			if (HitActor->Implements<USGameplayInterface>())
 			{
@@ -107,9 +110,9 @@ void USInteractionComponent::FindBestInteractable()
 	}
 
 
-	if (bDebugDraw)
+	if (DebugDrawing::bDrawInteractionVisualize)
 	{
-		DrawDebugLine(GetWorld(), EyeLocation, End, LineColor, false, 2.0f, 0, 0.0f);
+		DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, LineColor, false, 2.0f, 0, 0.0f);
 	}
 }
 

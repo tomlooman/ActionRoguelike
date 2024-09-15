@@ -27,7 +27,7 @@ protected:
 
 	void FindBestInteractable();
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 	TObjectPtr<AActor> FocusedActor;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Trace")
@@ -42,7 +42,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<USWorldUserWidget> DefaultWidgetClass;
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 	TObjectPtr<USWorldUserWidget> DefaultWidgetInstance;
 
 public:	

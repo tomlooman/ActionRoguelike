@@ -69,8 +69,7 @@ void USTickablesSubsystem::DeRegisterComponent(FActorComponentTickFunction* Tick
 
 void USTickablesSubsystem::ExecuteTick(ETickingGroup TickGroup, float DeltaTime, ELevelTick TickType, ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent)
 {
-	// "Old" Stats system
-	DECLARE_SCOPE_CYCLE_COUNTER(TEXT("AggregateComponentTick"), AggregateComponentTick, STATGROUP_STANFORD)
+	TRACE_CPUPROFILER_EVENT_SCOPE(AggregateComponentTick)
 	
 	{
 		SCOPED_NAMED_EVENT(TickManagedComponents, FColor::Orange);

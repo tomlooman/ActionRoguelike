@@ -9,10 +9,6 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SActionComponent)
 
-// Can declare stat here once and use in multiple instances in code elsewhere using SCOPE_CYCLE_COUNTER(STAT_StartActionByName);
-// If used once, the line below can be placed in-line where you want to trace, see usage USActionComponent::StartActionByName
-//DECLARE_CYCLE_STAT(TEXT("StartActionByName"), STAT_StartActionByName, STATGROUP_STANFORD);
-
 
 USActionComponent::USActionComponent()
 {
@@ -131,12 +127,11 @@ USAction* USActionComponent::GetAction(TSubclassOf<USAction> ActionClass) const
 
 bool USActionComponent::StartActionByName(AActor* Instigator, FGameplayTag ActionName)
 {
-	//SCOPE_CYCLE_COUNTER(STAT_StartActionByName);
-	// Inline variant, convenient when only used once in code, visible in Viewport stats
-	DECLARE_SCOPE_CYCLE_COUNTER(TEXT("StartActionByName"), StartActionByName, STATGROUP_STANFORD);
-
-	// Visible in Unreal Insights
+	// Visible in Unreal Insights with namedevents enabled
 	SCOPED_NAMED_EVENT(StartActionName, FColor::Green);
+	// Alternative, available when cpu channel is specified
+	//TRACE_CPUPROFILER_EVENT_SCOPE(StartActionByName);
+
 
 	for (USAction* Action : Actions)
 	{

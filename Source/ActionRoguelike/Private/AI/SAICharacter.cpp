@@ -2,6 +2,8 @@
 
 
 #include "AI/SAICharacter.h"
+
+#include "ActionRoguelike.h"
 #include "Perception/PawnSensingComponent.h"
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -67,7 +69,7 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 			SetTargetActor(InstigatorActor);
 		}
 
-		// Create once, and skip creating if its an instant kill
+		// Create once, and skip on instant kill
 		if (ActiveHealthBar == nullptr && NewHealth > 0.0)
 		{
 			ActiveHealthBar = CreateWidget<USWorldUserWidget>(GetWorld(), HealthBarWidgetClass);
@@ -94,7 +96,7 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 
 			// ragdoll
 			GetMesh()->SetAllBodiesSimulatePhysics(true);
-			GetMesh()->SetCollisionProfileName("Ragdoll");
+			GetMesh()->SetCollisionProfileName(Collision::Ragdoll_ProfileName);
 
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			GetCharacterMovement()->DisableMovement();

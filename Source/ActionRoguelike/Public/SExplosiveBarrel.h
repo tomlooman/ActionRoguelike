@@ -28,10 +28,5 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<URadialForceComponent> ForceComp;
 
-	virtual void PostInitializeComponents() override;
-
-	// Must be marked with ufunction in order to 'bind' the event
-	UFUNCTION()
-	void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 };

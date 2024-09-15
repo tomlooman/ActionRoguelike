@@ -16,13 +16,11 @@
 #include "../ActionRoguelike.h"
 #include "SActionComponent.h"
 #include "SSaveGameSubsystem.h"
+#include "Development/RoguelikeDeveloperSettings.h"
 #include "Engine/AssetManager.h"
 #include "Subsystems/SActorPoolingSubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SGameModeBase)
-
-
-static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("game.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
 
 
 
@@ -35,11 +33,6 @@ ASGameModeBase::ASGameModeBase()
 	DesiredPowerupCount = 10;
 	RequiredPowerupDistance = 2000;
 	InitialSpawnCredit = 50;
-
-	// We start spawning as the player walks on a button instead for convenient testing w/o bots.
-	bAutoStartBotSpawning = false;
-
-	bAutoRespawnPlayer = false;
 
 	PlayerStateClass = ASPlayerState::StaticClass();
 }
@@ -64,10 +57,7 @@ void ASGameModeBase::StartPlay()
 
 	AvailableSpawnCredit = InitialSpawnCredit;
 
-	if (bAutoStartBotSpawning)
-	{
-		StartSpawningBots();
-	}
+	StartSpawningBots();
 	
 	// Make sure we have assigned at least one power-up class
 	if (ensure(PowerupClasses.Num() > 0))
@@ -121,23 +111,24 @@ void ASGameModeBase::KillAll()
 
 void ASGameModeBase::StartSpawningBots()
 {
-	if (TimerHandle_SpawnBots.IsValid())
-	{
-		// Already spawning bots.
-		return;
-	}
+	check(!TimerHandle_SpawnBots.IsValid());
 	
 	// Continuous timer to spawn in more bots.
-	// Actual amount of bots and whether its allowed to spawn determined by spawn logic later in the chain...
+	// Actual amount of bots and whether it's allowed to spawn determined by spawn logic later in the chain...
 	GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &ASGameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
 }
 
 void ASGameModeBase::SpawnBotTimerElapsed()
 {
-	if (!CVarSpawnBots.GetValueOnGameThread())
+	/*
+#if WITH_EDITOR
+    // disabled as we now use big button in level for debugging, but in normal gameplay something like this is useful
+    // does require some code update on how it handles this as 'override' currently not properly set up.
+	if (!DevelopmentOnly::bSpawnBotsOverride)
 	{
 		return;
 	}
+#endif*/
 
 	// Give points to spend
 	if (SpawnCreditCurve)

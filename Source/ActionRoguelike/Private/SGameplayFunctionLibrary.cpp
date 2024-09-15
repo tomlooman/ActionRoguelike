@@ -4,6 +4,7 @@
 #include "SGameplayFunctionLibrary.h"
 #include "SAttributeComponent.h"
 #include "ShaderPipelineCache.h"
+#include "Kismet/GameplayStatics.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SGameplayFunctionLibrary)
 
@@ -21,6 +22,9 @@ bool USGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* Target
 
 bool USGameplayFunctionLibrary::ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, float DamageAmount, const FHitResult& HitResult)
 {
+	// Call into Unreals built in logic for early course damaging of explosive barrel
+	UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, nullptr, DamageCauser, nullptr);
+	
 	if (ApplyDamage(DamageCauser, TargetActor, DamageAmount))
 	{
 		UPrimitiveComponent* HitComp = HitResult.GetComponent();

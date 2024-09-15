@@ -84,11 +84,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
 	int32 InitialSpawnCredit;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
-	bool bAutoStartBotSpawning;
-	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ruleset")
-	bool bAutoRespawnPlayer;
+	bool bAutoRespawnPlayer = false;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
 	TObjectPtr<UEnvQuery> PowerupSpawnQuery;
@@ -120,12 +117,12 @@ protected:
 	void RespawnPlayerElapsed(AController* Controller);
 
 	// Points available to spend on spawning monsters
-	float AvailableSpawnCredit;
+	float AvailableSpawnCredit = 0;
 
 	/* GameTime cooldown to give spawner some time to build up credits */
-	float CooldownBotSpawnUntil;
+	float CooldownBotSpawnUntil = 0;
 
-	FMonsterInfoRow* SelectedMonsterRow;
+	FMonsterInfoRow* SelectedMonsterRow = nullptr;
 
 	/* Allow per game mode actor pools and custom amount of primed instances */
 	UPROPERTY(EditDefaultsOnly, Category= "Actor Pooling")
