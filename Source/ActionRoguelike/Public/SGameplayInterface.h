@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "SGameplayInterface.generated.h"
 
+class USActionComponent;
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class USGameplayInterface : public UInterface
@@ -23,7 +24,8 @@ class ACTIONROGUELIKE_API ISGameplayInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
-	//GetActionComponent();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	bool GetActionComponent(USActionComponent*& OutActionComp) const;
 
 	/* Called after the Actor state was restored from a SaveGame file. */
 	UFUNCTION(BlueprintNativeEvent)
