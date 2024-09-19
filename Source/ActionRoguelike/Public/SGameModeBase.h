@@ -106,8 +106,8 @@ protected:
 	void StartSpawningBots();
 	
 	void SpawnBotTimerElapsed();
-
-	void OnBotSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result);
+	
+	void OnBotSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result, FMonsterInfoRow* SelectedRow);
 
 	void OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation);
 	
@@ -121,8 +121,6 @@ protected:
 
 	/* GameTime cooldown to give spawner some time to build up credits */
 	float CooldownBotSpawnUntil = 0;
-
-	FMonsterInfoRow* SelectedMonsterRow = nullptr;
 
 	/* Allow per game mode actor pools and custom amount of primed instances */
 	UPROPERTY(EditDefaultsOnly, Category= "Actor Pooling")
