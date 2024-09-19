@@ -16,6 +16,9 @@ class ACTIONROGUELIKE_API USActionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
+	UFUNCTION(BlueprintCallable)
+	static USActionComponent* GetComponent(AActor* InActor);
+
 public:	
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags")
