@@ -25,6 +25,9 @@ public:
 
 protected:
 
+	UPROPERTY(EditDefaultsOnly, Category= "Animation")
+	UCurveFloat* LidAnimCurve;
+
 	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly, SaveGame) // RepNotify
 	bool bLidOpened;
 

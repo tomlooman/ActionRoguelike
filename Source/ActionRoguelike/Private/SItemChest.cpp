@@ -4,6 +4,7 @@
 #include "SItemChest.h"
 #include "Components/StaticMeshComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Subsystems/RogueTweenSubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SItemChest)
 
@@ -27,21 +28,29 @@ ASItemChest::ASItemChest()
 void ASItemChest::Interact_Implementation(APawn* InstigatorPawn)
 {
 	bLidOpened = !bLidOpened;
-	OnRep_LidOpened();
 
+	// @todo: kinda ugly, instead call "OpenChest()" function
+	OnRep_LidOpened();
 }
 
 
 void ASItemChest::OnActorLoaded_Implementation()
 {
+	// @todo: kinda ugly, instead call "OpenChest()" function
 	OnRep_LidOpened();
 }
 
 
 void ASItemChest::OnRep_LidOpened()
 {
-	float CurrPitch = bLidOpened ? TargetPitch : 0.0f;
-	LidMesh->SetRelativeRotation(FRotator(CurrPitch, 0, 0));
+	//float CurrPitch = bLidOpened ? TargetPitch : 0.0f;
+	//LidMesh->SetRelativeRotation(FRotator(CurrPitch, 0, 0));
+
+	URogueTweenSubsystem* AnimSubsystem = GetWorld()->GetSubsystem<URogueTweenSubsystem>();
+	AnimSubsystem->PlayTween(LidAnimCurve, 1.0f, [&](float CurrValue)
+	{
+		LidMesh->SetRelativeRotation(FRotator(CurrValue, 0, 0));
+	});
 }
 
 
