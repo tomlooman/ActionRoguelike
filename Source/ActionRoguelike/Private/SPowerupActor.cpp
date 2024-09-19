@@ -2,6 +2,8 @@
 
 
 #include "SPowerupActor.h"
+
+#include "ActionRoguelike.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Net/UnrealNetwork.h"
@@ -12,7 +14,8 @@
 ASPowerupActor::ASPowerupActor()
 {
 	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	SphereComp->SetCollisionProfileName("Powerup");
+	SphereComp->SetCollisionProfileName(Collision::Powerup_ProfileName);
+	SphereComp->SetSphereRadius(100.0f);
 	RootComponent = SphereComp;
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
@@ -26,6 +29,26 @@ ASPowerupActor::ASPowerupActor()
 	// Directly set bool instead of going through SetReplicates(true) within constructor,
 	// Only use SetReplicates() outside constructor
 	bReplicates = true;
+}
+
+
+void ASPowerupActor::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	// Some pickups should auto pickup on overlap rather than a choice through player input
+	if (bCanAutoPickup)
+	{
+		SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnSphereOverlap);
+	}
+}
+
+
+void ASPowerupActor::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                                     int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	// @todo: prevent minions from pickup coins. GameplayTags or collision channel.
+	Execute_Interact(this, CastChecked<APawn>(OtherActor));
 }
 
 
