@@ -16,10 +16,10 @@ class ACTIONROGUELIKE_API USActionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
+public:	
+	
 	UFUNCTION(BlueprintCallable)
 	static USActionComponent* GetComponent(AActor* InActor);
-
-public:	
 
 	UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, Category = "Tags")
 	FGameplayTagContainer ActiveGameplayTags;
