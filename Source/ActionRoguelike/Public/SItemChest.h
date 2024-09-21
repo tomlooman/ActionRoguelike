@@ -16,9 +16,6 @@ class ACTIONROGUELIKE_API ASItemChest : public AActor, public ISGameplayInterfac
 
 public:
 
-	UPROPERTY(EditAnywhere)
-	float TargetPitch;
-
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 
 	virtual void OnActorLoaded_Implementation() override;
@@ -28,8 +25,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category= "Animation")
 	UCurveFloat* LidAnimCurve;
 
-	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly, SaveGame) // RepNotify
+	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly, SaveGame)
 	bool bLidOpened;
+
+	void OpenChest();
 
 	UFUNCTION()
 	void OnRep_LidOpened();

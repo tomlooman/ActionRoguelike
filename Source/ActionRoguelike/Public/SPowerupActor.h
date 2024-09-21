@@ -19,7 +19,7 @@ class ACTIONROGUELIKE_API ASPowerupActor : public AActor, public ISGameplayInter
 
 protected:
 
-	UPROPERTY(ReplicatedUsing=OnRep_IsActive)
+	UPROPERTY(Transient, ReplicatedUsing=OnRep_IsActive)
 	bool bIsActive;
 
 	/* Overlap sphere to automatically pickup on walkover */
@@ -32,8 +32,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Powerup)
 	float RespawnTime;
 
-	FTimerHandle TimerHandle_RespawnTimer;
-	
 	void ShowPowerup();
 
 	void HideAndCooldownPowerup();
@@ -49,6 +47,8 @@ protected:
 public:
 
 	virtual void PostInitializeComponents() override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	UFUNCTION()
 	void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
