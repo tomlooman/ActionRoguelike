@@ -111,6 +111,8 @@ void USActionComponent::RemoveAction(USAction* ActionToRemove)
 		return;
 	}
 
+	RemoveReplicatedSubObject(ActionToRemove);
+
 	Actions.Remove(ActionToRemove);
 }
 
