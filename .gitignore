@@ -55,8 +55,10 @@ SourceArt/**/*.png
 SourceArt/**/*.tga
 
 # Binary Files
-Binaries/*
+Binaries/*/*
 Plugins/*/Binaries/*
+# Whitelist game dll to skip compilation for new users
+!UnrealEditor-ActionRoguelike.dll
 
 # Builds
 Build/*
