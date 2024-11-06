@@ -1,0 +1,27 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "GameDirector",
+	"Description": "",
+	"Category": "Game Features",
+	"CreatedBy": "",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"EnabledByDefault": false,
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "GameDirectorRuntime",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"ExplicitlyLoaded": true,
+	"BuiltInInitialFeatureState": "Registered"
+}

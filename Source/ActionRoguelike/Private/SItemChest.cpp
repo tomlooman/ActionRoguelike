@@ -4,6 +4,7 @@
 #include "SItemChest.h"
 #include "Components/StaticMeshComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Subsystems/RogueTweenSubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SItemChest)
 
@@ -16,8 +17,6 @@ ASItemChest::ASItemChest()
 	LidMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LidMesh"));
 	LidMesh->SetupAttachment(BaseMesh);
 
-	TargetPitch = 110;
-
 	// Directly set bool instead of going through SetReplicates(true) within constructor,
 	// Only use SetReplicates() outside constructor
 	bReplicates = true;
@@ -26,22 +25,39 @@ ASItemChest::ASItemChest()
 
 void ASItemChest::Interact_Implementation(APawn* InstigatorPawn)
 {
-	bLidOpened = !bLidOpened;
-	OnRep_LidOpened();
-
+	bLidOpened = true;
+	if (bLidOpened)
+	{
+		OpenChest();
+	}
 }
 
 
 void ASItemChest::OnActorLoaded_Implementation()
 {
-	OnRep_LidOpened();
+	if (bLidOpened)
+	{
+		OpenChest();
+	}
 }
 
 
+void ASItemChest::OpenChest()
+{
+	// @todo: lidmesh still as replicated relative rotation?
+	URogueTweenSubsystem* AnimSubsystem = GetWorld()->GetSubsystem<URogueTweenSubsystem>();
+	AnimSubsystem->PlayTween(LidAnimCurve, 1.0f, [&](float CurrValue)
+	{
+		LidMesh->SetRelativeRotation(FRotator(CurrValue, 0, 0));
+	});
+}
+
 void ASItemChest::OnRep_LidOpened()
 {
-	float CurrPitch = bLidOpened ? TargetPitch : 0.0f;
-	LidMesh->SetRelativeRotation(FRotator(CurrPitch, 0, 0));
+	if (bLidOpened)
+	{
+		OpenChest();
+	}
 }
 
 
