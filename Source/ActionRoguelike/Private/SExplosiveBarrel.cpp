@@ -7,6 +7,7 @@
 #include "PhysicsEngine/RadialForceComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Particles/ParticleSystemComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SExplosiveBarrel)
 
@@ -32,6 +33,10 @@ ASExplosiveBarrel::ASExplosiveBarrel()
 
 	// Optional, default constructor of component already adds 4 object types to affect, excluding WorldDynamic
 	ForceComp->AddCollisionChannelToAffect(ECC_WorldDynamic);
+
+	ExplosionComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ExplosionComp"));
+	ExplosionComp->bAutoActivate = false;
+	ExplosionComp->SetupAttachment(MeshComp);
 }
 
 
@@ -42,6 +47,8 @@ float ASExplosiveBarrel::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	//DamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	ForceComp->FireImpulse();
+
+	ExplosionComp->Activate();
 
 	// @todo: cause damage to other stuff around it
 
