@@ -13,7 +13,7 @@ struct FTickablesTickFunction : public FTickFunction
 {
 	GENERATED_BODY()
 
-	UPROPERTY(Transient)
+	UPROPERTY()
 	USTickablesSubsystem* Target = nullptr;
 
 	virtual void ExecuteTick(float DeltaTime, ELevelTick TickType, ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent) override;

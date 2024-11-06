@@ -44,7 +44,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	TSoftObjectPtr<UTexture2D> Icon;
 
-	UPROPERTY(Transient, Replicated)
+	UPROPERTY(Replicated)
 	TObjectPtr<USActionComponent> ActionComp;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
@@ -58,10 +58,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Tags")
 	FGameplayTagContainer BlockedTags;
 
-	UPROPERTY(Transient, ReplicatedUsing="OnRep_RepData")
+	UPROPERTY(ReplicatedUsing="OnRep_RepData")
 	FActionRepData RepData;
 
-	UPROPERTY(Transient, Replicated)
+	UPROPERTY(Replicated)
 	float TimeStarted;
 
 	UFUNCTION()

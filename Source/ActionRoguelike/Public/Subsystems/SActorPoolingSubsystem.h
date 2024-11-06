@@ -45,6 +45,6 @@ protected:
 protected:
 
 	/* Holds collection of available Actors, stored per class */
-	UPROPERTY(Transient)
+	UPROPERTY()
 	TMap<TSubclassOf<AActor>, FActorPool> AvailableActorPool;
 };

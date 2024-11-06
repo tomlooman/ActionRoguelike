@@ -153,15 +153,13 @@ void ASAICharacter::OnSignificanceChanged(ESignificanceValue Significance)
 {
 	// @todo: this may not work perfectly with falling and similar movement modes. (We don't support this on the AI character anyway)
 	// NavMesh based walking instead of using world geo
-
-	// @todo: this can crash in Chaos due to not being on the GameThread?
 	if (Significance <= ESignificanceValue::Medium)
 	{
-		//GetCharacterMovement()->SetMovementMode(MOVE_NavWalking);
+		GetCharacterMovement()->SetMovementMode(MOVE_NavWalking);
 	}
 	else
 	{
-		//GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	}
 	
 	// Set as 'dormant' if actor is hidden, otherwise we continue ticking the entire character

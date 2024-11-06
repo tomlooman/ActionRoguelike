@@ -33,7 +33,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> PauseMenuClass;
 
-	UPROPERTY(Transient)
+	UPROPERTY()
 	TObjectPtr<UUserWidget> PauseMenuInstance;
 
 	UFUNCTION(BlueprintCallable)

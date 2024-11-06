@@ -101,11 +101,6 @@ void USSaveGameSubsystem::WriteSaveGame()
 	}
 	
 	// Iterate all player states, we don't have proper ID to match yet (requires Steam or EOS)
-
-	//for (APlayerState* PS : GS->PlayerArray)
-	//{
-	//}
-
 	for (int32 i = 0; i < GS->PlayerArray.Num(); i++)
 	{
 		ASPlayerState* PS = CastChecked<ASPlayerState>(GS->PlayerArray[i]);

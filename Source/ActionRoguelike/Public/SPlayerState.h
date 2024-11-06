@@ -24,10 +24,10 @@ class ACTIONROGUELIKE_API ASPlayerState : public APlayerState
 	
 protected:
 
-	UPROPERTY(Transient, EditDefaultsOnly, ReplicatedUsing="OnRep_Credits", Category = "Credits")
+	UPROPERTY(EditDefaultsOnly, ReplicatedUsing="OnRep_Credits", Category = "Credits")
 	int32 Credits;
 
-	UPROPERTY(Transient, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly)
 	float PersonalRecordTime;
 
 	// OnRep_ can use a parameter containing the 'old value' of the variable it is bound to. Very useful in this case to figure out the 'delta'.

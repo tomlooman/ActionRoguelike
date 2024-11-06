@@ -9,7 +9,6 @@
 
 ASPowerup_Credits::ASPowerup_Credits()
 {
-	bCanAutoPickup = true;
 	CreditsAmount = 80;
 }
 

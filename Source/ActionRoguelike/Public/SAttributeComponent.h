@@ -57,6 +57,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float RageMax;
 
+	//UPROPERTY(ReplicatedUsing="")
+	//bool bIsAlive;
+
 	UFUNCTION(NetMulticast, Reliable) // @note: could mark as unreliable once we moved the 'state' out of scharacter (eg. once its cosmetic only)
 	void MulticastHealthChanged(AActor* InstigatorActor, float NewHealth, float Delta);
 
@@ -64,9 +67,6 @@ protected:
 	void MulticastRageChanged(AActor* InstigatorActor, float NewRage, float Delta);
 
 public:	
-	
-	/* Placeholder, base damage to let every ability scale off  */
-	float BaseDamage;
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	bool Kill(AActor* InstigatorActor);

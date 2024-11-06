@@ -428,14 +428,6 @@
 		{
 			"Name": "StateTree",
 			"Enabled": true
-		},
-		{
-			"Name": "GameFeatures",
-			"Enabled": true
-		},
-		{
-			"Name": "GameDirector",
-			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [

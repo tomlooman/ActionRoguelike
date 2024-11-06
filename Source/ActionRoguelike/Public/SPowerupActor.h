@@ -19,41 +19,30 @@ class ACTIONROGUELIKE_API ASPowerupActor : public AActor, public ISGameplayInter
 
 protected:
 
-	UPROPERTY(Transient, ReplicatedUsing=OnRep_IsActive)
+	UPROPERTY(ReplicatedUsing="OnRep_IsActive")
 	bool bIsActive;
-
-	/* Overlap sphere to automatically pickup on walkover */
-	UPROPERTY(EditDefaultsOnly, Category=Powerup)
-	bool bCanAutoPickup = false;
 
 	UFUNCTION()
 	void OnRep_IsActive();
 
-	UPROPERTY(EditAnywhere, Category = Powerup)
+	UPROPERTY(EditAnywhere, Category = "Powerup")
 	float RespawnTime;
 
+	FTimerHandle TimerHandle_RespawnTimer;
+	
 	void ShowPowerup();
 
 	void HideAndCooldownPowerup();
 
 	void SetPowerupState(bool bNewIsActive);
 
-	UPROPERTY(VisibleAnywhere, Category = Components)
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<USphereComponent> SphereComp;
 
-	UPROPERTY(VisibleAnywhere, Category = Components)
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> MeshComp;
 
 public:
-
-	virtual void PostInitializeComponents() override;
-
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-	UFUNCTION()
-	void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 
 	virtual FText GetInteractText_Implementation(APawn* InstigatorPawn) override;

@@ -16,10 +16,10 @@ struct FMagicProjectileSparseData : public FProjectileSparseData
 	GENERATED_BODY()
 
 	FMagicProjectileSparseData()
-	: DamageAmount(100.0f)
+	: DamageAmount(20.f)
 	{}
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Damage", meta=(Units="Percent"))
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	float DamageAmount;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")

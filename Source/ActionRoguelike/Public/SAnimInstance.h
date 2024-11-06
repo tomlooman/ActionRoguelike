@@ -19,10 +19,10 @@ class ACTIONROGUELIKE_API USAnimInstance : public UAnimInstance
 protected:
 
 	/* Is Pawn Stunned based on GameplayTag data */
-	UPROPERTY(Transient, EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	bool bIsStunned;
 
-	UPROPERTY(Transient, BlueprintReadOnly, Category = "Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	TObjectPtr<USActionComponent> ActionComp;
 
 	virtual void NativeInitializeAnimation() override;

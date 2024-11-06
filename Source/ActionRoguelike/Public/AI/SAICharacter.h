@@ -22,7 +22,7 @@ class ACTIONROGUELIKE_API ASAICharacter : public ACharacter
 
 protected:
 
-	UPROPERTY(Transient)
+	UPROPERTY()
 	TObjectPtr<USWorldUserWidget> ActiveHealthBar;
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
@@ -32,6 +32,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> SpottedWidgetClass;
 
+	/* Material parameter for Hitflashes */
+	//UPROPERTY(VisibleAnywhere, Category = "Effects")
+	//FName TimeToHitParamName;
+	
 	/* Index must match the CustomPrimitiveData index used in the Overlay material */
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	int32 HitFlash_CustomPrimitiveIndex;

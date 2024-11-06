@@ -118,7 +118,6 @@ void ASGameModeBase::StartSpawningBots()
 	GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &ASGameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
 }
 
-
 void ASGameModeBase::SpawnBotTimerElapsed()
 {
 	/*
@@ -150,9 +149,6 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 	// TActorRange simplifies the code compared to TActorIterator<T>
 	for (ASAICharacter* Bot : TActorRange<ASAICharacter>(GetWorld()))
 	{
-		// @todo: bots can register themselves with gamemode or director subsystem and remove on death
-		// @todo: game director class to handle the spawning, coin-system and registration would be a better fit
-		// @todo: downside is that subsystems are always loaded
 		USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(Bot);
 		if (ensure(AttributeComp) && AttributeComp->IsAlive())
 		{
@@ -169,60 +165,58 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 		return;
 	}
 
-	// Row to pass along with EQS delegate
-	FMonsterInfoRow* SelectedRow = nullptr;
-
-	// @todo: warn about no monsterrow much earlier in the game and don't even bother arriving here if not set.
-	// Use either DataValidation, asserts, or combination to prevent this from crashing here.
-	//if (MonsterTable)
-	
-	TArray<FMonsterInfoRow*> Rows;
-	MonsterTable->GetAllRows("", Rows);
-
-	// Get total weight
-	float TotalWeight = 0;
-	for (FMonsterInfoRow* Entry : Rows)
+	if (MonsterTable)
 	{
-		TotalWeight += Entry->Weight;
-	}
+		// Reset before selecting new row
+		SelectedMonsterRow = nullptr;
 
-	// Random number within total random
-	int32 RandomWeight = FMath::RandRange(0.0f, TotalWeight);
+		TArray<FMonsterInfoRow*> Rows;
+		MonsterTable->GetAllRows("", Rows);
 
-	//Reset
-	TotalWeight = 0;
-
-	// Get monster based on random weight
-	for (FMonsterInfoRow* Entry : Rows)
-	{
-		TotalWeight += Entry->Weight;
-
-		if (RandomWeight <= TotalWeight)
+		// Get total weight
+		float TotalWeight = 0;
+		for (FMonsterInfoRow* Entry : Rows)
 		{
-			SelectedRow = Entry;
-			break;
+			TotalWeight += Entry->Weight;
+		}
+
+		// Random number within total random
+		int32 RandomWeight = FMath::RandRange(0.0f, TotalWeight);
+
+		//Reset
+		TotalWeight = 0;
+
+		// Get monster based on random weight
+		for (FMonsterInfoRow* Entry : Rows)
+		{
+			TotalWeight += Entry->Weight;
+
+			if (RandomWeight <= TotalWeight)
+			{
+				SelectedMonsterRow = Entry;
+				break;
+			}
+		}
+
+		if (SelectedMonsterRow && SelectedMonsterRow->SpawnCost >= AvailableSpawnCredit)
+		{
+			// Too expensive to spawn, try again soon
+			CooldownBotSpawnUntil = GetWorld()->TimeSeconds + CooldownTimeBetweenFailures;
+
+			LogOnScreen(this, FString::Printf(TEXT("Cooling down until: %f"), CooldownBotSpawnUntil), FColor::Red);
+			return;
 		}
 	}
 
-	if (SelectedRow && SelectedRow->SpawnCost >= AvailableSpawnCredit)
-	{
-		// Too expensive to spawn, try again soon
-		CooldownBotSpawnUntil = GetWorld()->TimeSeconds + CooldownTimeBetweenFailures;
-
-		LogOnScreen(this, FString::Printf(TEXT("Cooling down until: %f"), CooldownBotSpawnUntil), FColor::Red);
-		return;
-	}
+	UE_LOG(LogGame, Log, TEXT("Spawning New Bot"));
 
 	// Skip the Blueprint wrapper and use the direct C++ option which the Wrapper uses as well
 	FEnvQueryRequest Request(SpawnBotQuery, this);
-
-	FQueryFinishedSignature FinishedDelegate = FQueryFinishedSignature::CreateUObject(this, &ASGameModeBase::OnBotSpawnQueryCompleted, SelectedRow);
-	
-	Request.Execute(EEnvQueryRunMode::RandomBest5Pct, FinishedDelegate);
+	Request.Execute(EEnvQueryRunMode::RandomBest5Pct, this, &ASGameModeBase::OnBotSpawnQueryCompleted);
 }
 
 
-void ASGameModeBase::OnBotSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result, FMonsterInfoRow* SelectedRow)
+void ASGameModeBase::OnBotSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result)
 {
 	FEnvQueryResult* QueryResult = Result.Get();
 	if (!QueryResult->IsSuccessful())
@@ -240,9 +234,9 @@ void ASGameModeBase::OnBotSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result
 		UAssetManager& Manager = UAssetManager::Get();
 		
 		// Apply spawn cost
-		AvailableSpawnCredit -= SelectedRow->SpawnCost;
+		AvailableSpawnCredit -= SelectedMonsterRow->SpawnCost;
 
-		FPrimaryAssetId MonsterId = SelectedRow->MonsterId;
+		FPrimaryAssetId MonsterId = SelectedMonsterRow->MonsterId;
 
 		TArray<FName> Bundles;
 		FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ASGameModeBase::OnMonsterLoaded, MonsterId, Locations[0]);
@@ -253,6 +247,8 @@ void ASGameModeBase::OnBotSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result
 
 void ASGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation)
 {
+	//LogOnScreen(this, "Finished loading.", FColor::Green);
+
 	UAssetManager& Manager = UAssetManager::Get();
 
 	USMonsterData* MonsterData = CastChecked<USMonsterData>(Manager.GetPrimaryAssetObject(LoadedId));

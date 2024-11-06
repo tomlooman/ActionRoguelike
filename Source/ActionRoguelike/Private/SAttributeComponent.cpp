@@ -18,8 +18,6 @@ USAttributeComponent::USAttributeComponent()
 	Rage = 0;
 	RageMax = 100;
 
-	BaseDamage = 20.0f;
-
 	SetIsReplicatedByDefault(true);
 }
 
