@@ -54,10 +54,6 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UInputAction> Input_SecondaryAttack;
-	
-	/* VisibleAnywhere = read-only, still useful to view in-editor and enforce a convention. */
-	//UPROPERTY(VisibleAnywhere, Category = "Effects")
-	//FName TimeToHitParamName;
 
 	/* Index must match the CustomPrimitiveData index used in the Overlay material */
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
@@ -108,8 +104,6 @@ protected:
 
 	void CrosshairTraceComplete(const FTraceHandle& InTraceHandle, FTraceDatum& InTraceDatum);
 
-	FTraceHandle TraceHandle;
-	
 public:	
 
 	ASCharacter();
@@ -125,5 +119,7 @@ public:
 
 private:
 
+	FTraceHandle TraceHandle;
+	
 	bool bHasPawnTarget;
 };

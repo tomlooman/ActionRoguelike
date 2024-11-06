@@ -3,6 +3,7 @@
 
 #include "SActionComponent.h"
 #include "SAction.h"
+#include "SGameplayInterface.h"
 #include "../ActionRoguelike.h"
 #include "Net/UnrealNetwork.h"
 #include "Engine/ActorChannel.h"
@@ -69,6 +70,24 @@ void USActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 }
 
 
+USActionComponent* USActionComponent::GetComponent(AActor* InActor)
+{
+	if (InActor && InActor->Implements<USGameplayInterface>())
+	{
+		USActionComponent* ActionComp = nullptr;
+		if (ISGameplayInterface::Execute_GetActionComponent(InActor, ActionComp))
+		{
+			return ActionComp;
+		}
+	}
+
+	// @todo: log warn about interface not implemented yet
+
+	// Iterate over all components anyway if not implemented. But warn about this
+
+	return InActor->GetComponentByClass<USActionComponent>();
+}
+
 void USActionComponent::AddAction(AActor* Instigator, TSubclassOf<USAction> ActionClass)
 {
 	if (!ensure(ActionClass))
@@ -106,6 +125,8 @@ void USActionComponent::RemoveAction(USAction* ActionToRemove)
 	{
 		return;
 	}
+
+	RemoveReplicatedSubObject(ActionToRemove);
 
 	Actions.Remove(ActionToRemove);
 }

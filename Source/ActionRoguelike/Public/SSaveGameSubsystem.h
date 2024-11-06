@@ -23,7 +23,7 @@ protected:
 	/* Name of slot to save/load to disk. Filled by SaveGameSettings (can be overriden from GameMode's InitGame()) */
 	FString CurrentSlotName;
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 	TObjectPtr<USSaveGame> CurrentSaveGame;
 
 public:
