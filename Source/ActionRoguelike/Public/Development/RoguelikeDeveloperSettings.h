@@ -8,11 +8,11 @@
 
 namespace DevelopmentOnly
 {
-	static bool bSpawnBotsOverride = false;
+	static bool bDisableSpawnBotsOverride = false;
 	static FAutoConsoleVariableRef CVarSpawnBotsOverride(
-	TEXT("game.SpawnBotsOverride"),
-	bSpawnBotsOverride,
-	TEXT("Enable spawning of bots via timer."));
+	TEXT("game.DisableBotSpawning"),
+	bDisableSpawnBotsOverride,
+	TEXT("Disable spawning of bots for development only."));
 
 }
 
@@ -26,8 +26,8 @@ class ACTIONROGUELIKE_API URoguelikeDeveloperSettings : public UDeveloperSetting
 
 public:
 
-	UPROPERTY(config, EditDefaultsOnly, Category = ActionRoguelike, meta = (ConsoleVariable = "game.SpawnBotsOverride"))
-	bool bSpawnBotsOverride = false;
+	UPROPERTY(config, EditDefaultsOnly, Category = ActionRoguelike, meta = (ConsoleVariable = "game.DisableBotSpawning"))
+	bool bDisableSpawnBotsOverride = false;
 
 	//~UDeveloperSettings interface
 	virtual FName GetCategoryName() const override;

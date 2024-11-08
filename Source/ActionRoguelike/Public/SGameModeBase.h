@@ -102,7 +102,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
 	int32 DesiredPowerupCount;
 
-	UFUNCTION(BlueprintCallable)
 	void StartSpawningBots();
 	
 	void SpawnBotTimerElapsed();
