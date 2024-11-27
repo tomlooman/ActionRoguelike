@@ -7,6 +7,7 @@
 #include "SExplosiveBarrel.generated.h"
 
 
+class UNiagaraComponent;
 class UStaticMeshComponent;
 class URadialForceComponent;
 
@@ -26,7 +27,7 @@ protected:
 	TObjectPtr<URadialForceComponent> ForceComp;
 
 	UPROPERTY(VisibleAnywhere, Category = Components)
-	TObjectPtr<UParticleSystemComponent> ExplosionComp;
+	TObjectPtr<UNiagaraComponent> ExplosionComp;
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	

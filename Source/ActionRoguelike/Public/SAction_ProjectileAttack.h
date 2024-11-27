@@ -6,8 +6,8 @@
 #include "SAction.h"
 #include "SAction_ProjectileAttack.generated.h"
 
+class UNiagaraSystem;
 class UAnimMontage;
-class UParticleSystem;
 class USoundBase;
 
 /**
@@ -42,7 +42,7 @@ protected:
 
 	/* Particle System played during attack animation */
 	UPROPERTY(EditAnywhere, Category = "Attack")
-	TObjectPtr<UParticleSystem> CastingEffect;
+	TObjectPtr<UNiagaraSystem> CastingEffect;
 
 	/* Sound Effect to play (Can be Wave or Cue) */
 	UPROPERTY(EditAnywhere, Category = "Attack")

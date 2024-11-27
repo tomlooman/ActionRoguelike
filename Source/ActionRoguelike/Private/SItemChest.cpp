@@ -2,6 +2,8 @@
 
 
 #include "SItemChest.h"
+
+#include "NiagaraComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Subsystems/RogueTweenSubsystem.h"
@@ -16,6 +18,13 @@ ASItemChest::ASItemChest()
 
 	LidMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LidMesh"));
 	LidMesh->SetupAttachment(BaseMesh);
+
+	OpenChestEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("OpeningEffectComp"));
+	OpenChestEffect->SetupAttachment(RootComponent);
+	OpenChestEffect->bAutoActivate = false;
+	// only attach while playing the VFX, this skips transform updates when the chests moves around the world
+	// while the VFX is not active
+	OpenChestEffect->bAutoManageAttachment = true;
 
 	// Directly set bool instead of going through SetReplicates(true) within constructor,
 	// Only use SetReplicates() outside constructor
@@ -50,6 +59,8 @@ void ASItemChest::OpenChest()
 	{
 		LidMesh->SetRelativeRotation(FRotator(CurrValue, 0, 0));
 	});
+
+	OpenChestEffect->Activate(true);
 }
 
 void ASItemChest::OnRep_LidOpened()

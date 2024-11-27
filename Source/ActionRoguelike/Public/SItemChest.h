@@ -7,6 +7,7 @@
 #include "SGameplayInterface.h"
 #include "SItemChest.generated.h"
 
+class UNiagaraComponent;
 class UStaticMeshComponent;
 
 UCLASS()
@@ -38,6 +39,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> LidMesh;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UNiagaraComponent> OpenChestEffect;
 
 public:	
 
