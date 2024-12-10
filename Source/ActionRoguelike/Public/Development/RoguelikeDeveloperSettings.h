@@ -6,6 +6,7 @@
 #include "Engine/DeveloperSettingsBackedByCVars.h"
 #include "RoguelikeDeveloperSettings.generated.h"
 
+#if !UE_BUILD_SHIPPING
 namespace DevelopmentOnly
 {
 	static bool bDisableSpawnBotsOverride = false;
@@ -15,6 +16,8 @@ namespace DevelopmentOnly
 	TEXT("Disable spawning of bots for development only."));
 
 }
+
+#endif
 
 /**
  * 
