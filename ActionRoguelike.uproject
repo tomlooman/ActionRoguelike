@@ -436,6 +436,10 @@
 		{
 			"Name": "GameDirector",
 			"Enabled": true
+		},
+		{
+			"Name": "SlateInsights",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [

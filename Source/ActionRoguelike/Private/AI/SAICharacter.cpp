@@ -14,6 +14,9 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "SActionComponent.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Components/CanvasPanel.h"
+#include "Components/CanvasPanelSlot.h"
 #include "Components/SSignificanceComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -76,7 +79,7 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 			if (ActiveHealthBar)
 			{
 				ActiveHealthBar->AttachedActor = this;
-				ActiveHealthBar->AddToViewport();
+				USWorldUserWidget::AddToRootCanvasPanel(ActiveHealthBar);
 			}
 		}
 
@@ -142,9 +145,7 @@ void ASAICharacter::MulticastPawnSeen_Implementation()
 	if (NewWidget)
 	{
 		NewWidget->AttachedActor = this;
-		// Index of 10 (or anything higher than default of 0) places this on top of any other widget.
-		// May end up behind the minion health bar otherwise.
-		NewWidget->AddToViewport(10);
+		USWorldUserWidget::AddToRootCanvasPanel(NewWidget);
 	}
 }
 

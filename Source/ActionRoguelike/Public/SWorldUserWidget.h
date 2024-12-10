@@ -7,7 +7,7 @@
 #include "SWorldUserWidget.generated.h"
 
 
-class USizeBox;
+class UOverlay;
 
 /**
  * 
@@ -20,11 +20,19 @@ class ACTIONROGUELIKE_API USWorldUserWidget : public UUserWidget
 protected:
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<USizeBox> ParentSizeBox;
+	TObjectPtr<UOverlay> ParentOverlay;
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
+	virtual void NativeConstruct() override;
+
+	bool bWasOnScreen = true;
+
 public:
+
+	/* Find the root canvas panel (expected in a 'main hud' style widget) and add new widget as child. */
+	UFUNCTION(BlueprintCallable, Category= UI)
+	static void AddToRootCanvasPanel(UUserWidget* InNewWidget);
 
 	UPROPERTY(EditAnywhere, Category = "UI")
 	FVector WorldOffset;

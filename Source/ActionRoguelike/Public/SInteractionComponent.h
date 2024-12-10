@@ -43,7 +43,7 @@ protected:
 	TSubclassOf<USWorldUserWidget> DefaultWidgetClass;
 
 	UPROPERTY(Transient)
-	TObjectPtr<USWorldUserWidget> DefaultWidgetInstance;
+	TObjectPtr<USWorldUserWidget> WidgetInst;
 
 public:	
 

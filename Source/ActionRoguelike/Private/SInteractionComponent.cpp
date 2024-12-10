@@ -86,26 +86,26 @@ void USInteractionComponent::FindBestInteractable()
 
 	if (FocusedActor)
 	{
-		if (DefaultWidgetInstance == nullptr && ensure(DefaultWidgetClass))
+		if (WidgetInst == nullptr && ensure(DefaultWidgetClass))
 		{
-			DefaultWidgetInstance = CreateWidget<USWorldUserWidget>(GetWorld(), DefaultWidgetClass);
+			WidgetInst = CreateWidget<USWorldUserWidget>(GetWorld(), DefaultWidgetClass);
 		}
 
-		if (DefaultWidgetInstance)
+		if (WidgetInst)
 		{
-			DefaultWidgetInstance->AttachedActor = FocusedActor;
+			WidgetInst->AttachedActor = FocusedActor;
 
-			if (!DefaultWidgetInstance->IsInViewport())
+			if (!WidgetInst->GetParent())
 			{
-				DefaultWidgetInstance->AddToViewport();
+				USWorldUserWidget::AddToRootCanvasPanel(WidgetInst);
 			}
 		}
 	}
 	else
 	{
-		if (DefaultWidgetInstance)
+		if (WidgetInst)
 		{
-			DefaultWidgetInstance->RemoveFromParent();
+			WidgetInst->RemoveFromParent();
 		}
 	}
 
