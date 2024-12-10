@@ -30,9 +30,11 @@ class ACTIONROGUELIKE_API URoguelikeDeveloperSettings : public UDeveloperSetting
 public:
 
 	UPROPERTY(config, EditDefaultsOnly, Category = ActionRoguelike, meta = (ConsoleVariable = "game.DisableBotSpawning"))
-	bool bDisableSpawnBotsOverride = false;
+	bool bDisableSpawnBotsOverride;
 
 	//~UDeveloperSettings interface
+	virtual void PostInitProperties() override;
+	
 	virtual FName GetCategoryName() const override;
 	//~End of UDeveloperSettings interface
 };
