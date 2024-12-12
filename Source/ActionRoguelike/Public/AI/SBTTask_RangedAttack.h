@@ -7,10 +7,10 @@
 #include "SBTTask_RangedAttack.generated.h"
 
 /**
- * 
+ * Original Ranged Attack class for AI. Replaced with Action System variant
  */
-UCLASS()
-class ACTIONROGUELIKE_API USBTTask_RangedAttack : public UBTTaskNode
+UCLASS(Deprecated) // 
+class ACTIONROGUELIKE_API UDEPRECATED_USBTTask_RangedAttack : public UBTTaskNode
 {
 	GENERATED_BODY()
 		
