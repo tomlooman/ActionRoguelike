@@ -23,7 +23,7 @@ void USActionEffect::StartAction_Implementation(AActor* Instigator)
 	if (Duration > 0.0f)
 	{
 		FTimerDelegate Delegate;
-		Delegate.BindUFunction(this, "StopAction", Instigator);
+		Delegate.BindUObject(this, &ThisClass::StopAction, Instigator);
 
 		GetWorld()->GetTimerManager().SetTimer(DurationHandle, Delegate, Duration, false);
 	}
@@ -31,7 +31,7 @@ void USActionEffect::StartAction_Implementation(AActor* Instigator)
 	if (Period > 0.0f)
 	{
 		FTimerDelegate Delegate;
-		Delegate.BindUFunction(this, "ExecutePeriodicEffect", Instigator);
+		Delegate.BindUObject(this, &ThisClass::ExecutePeriodicEffect, Instigator);
 
 		GetWorld()->GetTimerManager().SetTimer(PeriodHandle, Delegate, Period, true);
 	}

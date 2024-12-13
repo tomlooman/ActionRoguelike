@@ -47,8 +47,7 @@ protected:
 	/* Sound Effect to play (Can be Wave or Cue) */
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	TObjectPtr<USoundBase> CastingSound;
-
-	UFUNCTION()
+	
 	void AttackDelay_Elapsed(ACharacter* InstigatorCharacter);
 
 public:

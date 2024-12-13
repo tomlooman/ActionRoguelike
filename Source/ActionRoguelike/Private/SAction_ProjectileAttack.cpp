@@ -39,7 +39,7 @@ void USAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
 	{
 		FTimerHandle TimerHandle_AttackDelay;
 		FTimerDelegate Delegate;
-		Delegate.BindUFunction(this, "AttackDelay_Elapsed", Character);
+		Delegate.BindUObject(this, &ThisClass::AttackDelay_Elapsed, Character);
 
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, AttackAnimDelay, false);
 	}
