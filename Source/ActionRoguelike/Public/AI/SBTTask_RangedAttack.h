@@ -33,5 +33,5 @@ protected:
 
 public:
 
-	USBTTask_RangedAttack();
+	UDEPRECATED_USBTTask_RangedAttack();
 };
