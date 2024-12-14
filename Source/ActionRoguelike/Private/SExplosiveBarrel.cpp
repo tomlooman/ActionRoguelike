@@ -7,6 +7,7 @@
 #include "PhysicsEngine/RadialForceComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "DrawDebugHelpers.h"
+#include "NiagaraComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SExplosiveBarrel)
 
@@ -32,27 +33,32 @@ ASExplosiveBarrel::ASExplosiveBarrel()
 
 	// Optional, default constructor of component already adds 4 object types to affect, excluding WorldDynamic
 	ForceComp->AddCollisionChannelToAffect(ECC_WorldDynamic);
+
+	ExplosionComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ExplosionComp"));
+	ExplosionComp->bAutoActivate = false;
+	ExplosionComp->SetupAttachment(MeshComp);
 }
 
 
-void ASExplosiveBarrel::PostInitializeComponents()
+float ASExplosiveBarrel::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
 {
-	// Don't forget to call parent function
-	Super::PostInitializeComponents();
+	// Could safely skip the base logic...
+	//DamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	MeshComp->OnComponentHit.AddDynamic(this, &ASExplosiveBarrel::OnActorHit);
-}
-
-
-void ASExplosiveBarrel::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
 	ForceComp->FireImpulse();
+
+	ExplosionComp->Activate();
+
+	// @todo: cause damage to other stuff around it
 
 	UE_LOGFMT(LogGame, Log, "OnActorHit in Explosive Barrel");
 
 	// Warnings as structed logs even show up in the "Message Log" window of UnrealEd
-	UE_LOGFMT(LogGame, Warning, "OnActorHit, OtherActor: {name}, at game time: {timeseconds}", GetNameSafe(OtherActor), GetWorld()->TimeSeconds);
+	UE_LOGFMT(LogGame, Warning, "OnActorHit, OtherActor: {name}, at game time: {timeseconds}", GetNameSafe(DamageCauser), GetWorld()->TimeSeconds);
 
-	FString CombinedString = FString::Printf(TEXT("Hit at location: %s"), *Hit.ImpactPoint.ToString());
-	DrawDebugString(GetWorld(), Hit.ImpactPoint, CombinedString, nullptr, FColor::Green, 2.0f, true);
+	//FString CombinedString = FString::Printf(TEXT("Hit at location: %s"), *Hit.ImpactPoint.ToString());
+	//DrawDebugString(GetWorld(), Hit.ImpactPoint, CombinedString, nullptr, FColor::Green, 2.0f, true);
+
+	return DamageAmount;
 }

@@ -75,7 +75,7 @@ public:
 	UPROPERTY(EditAnywhere, meta = (TitleProperty="MaxDistance"))
 	TArray<FSignificanceDistance> Thresholds;
 
-	UPROPERTY(BlueprintReadOnly, Category= "Optimization")
+	UPROPERTY(Transient, BlueprintReadOnly, Category= "Optimization")
 	ESignificanceValue CurrentSignificance;
 
 protected:

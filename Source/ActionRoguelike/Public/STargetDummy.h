@@ -11,7 +11,7 @@ class USAttributeComponent;
 
 
 UCLASS()
-class ACTIONROGUELIKE_API ASTargetDummy : public AActor
+class ACTIONROGUELIKE_API ASTargetDummy : public APawn
 {
 	GENERATED_BODY()
 	
@@ -27,7 +27,7 @@ protected:
 	TObjectPtr<USAttributeComponent> AttributeComp;
 
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UStaticMeshComponent> MeshComp;
+	TObjectPtr<USkeletalMeshComponent> SkelMeshComp;
 
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);

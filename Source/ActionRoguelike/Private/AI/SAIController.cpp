@@ -3,8 +3,15 @@
 
 #include "AI/SAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Perception/AIPerceptionComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SAIController)
+
+
+ASAIController::ASAIController()
+{
+	PerceptionComp = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComp"));
+}
 
 
 void ASAIController::BeginPlay()

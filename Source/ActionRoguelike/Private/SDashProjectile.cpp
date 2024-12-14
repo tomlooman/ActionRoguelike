@@ -4,6 +4,7 @@
 #include "SDashProjectile.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "SPlayerController.h"
 #include "Components/SProjectileMovementComponent.h"
 #include "Sound/SoundCue.h"
@@ -35,7 +36,7 @@ void ASDashProjectile::Explode_Implementation()
 	// Clear timer if the Explode was already called through another source like OnActorHit
 	GetWorldTimerManager().ClearTimer(TimerHandle_DelayedDetonate);
 
-	UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
 
 	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 
@@ -67,7 +68,7 @@ void ASDashProjectile::TeleportInstigator()
 	// Controller can be nullptr if we died (and detached the pawn) just after launching the dash projectile
 	if (PC && PC->IsLocalController())
 	{
-		PC->ClientStartCameraShake(ImpactShake);
+		PC->PlayerCameraManager->StartCameraShake(ImpactShake);
 	}
 
 	// Now we're ready to destroy self

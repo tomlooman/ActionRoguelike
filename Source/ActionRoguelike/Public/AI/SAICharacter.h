@@ -9,7 +9,6 @@
 
 
 class USSignificanceComponent;
-class UPawnSensingComponent;
 class USAttributeComponent;
 class UUserWidget;
 class USWorldUserWidget;
@@ -20,10 +19,12 @@ class ACTIONROGUELIKE_API ASAICharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-protected:
+public:
+	
+	UFUNCTION(BlueprintCallable, Category = "AI")
+	AActor* GetTargetActor() const;
 
-	UPROPERTY()
-	TObjectPtr<USWorldUserWidget> ActiveHealthBar;
+protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> HealthBarWidgetClass;
@@ -32,29 +33,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> SpottedWidgetClass;
 
-	/* Material parameter for Hitflashes */
-	//UPROPERTY(VisibleAnywhere, Category = "Effects")
-	//FName TimeToHitParamName;
-	
 	/* Index must match the CustomPrimitiveData index used in the Overlay material */
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	int32 HitFlash_CustomPrimitiveIndex;
 
-	/* Key for AI Blackboard 'TargetActor' */
-	UPROPERTY(VisibleAnywhere, Category = "Effects")
-	FName TargetActorKey;
-
-	UFUNCTION(BlueprintCallable, Category = "AI")
-	void SetTargetActor(AActor* NewTarget);
-
-	UFUNCTION(BlueprintCallable, Category = "AI")
-	AActor* GetTargetActor() const;
-
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
-
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	TObjectPtr<UPawnSensingComponent> PawnSensingComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USAttributeComponent> AttributeComp;
@@ -69,12 +53,12 @@ protected:
 	UFUNCTION()
 	void OnSignificanceChanged(ESignificanceValue Significance);
 
-	UFUNCTION()
-	void OnPawnSeen(APawn* Pawn);
-
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastPawnSeen();
 	
+	UPROPERTY(Transient)
+	TObjectPtr<USWorldUserWidget> ActiveHealthBar;
+
 public:
 
 	virtual void PostInitializeComponents() override;

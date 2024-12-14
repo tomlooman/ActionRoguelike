@@ -7,6 +7,7 @@
 #include "SActionComponent.h"
 #include "Components/SProjectileMovementComponent.h"
 #include "SActionEffect.h"
+#include "SAttributeComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SMagicProjectile)
 
@@ -35,8 +36,8 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 	if (OtherActor && OtherActor != GetInstigator())
 	{
 		// Parry Ability (GameplayTag Example)
-		USActionComponent* ActionComp = OtherActor->FindComponentByClass<USActionComponent>();
-		if (ActionComp && ActionComp->ActiveGameplayTags.HasTag(GetParryTag()))
+		USActionComponent* OtherActionComp = OtherActor->FindComponentByClass<USActionComponent>();
+		if (OtherActionComp && OtherActionComp->ActiveGameplayTags.HasTag(GetParryTag()))
 		{
 			MoveComp->Velocity = -MoveComp->Velocity;
 
@@ -44,15 +45,21 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 			return;
 		}
 
+		// re-use the dmg amount as a 'coefficient', a percentage based off the base damage from player.
+		float DmgCoefficient = GetDamageAmount();
+
+		USAttributeComponent* InstigatorAttributes = USAttributeComponent::GetAttributes(GetInstigator());
+		float TotalDamage = InstigatorAttributes->BaseDamage * (DmgCoefficient*0.01f);
+
 		// Apply Damage & Impulse
-		if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, GetDamageAmount(), SweepResult))
+		if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, TotalDamage, SweepResult))
 		{
 			// We only explode if the target can be damaged, it ignores anything it Overlaps that it cannot Damage (it requires an AttributeComponent on the target)
 			Explode();
 
-			if (ActionComp && GetBurningActionClass() && HasAuthority())
+			if (OtherActionComp && GetBurningActionClass() && HasAuthority())
 			{
-				ActionComp->AddAction(GetInstigator(), GetBurningActionClass());
+				OtherActionComp->AddAction(GetInstigator(), GetBurningActionClass());
 			}
 		}
 	}

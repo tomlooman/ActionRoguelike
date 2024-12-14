@@ -6,7 +6,6 @@
 #include "NiagaraComponent.h"
 #include "SSignificanceInterface.h"
 #include "ParticleHelper.h"
-#include "Particles/ParticleSystemComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SSignificanceComponent)
 
@@ -58,14 +57,7 @@ void USSignificanceComponent::BeginPlay()
 		// Manage particle components
 		if (bManageOwnerParticleSignificance)
 		{
-			// Cascade (deprecated)
-			TArray<UParticleSystemComponent*> CascadeParticles;
-			GetOwner()->GetComponents<UParticleSystemComponent>(CascadeParticles);
-
-			for (UParticleSystemComponent* Comp : CascadeParticles)
-			{
-				Comp->SetManagingSignificance(true);
-			}
+			// @todo: implement niagara FX
 		}
 	}
 }
@@ -209,41 +201,5 @@ void USSignificanceComponent::UpdateParticleSignificance(float NewSignificance)
 		// Niagara uses 'int32 index' to set significance, you should map this with the input "float NewSignificance" (eg. not something between 0.0-1.0 as it gets rounded)
 		
 		Comp->SetSystemSignificanceIndex(NewSignificance);
-	}
-
-	// Push new required significance to Cascade particles
-	// This is just here since the project still has some old Cascade components...
-	{
-		// @TODO: Activate/Play resets significance, meaning we can't set the significance if things like the muzzle aren't yet playing.
-        	
-		// "Low" significance particles are culled first
-		EParticleSignificanceLevel CurrSignificance;
-		if (NewSignificance == static_cast<float>(ESignificanceValue::Highest))
-		{
-			// This works inverted from how we defined our own ENUM elsewhere. It's set to "require X significance or we cull this particle"
-			// When our significance is very high (close to camera) we don't cull any particles. So the required significance = "Low"
-			CurrSignificance = EParticleSignificanceLevel::Low;
-		}
-		// Lowest significance, only render critical particles
-		else if (NewSignificance <= static_cast<float>(ESignificanceValue::Lowest))
-		{
-			CurrSignificance = EParticleSignificanceLevel::Critical;
-		}
-		else
-		{
-			// Keeping things simple, for any significance inbetween we use "medium" (we don't define a range for "High" anywhere in this Example but it will still be rendered the same as Medium)
-			CurrSignificance = EParticleSignificanceLevel::Medium;
-		}
-		
-		TArray<UParticleSystemComponent*> Particles;
-		GetOwner()->GetComponents<UParticleSystemComponent>(Particles);
-
-		for (UParticleSystemComponent* Comp : Particles)
-		{
-			Comp->SetRequiredSignificance(CurrSignificance);
-
-			// High "required" significance means we quickly cull many particle emitters that don't match the requirement
-			//UE_LOG(LogGame, Log, TEXT("Changed required particle significance to %s for %s in %s"), *UEnum::GetValueAsString(CurrSignificance), *Comp->GetName(), *GetOwner()->GetName());
-		}
 	}
 }

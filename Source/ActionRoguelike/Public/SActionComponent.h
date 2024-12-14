@@ -17,8 +17,11 @@ class ACTIONROGUELIKE_API USActionComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
+	
+	UFUNCTION(BlueprintCallable)
+	static USActionComponent* GetComponent(AActor* InActor);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags")
+	UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, Category = "Tags")
 	FGameplayTagContainer ActiveGameplayTags;
 
 	UFUNCTION(BlueprintCallable, Category = "Actions")
@@ -51,7 +54,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Actions")
 	TArray<TSubclassOf<USAction>> DefaultActions;
 
-	UPROPERTY(BlueprintReadOnly, Replicated)
+	UPROPERTY(Transient, BlueprintReadOnly, Replicated)
 	TArray<TObjectPtr<USAction>> Actions;
 
 	virtual void BeginPlay() override;

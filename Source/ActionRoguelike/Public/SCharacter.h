@@ -9,13 +9,13 @@
 #include "InputAction.h"
 #include "SCharacter.generated.h"
 
+class UAIPerceptionStimuliSourceComponent;
 class UInputMappingContext;
 class UCameraComponent;
 class USpringArmComponent;
 class USInteractionComponent;
 class UAnimMontage;
 class USAttributeComponent;
-class UParticleSystem;
 class USActionComponent;
 
 UCLASS()
@@ -54,10 +54,6 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UInputAction> Input_SecondaryAttack;
-	
-	/* VisibleAnywhere = read-only, still useful to view in-editor and enforce a convention. */
-	//UPROPERTY(VisibleAnywhere, Category = "Effects")
-	//FName TimeToHitParamName;
 
 	/* Index must match the CustomPrimitiveData index used in the Overlay material */
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
@@ -77,6 +73,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USActionComponent> ActionComp;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UAIPerceptionStimuliSourceComponent> PerceptionStimuliComp;
 
 	// Enhanced Input
 	// Three parameter options available (FInputActionInstance, FInputActionValue, or none)
@@ -108,8 +107,6 @@ protected:
 
 	void CrosshairTraceComplete(const FTraceHandle& InTraceHandle, FTraceDatum& InTraceDatum);
 
-	FTraceHandle TraceHandle;
-	
 public:	
 
 	ASCharacter();
@@ -125,5 +122,7 @@ public:
 
 private:
 
+	FTraceHandle TraceHandle;
+	
 	bool bHasPawnTarget;
 };

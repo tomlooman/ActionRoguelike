@@ -3,6 +3,7 @@
 
 #include "SAction_ProjectileAttack.h"
 #include "ActionRoguelike.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundBase.h"
 #include "GameFramework/Character.h"
@@ -29,8 +30,8 @@ void USAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
 	Character->PlayAnimMontage(AttackAnim);
 
 	// Auto-released particle pooling
-	UGameplayStatics::SpawnEmitterAttached(CastingEffect, Character->GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator,
-		EAttachLocation::SnapToTarget, true, EPSCPoolMethod::AutoRelease);
+	UNiagaraFunctionLibrary::SpawnSystemAttached(CastingEffect, Character->GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator,
+		EAttachLocation::SnapToTarget, true, true, ENCPoolMethod::AutoRelease);
 
 	UGameplayStatics::SpawnSoundAttached(CastingSound, Character->GetMesh());
 
@@ -38,7 +39,7 @@ void USAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
 	{
 		FTimerHandle TimerHandle_AttackDelay;
 		FTimerDelegate Delegate;
-		Delegate.BindUFunction(this, "AttackDelay_Elapsed", Character);
+		Delegate.BindUObject(this, &ThisClass::AttackDelay_Elapsed, Character);
 
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, AttackAnimDelay, false);
 	}

@@ -15,13 +15,11 @@ EBTNodeResult::Type UBTTask_StartAction::ExecuteTask(UBehaviorTreeComponent& Own
 	check(MyPawn);
 	
 	USActionComponent* ActionComp = MyPawn->FindComponentByClass<USActionComponent>();
-	// If nullptr we haven't properly implemented the enemy with an action component
-	if (ensure(ActionComp))
+	check(ActionComp); // If nullptr we haven't properly implemented the enemy with an action component
+	
+	if (ActionComp->StartActionByName(MyPawn, ActionName))
 	{
-		if (ActionComp->StartActionByName(MyPawn, ActionName))
-		{
-			return EBTNodeResult::Succeeded;
-		}
+		return EBTNodeResult::Succeeded;
 	}
 	
 	return EBTNodeResult::Failed;

@@ -5,21 +5,27 @@
 #include "SGameplayInterface.h"
 #include "DrawDebugHelpers.h"
 #include "SWorldUserWidget.h"
+#include "Engine/OverlapResult.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SInteractionComponent)
 
-static TAutoConsoleVariable<bool> CVarDebugDrawInteraction(TEXT("game.InteractionDebugDraw"), false, TEXT("Enable Debug Lines for Interact Component."), ECVF_Cheat);
-
+namespace DebugDrawing
+{
+	static bool bDrawInteractionVisualize = false;
+	static FAutoConsoleVariableRef CVarDebugDrawInteraction(TEXT("game.InteractionDebugDraw"),
+		bDrawInteractionVisualize,
+		TEXT("Enable Debug Lines for Interaction Component."),
+		ECVF_Cheat);
+}
 
 
 USInteractionComponent::USInteractionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	// Since we use Camera info in Tick we want the most up to date camera position for tracing
+	// Since we use Camera info in Tick we want the most up-to-date camera position for tracing
 	PrimaryComponentTick.TickGroup = TG_PostUpdateWork;
 
-	TraceRadius = 30.0f;
-	TraceDistance = 500.0f;
+	TraceRadius = 250.f;
 	CollisionChannel = ECC_WorldDynamic;
 }
 
@@ -40,76 +46,104 @@ void USInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void USInteractionComponent::FindBestInteractable()
 {
-	const bool bDebugDraw = CVarDebugDrawInteraction.GetValueOnGameThread();
+	UWorld* World = GetWorld();
 
-	FCollisionObjectQueryParams ObjectQueryParams;
-	ObjectQueryParams.AddObjectTypesToQuery(CollisionChannel);
+	FVector TraceOrigin = GetOwner()->GetActorLocation();
 
-	FVector EyeLocation;
-	FRotator EyeRotation;
-	GetOwner()->GetActorEyesViewPoint(EyeLocation, EyeRotation);
-
-	FVector End = EyeLocation + (EyeRotation.Vector() * TraceDistance);
-
-	TArray<FHitResult> Hits;
-
-	FCollisionShape Shape;
-	Shape.SetSphere(TraceRadius);
-
-	bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, EyeLocation, End, FQuat::Identity, ObjectQueryParams, Shape);
-
-	FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red;
-
-	// Clear ref before trying to fill
-	FocusedActor = nullptr;
-
-	for (FHitResult Hit : Hits)
+	// Find all potential interactables around the player
+	TArray<FOverlapResult> Overlaps;
+	World->OverlapMultiByChannel(
+		Overlaps,
+		TraceOrigin,
+		FQuat::Identity,
+		CollisionChannel,
+		FCollisionShape::MakeSphere(TraceRadius));
+	
+	FColor LineColor = FColor::Green;
+	if (DebugDrawing::bDrawInteractionVisualize)
 	{
-		if (bDebugDraw)
-		{
-			DrawDebugSphere(GetWorld(), Hit.ImpactPoint, TraceRadius, 32, LineColor, false, 0.0f);
-		}
+		DrawDebugSphere(World, TraceOrigin, TraceRadius, 32, LineColor, false, 0.0f);
+	}
 
-		AActor* HitActor = Hit.GetActor();
-		if (HitActor)
+	APawn* OwningPawn = Cast<APawn>(GetOwner());
+	AController* OwningController = OwningPawn->GetController();
+	check(OwningController); // We already check if locally controlled earlier
+	
+	FocusedActor = nullptr;
+	float HighestWeight = -MAX_flt;
+
+	// Calc 'weights' to find the best interactable which the player most likely intends to focus
+	for (const FOverlapResult& Overlap : Overlaps)
+	{
+		if (AActor* HitActor = Overlap.GetActor())
 		{
+			if (DebugDrawing::bDrawInteractionVisualize)
+			{
+				DrawDebugSphere(GetWorld(), HitActor->GetActorLocation(),
+					32, 16, LineColor, false, 0.0f);
+			}
+			
 			if (HitActor->Implements<USGameplayInterface>())
 			{
-				FocusedActor = HitActor;
-				break;
+				// When not recently rendered, the player is unlikely to want to interact with this object
+				// it might be hidden behind walls (shadow rendering might mess with this boolean)
+				if (!HitActor->WasRecentlyRendered(0.0f))
+				{
+					// Won't work for Nanite meshes which don't report this recently rendered
+					// - Extra: if recently rendered, then perform line trace from camera to obj pivot
+					//				to know if we are actually behind some type of wall
+					continue;
+				}
+
+				FVector ObjectDir = (HitActor->GetActorLocation() - TraceOrigin).GetUnsafeNormal();
+
+				// Prefer actors that our 'control rotation' (eg. camera) is pointing to
+				float DotResult = FVector::DotProduct(ObjectDir, OwningController->GetControlRotation().Vector());
+				float Weight = DotResult * 10.f;
+				
+				if (HighestWeight < Weight)
+				{
+					FocusedActor = HitActor;
+					HighestWeight = Weight;
+				}
 			}
 		}
 	}
 
 	if (FocusedActor)
 	{
-		if (DefaultWidgetInstance == nullptr && ensure(DefaultWidgetClass))
+		if (WidgetInst == nullptr && ensure(DefaultWidgetClass))
 		{
-			DefaultWidgetInstance = CreateWidget<USWorldUserWidget>(GetWorld(), DefaultWidgetClass);
+			WidgetInst = CreateWidget<USWorldUserWidget>(GetWorld(), DefaultWidgetClass);
 		}
 
-		if (DefaultWidgetInstance)
+		if (WidgetInst)
 		{
-			DefaultWidgetInstance->AttachedActor = FocusedActor;
+			WidgetInst->AttachedActor = FocusedActor;
 
-			if (!DefaultWidgetInstance->IsInViewport())
+			if (!WidgetInst->GetParent())
 			{
-				DefaultWidgetInstance->AddToViewport();
+				USWorldUserWidget::AddToRootCanvasPanel(WidgetInst);
 			}
 		}
 	}
 	else
 	{
-		if (DefaultWidgetInstance)
+		if (WidgetInst)
 		{
-			DefaultWidgetInstance->RemoveFromParent();
+			WidgetInst->RemoveFromParent();
 		}
 	}
 
 
-	if (bDebugDraw)
+	if (DebugDrawing::bDrawInteractionVisualize)
 	{
-		DrawDebugLine(GetWorld(), EyeLocation, End, LineColor, false, 2.0f, 0, 0.0f);
+		if (FocusedActor)
+		{
+			DrawDebugBox(GetWorld(), FocusedActor->GetActorLocation(), FVector(20.f),
+				LineColor, false, 0.0f);
+		}
+		//DrawDebugLine(GetWorld(), TraceOrigin, TraceEnd, LineColor, false, 2.0f, 0, 0.0f);
 	}
 }
 

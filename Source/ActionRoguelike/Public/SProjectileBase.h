@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "SProjectileBase.generated.h"
 
+class UNiagaraSystem;
 class USphereComponent;
 class USProjectileMovementComponent;
 class UNiagaraComponent;
@@ -48,7 +49,7 @@ protected:
 	TSubclassOf<UCameraShakeBase> ImpactShake;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
-	TObjectPtr<UParticleSystem> ImpactVFX;
+	TObjectPtr<UNiagaraSystem> ImpactVFX;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	TObjectPtr<USoundCue> ImpactSound;

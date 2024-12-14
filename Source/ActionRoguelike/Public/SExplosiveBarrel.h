@@ -7,6 +7,7 @@
 #include "SExplosiveBarrel.generated.h"
 
 
+class UNiagaraComponent;
 class UStaticMeshComponent;
 class URadialForceComponent;
 
@@ -15,23 +16,21 @@ UCLASS()
 class ACTIONROGUELIKE_API ASExplosiveBarrel : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	ASExplosiveBarrel();
+
 
 protected:
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = Components)
 	TObjectPtr<UStaticMeshComponent> MeshComp;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = Components)
 	TObjectPtr<URadialForceComponent> ForceComp;
 
-	virtual void PostInitializeComponents() override;
+	UPROPERTY(VisibleAnywhere, Category = Components)
+	TObjectPtr<UNiagaraComponent> ExplosionComp;
 
-	// Must be marked with ufunction in order to 'bind' the event
-	UFUNCTION()
-	void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	
+public:	
+	ASExplosiveBarrel();
 };

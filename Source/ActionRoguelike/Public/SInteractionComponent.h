@@ -27,11 +27,8 @@ protected:
 
 	void FindBestInteractable();
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 	TObjectPtr<AActor> FocusedActor;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Trace")
-	float TraceDistance;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Trace")
 	float TraceRadius;
@@ -42,8 +39,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<USWorldUserWidget> DefaultWidgetClass;
 
-	UPROPERTY()
-	TObjectPtr<USWorldUserWidget> DefaultWidgetInstance;
+	UPROPERTY(Transient)
+	TObjectPtr<USWorldUserWidget> WidgetInst;
 
 public:	
 

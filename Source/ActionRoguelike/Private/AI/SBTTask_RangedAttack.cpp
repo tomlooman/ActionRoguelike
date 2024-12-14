@@ -10,7 +10,7 @@
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SBTTask_RangedAttack)
 
 
-USBTTask_RangedAttack::USBTTask_RangedAttack()
+UDEPRECATED_USBTTask_RangedAttack::UDEPRECATED_USBTTask_RangedAttack()
 {
 	MuzzleSocket = "Muzzle_01";
 	MaxBulletSpread = 2.0f;
@@ -19,7 +19,7 @@ USBTTask_RangedAttack::USBTTask_RangedAttack()
 }
 
 
-EBTNodeResult::Type USBTTask_RangedAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UDEPRECATED_USBTTask_RangedAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	ACharacter* MyPawn = CastChecked<ACharacter>(OwnerComp.GetAIOwner()->GetPawn());
 

@@ -12,6 +12,9 @@ Plugins/Developer/RiderLink
 *.o
 *.obj
 
+# Debug Files
+*.pdb
+
 # Precompiled Headers
 *.gch
 *.pch
@@ -46,6 +49,7 @@ Plugins/Developer/RiderLink
 *.VC.db
 *.VC.opendb
 
+
 # Precompiled Assets
 SourceArt/**/*.png
 SourceArt/**/*.tga
@@ -58,6 +62,7 @@ Plugins/*/Binaries/*
 
 # Builds
 Build/*
+*.modules
 
 # File Open Order
 Build/Windows/FileOpenOrder/*
@@ -82,7 +87,7 @@ Platforms/HoloLens/Config/HoloLensEngine.ini
 
 # Compiled source files for the engine to use
 Intermediate/*
-Plugins/*/Intermediate/*
+Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*

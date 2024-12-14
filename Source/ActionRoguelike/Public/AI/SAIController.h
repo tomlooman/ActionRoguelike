@@ -7,6 +7,7 @@
 #include "SAIController.generated.h"
 
 class UBehaviorTree;
+class UAIPerceptionComponent;
 
 /**
  * 
@@ -21,5 +22,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	TObjectPtr<UBehaviorTree> BehaviorTree;
 
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UAIPerceptionComponent> PerceptionComp;
+
 	virtual void BeginPlay() override;
+
+public:
+
+	ASAIController();
 };

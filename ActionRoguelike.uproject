@@ -174,10 +174,6 @@
 			"Enabled": false
 		},
 		{
-			"Name": "LightPropagationVolume",
-			"Enabled": false
-		},
-		{
 			"Name": "LinuxDeviceProfileSelector",
 			"Enabled": false
 		},
@@ -197,51 +193,11 @@
 			"Enabled": false
 		},
 		{
-			"Name": "MagicLeapMedia",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Lumin"
-			]
-		},
-		{
-			"Name": "MagicLeap",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Lumin",
-				"Mac",
-				"Win64"
-			]
-		},
-		{
-			"Name": "MagicLeapPassableWorld",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Lumin",
-				"Mac",
-				"Win64"
-			]
-		},
-		{
-			"Name": "LuminPlatformFeatures",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Lumin"
-			]
-		},
-		{
-			"Name": "MatineeToLevelSequence",
-			"Enabled": false
-		},
-		{
 			"Name": "MediaPlayerEditor",
 			"Enabled": false
 		},
 		{
 			"Name": "MeshPainting",
-			"Enabled": false
-		},
-		{
-			"Name": "MLSDK",
 			"Enabled": false
 		},
 		{
@@ -259,15 +215,6 @@
 		{
 			"Name": "WebMMoviePlayer",
 			"Enabled": false
-		},
-		{
-			"Name": "OculusVR",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Win32",
-				"Win64",
-				"Android"
-			]
 		},
 		{
 			"Name": "OnlineSubsystemIOS",
@@ -308,10 +255,6 @@
 			"Enabled": false
 		},
 		{
-			"Name": "PhysXVehicles",
-			"Enabled": false
-		},
-		{
 			"Name": "PixWinPlugin",
 			"Enabled": false
 		},
@@ -324,25 +267,12 @@
 			"Enabled": false
 		},
 		{
-			"Name": "RuntimePhysXCooking",
-			"Enabled": false
-		},
-		{
 			"Name": "SpeedTreeImporter",
 			"Enabled": false
 		},
 		{
 			"Name": "SoundFields",
 			"Enabled": false
-		},
-		{
-			"Name": "SteamVR",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Win32",
-				"Win64",
-				"Linux"
-			]
 		},
 		{
 			"Name": "SubversionSourceControl",
@@ -422,8 +352,91 @@
 			"Enabled": true
 		},
 		{
-			"Name": "CascadeToNiagaraConverter",
+			"Name": "StateTree",
 			"Enabled": true
+		},
+		{
+			"Name": "SlateInsights",
+			"Enabled": true
+		},
+		{
+			"Name": "N10XSourceCodeAccess",
+			"Enabled": false
+		},
+		{
+			"Name": "ActorSequence",
+			"Enabled": false
+		},
+		{
+			"Name": "ChangelistReview",
+			"Enabled": false
+		},
+		{
+			"Name": "ChaosUserDataPT",
+			"Enabled": false
+		},
+		{
+			"Name": "CmdLinkServer",
+			"Enabled": false
+		},
+		{
+			"Name": "CryptoKeys",
+			"Enabled": false
+		},
+		{
+			"Name": "Fab",
+			"Enabled": false,
+			"SupportedTargetPlatforms": [
+				"Win64",
+				"Mac",
+				"Linux"
+			]
+		},
+		{
+			"Name": "GLTFExporter",
+			"Enabled": false
+		},
+		{
+			"Name": "MediaPlate",
+			"Enabled": false
+		},
+		{
+			"Name": "InterchangeTests",
+			"Enabled": false
+		},
+		{
+			"Name": "Interchange",
+			"Enabled": false,
+			"SupportedTargetPlatforms": [
+				"Win64",
+				"Linux",
+				"Mac"
+			]
+		},
+		{
+			"Name": "MsQuic",
+			"Enabled": false,
+			"SupportedTargetPlatforms": [
+				"Win64",
+				"Linux",
+				"Mac"
+			]
+		},
+		{
+			"Name": "PlatformCrypto",
+			"Enabled": false
+		},
+		{
+			"Name": "PortableObjectFileDataSource",
+			"Enabled": false
+		},
+		{
+			"Name": "StudioTelemetry",
+			"Enabled": false
+		},
+		{
+			"Name": "NiagaraSimCaching",
+			"Enabled": false
 		}
 	],
 	"TargetPlatforms": [
