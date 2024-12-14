@@ -10,14 +10,13 @@
 #include "SAttributeComponent.h"
 #include "SActionComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "ActionRoguelike.h"
-#include "Logging/StructuredLog.h"
 #include "SharedGameplayTags.h"
 
 // Enhanced Input
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "SPlayerController.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SCharacter)
 
@@ -43,6 +42,8 @@ ASCharacter::ASCharacter()
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>(TEXT("AttributeComp"));
 
 	ActionComp = CreateDefaultSubobject<USActionComponent>(TEXT("ActionComp"));
+
+	PerceptionStimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("PerceptionStimuliComp"));
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
@@ -293,8 +294,6 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 	// Damaged
 	if (Delta < 0.0f)
 	{
-		//GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
-
 		// Replaces the above "old" method of requiring unique material instances for every mesh element on the player 
 		GetMesh()->SetCustomPrimitiveDataFloat(HitFlash_CustomPrimitiveIndex, GetWorld()->TimeSeconds);
 
@@ -310,6 +309,9 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 		DisableInput(PC);
 
 		SetLifeSpan(5.0f);
+
+		// Prevent bots from seeing us as a threat
+		PerceptionStimuliComp->UnregisterFromPerceptionSystem();
 	}
 }
 

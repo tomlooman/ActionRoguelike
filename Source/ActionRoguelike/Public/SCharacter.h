@@ -9,6 +9,7 @@
 #include "InputAction.h"
 #include "SCharacter.generated.h"
 
+class UAIPerceptionStimuliSourceComponent;
 class UInputMappingContext;
 class UCameraComponent;
 class USpringArmComponent;
@@ -72,6 +73,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USActionComponent> ActionComp;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UAIPerceptionStimuliSourceComponent> PerceptionStimuliComp;
 
 	// Enhanced Input
 	// Three parameter options available (FInputActionInstance, FInputActionValue, or none)

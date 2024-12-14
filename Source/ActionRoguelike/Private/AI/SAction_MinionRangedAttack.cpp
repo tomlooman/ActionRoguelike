@@ -16,13 +16,11 @@ void USAction_MinionRangedAttack::StartAction_Implementation(AActor* Instigator)
 	AActor* TargetActor = MyPawn->GetTargetActor();
 	if (TargetActor == nullptr)
 	{
-		//return EBTNodeResult::Failed;
 		return;
 	}
 
 	if (!USAttributeComponent::IsActorAlive(TargetActor))
 	{
-		//return EBTNodeResult::Failed;
 		return;
 	}
 
@@ -39,7 +37,5 @@ void USAction_MinionRangedAttack::StartAction_Implementation(AActor* Instigator)
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	Params.Instigator = MyPawn;
 
-	AActor* NewProj = GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, Params);
-
-	//return NewProj ? EBTNodeResult::Succeeded : EBTNodeResult::Failed;
+	GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, Params);
 }
