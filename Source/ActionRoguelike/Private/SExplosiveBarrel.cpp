@@ -2,7 +2,6 @@
 
 
 #include "SExplosiveBarrel.h"
-
 #include "ActionRoguelike.h"
 #include "PhysicsEngine/RadialForceComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -37,28 +36,62 @@ ASExplosiveBarrel::ASExplosiveBarrel()
 	ExplosionComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ExplosionComp"));
 	ExplosionComp->bAutoActivate = false;
 	ExplosionComp->SetupAttachment(MeshComp);
+
+	FlamesFXComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("FlamesFXComp"));
+	FlamesFXComp->bAutoActivate = false;
+	FlamesFXComp->SetupAttachment(MeshComp);
+
+	ExplosionDelayTime = 2.0f;
 }
 
 
 float ASExplosiveBarrel::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	AActor* DamageCauser)
 {
-	// Could safely skip the base logic...
-	//DamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	if (bExploded)
+	{
+		return 0.0f;
+	}
+	
+	// Either use a hit counter or 'hitpoints' (For early assignment, we don't have any kind of attributes yet)
+	HitCounter++;
 
+	if (HitCounter == 1)
+	{
+		GetWorldTimerManager().SetTimer(DelayedExplosionHandle, this, &ThisClass::Explode, ExplosionDelayTime);
+	}
+	else if (HitCounter == 2)
+	{
+		// Avoid second explosion later
+		GetWorldTimerManager().ClearTimer(DelayedExplosionHandle);
+		
+		Explode();
+	}
+	
+	// Structured Logging Example
+	UE_LOGFMT(LogGame, Log, "OnActorHit in Explosive Barrel");
+	// Warnings as structured logs even show up in the "Message Log" window of UnrealEd
+	UE_LOGFMT(LogGame, Warning, "OnActorHit, OtherActor: {name}, at game time: {timeseconds}", GetNameSafe(DamageCauser), GetWorld()->TimeSeconds);
+
+	return DamageAmount;
+}
+
+void ASExplosiveBarrel::Explode()
+{
+	if (bExploded)
+	{
+		// Nothing to do here
+		return;
+	}
+
+	bExploded = true;
+	
 	ForceComp->FireImpulse();
 
 	ExplosionComp->Activate();
 
 	// @todo: cause damage to other stuff around it
 
-	UE_LOGFMT(LogGame, Log, "OnActorHit in Explosive Barrel");
-
-	// Warnings as structed logs even show up in the "Message Log" window of UnrealEd
-	UE_LOGFMT(LogGame, Warning, "OnActorHit, OtherActor: {name}, at game time: {timeseconds}", GetNameSafe(DamageCauser), GetWorld()->TimeSeconds);
-
 	//FString CombinedString = FString::Printf(TEXT("Hit at location: %s"), *Hit.ImpactPoint.ToString());
 	//DrawDebugString(GetWorld(), Hit.ImpactPoint, CombinedString, nullptr, FColor::Green, 2.0f, true);
-
-	return DamageAmount;
 }

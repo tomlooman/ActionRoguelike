@@ -31,7 +31,8 @@ void ASMagicProjectile::PostInitializeComponents()
 }
 
 
-void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != GetInstigator())
 	{
@@ -41,6 +42,7 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 		{
 			MoveComp->Velocity = -MoveComp->Velocity;
 
+			// The reflector now becomes the 'instigator' of the damage from the reflected projectile
 			SetInstigator(Cast<APawn>(OtherActor));
 			return;
 		}

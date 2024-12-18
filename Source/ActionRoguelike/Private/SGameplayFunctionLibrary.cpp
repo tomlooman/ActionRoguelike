@@ -22,22 +22,25 @@ bool USGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* Target
 
 bool USGameplayFunctionLibrary::ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, float DamageAmount, const FHitResult& HitResult)
 {
-	// Call into Unreals built in logic for early course damaging of explosive barrel
-	UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, nullptr, DamageCauser, nullptr);
-	
 	if (ApplyDamage(DamageCauser, TargetActor, DamageAmount))
 	{
 		UPrimitiveComponent* HitComp = HitResult.GetComponent();
-		if (HitComp && HitComp->IsSimulatingPhysics(HitResult.BoneName))
+		if (HitComp->bApplyImpulseOnDamage && HitComp->IsSimulatingPhysics(HitResult.BoneName))
 		{
 			// Direction = Target - Origin
 			FVector Direction = HitResult.TraceEnd - HitResult.TraceStart;
 			Direction.Normalize();
 
-			HitComp->AddImpulseAtLocation(Direction * 300000.f, HitResult.ImpactPoint, HitResult.BoneName);
+			// @todo: allow configuration for impulse strength
+			HitComp->AddImpulseAtLocation(Direction * 30000.f, HitResult.ImpactPoint, HitResult.BoneName);
 		}
 		return true;
 	}
+
+
+	// Call into Unreal built in logic for early course damaging of explosive barrel
+	// Don't have a proper way of knowing it was processed
+	UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, nullptr, DamageCauser, nullptr);
 
 	return false;
 }
