@@ -95,7 +95,6 @@ void ASPlayerState::LoadPlayerState_Implementation(USSaveGame* SaveObject)
 		FPlayerSaveData* FoundData = SaveObject->GetPlayerData(this);
 		if (FoundData)
 		{
-			//Credits = SaveObject->Credits;
 			// Makes sure we trigger credits changed event
 			AddCredits(FoundData->Credits);
 
@@ -113,12 +112,6 @@ void ASPlayerState::OnRep_Credits(int32 OldCredits)
 {
 	OnCreditsChanged.Broadcast(this, Credits, Credits - OldCredits);
 }
-
-
-// void ASPlayerState::MulticastCredits_Implementation(float NewCredits, float Delta)
-// {
-// 	OnCreditsChanged.Broadcast(this, NewCredits, Delta);
-// }
 
 
 int32 ASPlayerState::GetCredits() const
