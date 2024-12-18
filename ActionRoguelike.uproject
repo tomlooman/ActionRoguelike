@@ -328,10 +328,6 @@
 			"Enabled": false
 		},
 		{
-			"Name": "GitSourceControl",
-			"Enabled": false
-		},
-		{
 			"Name": "CharacterAI",
 			"Enabled": false
 		},
