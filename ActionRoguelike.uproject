@@ -437,6 +437,10 @@
 		{
 			"Name": "NiagaraSimCaching",
 			"Enabled": false
+		},
+		{
+			"Name": "EditorSysConfigAssistant",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
