@@ -30,10 +30,12 @@ void USActionEffect::StartAction_Implementation(AActor* Instigator)
 
 	if (Period > 0.0f)
 	{
-		FTimerDelegate Delegate;
-		Delegate.BindUObject(this, &ThisClass::ExecutePeriodicEffect, Instigator);
-
-		GetWorld()->GetTimerManager().SetTimer(PeriodHandle, Delegate, Period, true);
+		// Can bind in-line using FTimerDelegate::CreateUObject instead
+		GetWorld()->GetTimerManager().SetTimer(
+			PeriodHandle,
+			FTimerDelegate::CreateUObject(this, &ThisClass::ExecutePeriodicEffect, Instigator),
+			Period,
+			true);
 	}
 }
 
