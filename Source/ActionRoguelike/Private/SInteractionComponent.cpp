@@ -2,6 +2,8 @@
 
 
 #include "SInteractionComponent.h"
+
+#include "ActionRoguelike.h"
 #include "SGameplayInterface.h"
 #include "DrawDebugHelpers.h"
 #include "SWorldUserWidget.h"
@@ -26,7 +28,7 @@ USInteractionComponent::USInteractionComponent()
 	PrimaryComponentTick.TickGroup = TG_PostUpdateWork;
 
 	TraceRadius = 250.f;
-	CollisionChannel = ECC_WorldDynamic;
+	TraceChannel = TRACE_INTERACT;
 }
 
 
@@ -56,7 +58,7 @@ void USInteractionComponent::FindBestInteractable()
 		Overlaps,
 		TraceOrigin,
 		FQuat::Identity,
-		CollisionChannel,
+		TraceChannel,
 		FCollisionShape::MakeSphere(TraceRadius));
 	
 	FColor LineColor = FColor::Green;
