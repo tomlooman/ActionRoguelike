@@ -3,9 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayTagContainer.h"
 
-class USActionComponent;
+class URogueActionComponent;
 
 
 UENUM(BlueprintType)
