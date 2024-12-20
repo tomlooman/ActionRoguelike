@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
 #include "Engine/DeveloperSettings.h"
-#include "RogueSaveGameSettings.generated.h"
+#include "SSaveGameSettings.generated.h"
 
 class UDataTable;
 
