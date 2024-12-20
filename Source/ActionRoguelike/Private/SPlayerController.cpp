@@ -2,11 +2,19 @@
 
 
 #include "SPlayerController.h"
+
+#include "Development/RogueCheatManager.h"
 #include "UI/RogueHUD.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SPlayerController)
 
 
+
+ASPlayerController::ASPlayerController()
+{
+	CheatClass = URogueCheatManager::StaticClass();
+	bIsUsingGamepad = false;
+}
 
 
 void ASPlayerController::SetupInputComponent()

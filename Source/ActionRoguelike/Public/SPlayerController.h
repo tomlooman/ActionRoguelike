@@ -50,4 +50,8 @@ private:
 
 	/* Was any input recently using GamePad */
 	bool bIsUsingGamepad;
+
+public:
+
+	ASPlayerController();
 };

@@ -281,11 +281,6 @@ void ASCharacter::PrimaryInteract()
 }
 
 
-void ASCharacter::HealSelf(float Amount /* = 100 */)
-{
-	AttributeComp->ApplyHealthChange(this, Amount);
-}
-
 FGenericTeamId ASCharacter::GetGenericTeamId() const
 {
 	// We have no team switching support during gameplay

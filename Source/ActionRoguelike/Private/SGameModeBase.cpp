@@ -98,19 +98,6 @@ void ASGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* N
 }
 
 
-void ASGameModeBase::KillAll()
-{
-	for (ASAICharacter* Bot : TActorRange<ASAICharacter>(GetWorld()))
-	{
-		USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(Bot);
-		if (ensure(AttributeComp) && AttributeComp->IsAlive())
-		{
-			AttributeComp->Kill(this);
-		}
-	}
-}
-
-
 void ASGameModeBase::StartSpawningBots()
 {
 	// Continuous timer to spawn in more bots.

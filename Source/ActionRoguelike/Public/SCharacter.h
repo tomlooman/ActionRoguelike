@@ -118,9 +118,6 @@ public:
 
 	virtual void Tick(float DeltaSeconds) override;
 
-	UFUNCTION(Exec)
-	void HealSelf(float Amount = 100);
-
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
 private:
