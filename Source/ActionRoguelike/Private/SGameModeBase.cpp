@@ -19,6 +19,7 @@
 #include "Development/RoguelikeDeveloperSettings.h"
 #include "Engine/AssetManager.h"
 #include "Subsystems/SActorPoolingSubsystem.h"
+#include "UI/RogueHUD.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SGameModeBase)
 
@@ -35,6 +36,7 @@ ASGameModeBase::ASGameModeBase()
 	InitialSpawnCredit = 50;
 
 	PlayerStateClass = ASPlayerState::StaticClass();
+	HUDClass = ARogueHUD::StaticClass();
 }
 
 
