@@ -89,9 +89,11 @@ void USSaveGameSubsystem::SetSlotName(FString NewSlotName)
 
 void USSaveGameSubsystem::WriteSaveGame()
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE(WriteSaveGame);
+	
 	// Clear arrays, may contain data from previously loaded SaveGame
 	CurrentSaveGame->SavedPlayers.Empty();
-	CurrentSaveGame->SavedActors.Empty();
+	CurrentSaveGame->SavedActorMap.Empty();
 
 	AGameStateBase* GS = GetWorld()->GetGameState();
 	if (GS == nullptr)
@@ -101,11 +103,6 @@ void USSaveGameSubsystem::WriteSaveGame()
 	}
 	
 	// Iterate all player states, we don't have proper ID to match yet (requires Steam or EOS)
-
-	//for (APlayerState* PS : GS->PlayerArray)
-	//{
-	//}
-
 	for (int32 i = 0; i < GS->PlayerArray.Num(); i++)
 	{
 		ASPlayerState* PS = CastChecked<ASPlayerState>(GS->PlayerArray[i]);
@@ -139,7 +136,7 @@ void USSaveGameSubsystem::WriteSaveGame()
 		// Converts Actor's SaveGame UPROPERTIES into binary array
 		Actor->Serialize(Ar);
 
-		CurrentSaveGame->SavedActors.Add(ActorData);
+		CurrentSaveGame->SavedActorMap.Add(Actor->GetFName(), ActorData);
 	}
 
 	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, CurrentSlotName, 0);
@@ -150,6 +147,8 @@ void USSaveGameSubsystem::WriteSaveGame()
 
 void USSaveGameSubsystem::LoadSaveGame(FString InSlotName /*= ""*/)
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE(LoadSaveGame);
+	
 	// Update slot name first if specified, otherwise keeps default name
 	SetSlotName(InSlotName);
 	
@@ -174,23 +173,18 @@ void USSaveGameSubsystem::LoadSaveGame(FString InSlotName /*= ""*/)
 				continue;
 			}
 
-			for (FActorSaveData ActorData : CurrentSaveGame->SavedActors)
+			if (FActorSaveData* FoundData = CurrentSaveGame->SavedActorMap.Find(Actor->GetFName()))
 			{
-				if (ActorData.ActorName == Actor->GetFName())
-				{
-					Actor->SetActorTransform(ActorData.Transform);
+				Actor->SetActorTransform(FoundData->Transform);
 
-					FMemoryReader MemReader(ActorData.ByteData);
+				FMemoryReader MemReader(FoundData->ByteData);
 
-					FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
-					Ar.ArIsSaveGame = true;
-					// Convert binary array back into actor's variables
-					Actor->Serialize(Ar);
+				FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
+				Ar.ArIsSaveGame = true;
+				// Convert binary array back into actor's variables
+				Actor->Serialize(Ar);
 
-					ISGameplayInterface::Execute_OnActorLoaded(Actor);
-
-					break;
-				}
+				ISGameplayInterface::Execute_OnActorLoaded(Actor);
 			}
 		}
 
