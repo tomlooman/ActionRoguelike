@@ -21,7 +21,7 @@ void USSaveGameSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	const USSaveGameSettings* SGSettings = GetDefault<USSaveGameSettings>();
+	const URogueSaveGameSettings* SGSettings = GetDefault<URogueSaveGameSettings>();
 	// Access defaults from DefaultGame.ini
 	CurrentSlotName = SGSettings->SaveSlotName;
 

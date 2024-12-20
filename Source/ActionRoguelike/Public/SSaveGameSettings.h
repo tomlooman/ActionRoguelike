@@ -13,7 +13,7 @@ class UDataTable;
  * 
  */
 UCLASS(Config=Game, defaultconfig, meta = (DisplayName="Save Game Settings")) // 'defaultconfig' = "Save object config only to Default INIs, never to local INIs."
-class ACTIONROGUELIKE_API USSaveGameSettings : public UDeveloperSettings
+class ACTIONROGUELIKE_API URogueSaveGameSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
 
@@ -26,5 +26,5 @@ public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "General", AdvancedDisplay)
 	TSoftObjectPtr<UDataTable> DummyTablePath;
 
-	USSaveGameSettings();
+	URogueSaveGameSettings();
 };

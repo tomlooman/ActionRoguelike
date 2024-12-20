@@ -37,6 +37,6 @@ void URogueCheatManager::KillAll()
 
 void URogueCheatManager::DeleteSaveGame()
 {
-	const USSaveGameSettings* SGSettings = GetDefault<USSaveGameSettings>();
+	const URogueSaveGameSettings* SGSettings = GetDefault<URogueSaveGameSettings>();
 	UGameplayStatics::DeleteGameInSlot(SGSettings->SaveSlotName, 0);
 }
