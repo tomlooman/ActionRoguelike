@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GenericTeamAgentInterface.h"
 #include "Components/SSignificanceComponent.h"
 #include "GameFramework/Character.h"
 #include "SAICharacter.generated.h"
@@ -15,7 +16,7 @@ class USWorldUserWidget;
 class USActionComponent;
 
 UCLASS()
-class ACTIONROGUELIKE_API ASAICharacter : public ACharacter
+class ACTIONROGUELIKE_API ASAICharacter : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -60,6 +61,8 @@ protected:
 	TObjectPtr<USWorldUserWidget> ActiveHealthBar;
 
 public:
+
+	virtual FGenericTeamId GetGenericTeamId() const;
 
 	virtual void PostInitializeComponents() override;
 

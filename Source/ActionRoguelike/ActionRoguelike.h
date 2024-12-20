@@ -14,6 +14,10 @@ ACTIONROGUELIKE_API DECLARE_LOG_CATEGORY_EXTERN(LogGame, Log, All);
 // Define alias to easily keep track of custom channels in C++ (must match what is specified in Project Settings > Collision 
 #define COLLISION_PROJECTILE ECC_GameTraceChannel1
 
+// Perception System simple Team Numbers
+#define TEAM_ID_BOTS 1
+#define TEAM_ID_PLAYERS 2
+
 namespace Collision
 {
 	static FName Ragdoll_ProfileName = FName(TEXT("Ragdoll"));

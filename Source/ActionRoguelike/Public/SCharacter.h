@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 
 // Included for struct FInputActionInstance (Enhanced Input)
+#include "GenericTeamAgentInterface.h"
 #include "InputAction.h"
 #include "SCharacter.generated.h"
 
@@ -19,7 +20,7 @@ class USAttributeComponent;
 class USActionComponent;
 
 UCLASS()
-class ACTIONROGUELIKE_API ASCharacter : public ACharacter
+class ACTIONROGUELIKE_API ASCharacter : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -119,6 +120,8 @@ public:
 
 	UFUNCTION(Exec)
 	void HealSelf(float Amount = 100);
+
+	virtual FGenericTeamId GetGenericTeamId() const override;
 
 private:
 

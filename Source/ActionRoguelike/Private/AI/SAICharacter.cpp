@@ -155,3 +155,10 @@ void ASAICharacter::OnSignificanceChanged(ESignificanceValue Significance)
 	
 	GetMesh()->VisibilityBasedAnimTickOption = AnimTickOption;
 }
+
+
+FGenericTeamId ASAICharacter::GetGenericTeamId() const
+{
+	// Fetch from the AI Controller who has built-in TeamId
+	return FGenericTeamId::GetTeamIdentifier(GetController());
+}

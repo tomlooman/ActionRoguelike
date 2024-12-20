@@ -2,6 +2,8 @@
 
 
 #include "AI/SAIController.h"
+
+#include "ActionRoguelike.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 
@@ -17,6 +19,9 @@ ASAIController::ASAIController()
 void ASAIController::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	// Set default for for all AI
+	SetGenericTeamId(FGenericTeamId(TEAM_ID_BOTS));
 
 	if (ensureMsgf(BehaviorTree, TEXT("Behavior Tree is nullptr! Please assign BehaviorTree in your AI Controller.")))
 	{
