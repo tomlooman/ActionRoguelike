@@ -113,7 +113,12 @@ void ARogueAICharacter::MulticastPawnSeen_Implementation()
 AActor* ARogueAICharacter::GetTargetActor() const
 {
 	AAIController* AIC = GetController<AAIController>();
-	return Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject("TargetActor"));
+	// Not guaranteed to be possessed (as we may use this in the AnimBP)
+	if (AIC)
+	{
+		return Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject("TargetActor"));
+	}
+	return nullptr;
 }
 
 void ARogueAICharacter::OnSignificanceChanged(ESignificanceValue Significance)
