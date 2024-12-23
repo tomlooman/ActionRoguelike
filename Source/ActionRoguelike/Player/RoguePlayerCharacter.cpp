@@ -46,8 +46,15 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 
 	PerceptionStimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("PerceptionStimuliComp"));
 
-	GetCharacterMovement()->bOrientRotationToMovement = true;
+	UCharacterMovementComponent* CharMoveComp = GetCharacterMovement();
+	CharMoveComp->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
+
+	// Attempt to make the jump feel less floaty
+	CharMoveComp->JumpZVelocity = 550;
+	CharMoveComp->GravityScale = 1.35f;
+	CharMoveComp->BrakingDecelerationFalling = 200.f;
+	
 
 	// Skip performing overlap queries on the Physics Asset after animation (7 queries in case of our Gideon mesh)
 	GetMesh()->bUpdateOverlapsOnAnimationFinalize = false;
