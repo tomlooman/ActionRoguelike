@@ -20,6 +20,12 @@ struct FAttributeModification
 {
 	GENERATED_BODY()
 
+	FAttributeModification():
+		Magnitude(0),
+		ModifyType(EAttributeModifyType::AddDelta)
+	{
+	}
+
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<URogueActionComponent> OwningComp;
 
