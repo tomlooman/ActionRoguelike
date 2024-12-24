@@ -60,6 +60,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	int32 HitFlash_CustomPrimitiveIndex;
 
+	UPROPERTY(EditDefaultsOnly, Category= Effects)
+	TObjectPtr<USoundBase> TakeDamageVOSound;
+	
+	UPROPERTY(EditDefaultsOnly, Category= Effects)
+	TObjectPtr<USoundBase> DeathVOSound;
+
+	UPROPERTY(EditDefaultsOnly, Category= Effects)
+	TObjectPtr<USoundBase> DeathUISound;
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USpringArmComponent> SpringArmComp;
 

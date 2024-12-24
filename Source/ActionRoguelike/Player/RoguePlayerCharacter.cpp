@@ -17,6 +17,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "RoguePlayerController.h"
+#include "Kismet/GameplayStatics.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RoguePlayerCharacter)
@@ -320,6 +321,8 @@ void ARoguePlayerCharacter::OnHealthChanged(AActor* InstigatorActor, URogueAttri
 		// Rage added equal to damage received (Abs to turn into positive rage number)
 		const float RageDelta = FMath::Abs(Delta);
 		AttributeComp->ApplyRage(InstigatorActor, RageDelta);
+
+		UGameplayStatics::PlaySoundAtLocation(this, TakeDamageVOSound, GetActorLocation(), FRotator::ZeroRotator);
 	}
 
 	// Died
@@ -327,11 +330,19 @@ void ARoguePlayerCharacter::OnHealthChanged(AActor* InstigatorActor, URogueAttri
 	{
 		APlayerController* PC = GetController<ARoguePlayerController>();
 		DisableInput(PC);
+		
+		UGameplayStatics::PlaySoundAtLocation(this, DeathVOSound, GetActorLocation(), FRotator::ZeroRotator);
 
 		SetLifeSpan(5.0f);
 
 		// Prevent bots from seeing us as a threat
 		PerceptionStimuliComp->UnregisterFromPerceptionSystem();
+
+		// for local player, play a "UI" sound on death
+		if (PC->IsLocalController())
+		{
+			UGameplayStatics::PlaySound2D(this, DeathUISound);
+		}
 	}
 }
 

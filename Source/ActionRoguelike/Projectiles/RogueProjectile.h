@@ -12,7 +12,7 @@ class USphereComponent;
 class URogueProjectileMovementComponent;
 class UNiagaraComponent;
 class UAudioComponent;
-class USoundCue;
+class USoundBase;
 class UCameraShakeBase;
 
 
@@ -52,7 +52,7 @@ protected:
 	TObjectPtr<UNiagaraSystem> ImpactVFX;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
-	TObjectPtr<USoundCue> ImpactSound;
+	TObjectPtr<USoundBase> ImpactSound;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USphereComponent> SphereComp;
