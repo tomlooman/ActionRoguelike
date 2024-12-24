@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class ACTIONROGUELIKE_API URogueAction_MinionRangedAttack : public URogueAction
 {
 	GENERATED_BODY()

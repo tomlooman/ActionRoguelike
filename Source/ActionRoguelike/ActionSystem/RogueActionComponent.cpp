@@ -342,7 +342,7 @@ bool URogueActionComponent::StartActionByName(AActor* Instigator, FGameplayTag A
 			}
 
 			// Bookmark for Unreal Insights
-			TRACE_BOOKMARK(TEXT("StartAction::%s"), *GetNameSafe(Action));
+			//TRACE_BOOKMARK(TEXT("StartAction::%s"), *GetNameSafe(Action));
 			
 			{
 				// Scoped within the curly braces. the _FSTRING variant adds additional tracing overhead due to grabbing the class name every time

@@ -8,6 +8,10 @@
 
 class URogueActionComponent;
 
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnAnimNofify_MeleeOverlap, const TArray<FOverlapResult>&);
+
+
 /**
  * 
  */
@@ -15,6 +19,11 @@ UCLASS()
 class ACTIONROGUELIKE_API URogueAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
+
+public:
+
+	/* Broadcast by AnimNotify_Melee anytime a melee successfully finds overlaps  */
+	FOnAnimNofify_MeleeOverlap OnMeleeOverlap;
 	
 protected:
 

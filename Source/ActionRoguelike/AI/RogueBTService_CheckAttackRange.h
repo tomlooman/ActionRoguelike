@@ -26,6 +26,11 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float MaxAttackRange;
 
+//#if WITH_EDITORONLY_DATA
+	UPROPERTY(EditAnywhere, Category = Debug)
+	FColor DebugColor = FColor::Green;
+//#endif
+	
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
 public:

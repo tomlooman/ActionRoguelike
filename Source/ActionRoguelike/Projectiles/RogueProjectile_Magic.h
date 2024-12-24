@@ -30,8 +30,8 @@ struct FMagicProjectileSparseData : public FProjectileSparseData
 
 };
 
-UCLASS(SparseClassDataTypes = MagicProjectileSparseData)
-class ACTIONROGUELIKE_API ARogueProjectile_Magic : public ARogueProjectile // Re-parented from AActor
+UCLASS(Abstract, SparseClassDataTypes = MagicProjectileSparseData)
+class ACTIONROGUELIKE_API ARogueProjectile_Magic : public ARogueProjectile
 {
 	GENERATED_BODY()
 

@@ -10,7 +10,10 @@ namespace SharedGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Action_PrimaryAttack, "Action.PrimaryAttack");
 	UE_DEFINE_GAMEPLAY_TAG(Action_Blackhole, "Action.Blackhole");
 	UE_DEFINE_GAMEPLAY_TAG(Action_Dash, "Action.Dash");
-	UE_DEFINE_GAMEPLAY_TAG(Action_Stunned, "Status.Stunned");
+	UE_DEFINE_GAMEPLAY_TAG(Action_Melee, "Action.Melee");
+	
+	// Status
+	UE_DEFINE_GAMEPLAY_TAG(Status_Stunned, "Status.Stunned");
 
 	// Attributes
 	UE_DEFINE_GAMEPLAY_TAG(Attribute_Health, "Attribute.Health");
