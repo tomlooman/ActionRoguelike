@@ -2,9 +2,12 @@
 
 
 #include "RogueAnimInstance.h"
+
+#include "ActionRoguelike.h"
 #include "GameplayTagContainer.h"
 #include "ActionSystem/RogueActionComponent.h"
 #include "SharedGameplayTags.h"
+#include "Kismet/GameplayStatics.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueAnimInstance)
 
@@ -30,4 +33,20 @@ void URogueAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	{
 		bIsStunned = ActionComp->ActiveGameplayTags.HasTag(SharedGameplayTags::Status_Stunned);
 	}
+}
+
+bool URogueAnimInstance::HandleNotify(const FAnimNotifyEvent& AnimNotifyEvent)
+{
+	if (AnimNotifyEvent.NotifyName == Animation::NAME_Foot_Plant_R || AnimNotifyEvent.NotifyName == Animation::NAME_Foot_Plant_L)
+	{
+		// Foot SFX (non-attached sounds will automatically cull if out of audible range)
+		// You could choose to route this to the character classes instead to handle SFX playback
+		UGameplayStatics::PlaySoundAtLocation(this, FootstepSound, GetOwningComponent()->GetComponentLocation());
+
+		//UE_LOG(LogTemp, Log, TEXT("foot planted!"));
+		return true;
+	}
+
+	// let the regular code path handle the notify
+	return false;
 }

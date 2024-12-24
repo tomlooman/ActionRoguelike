@@ -69,6 +69,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category= Effects)
 	TObjectPtr<USoundBase> DeathUISound;
 
+	UPROPERTY(EditDefaultsOnly, Category= Effects)
+	TObjectPtr<USoundBase> FootPlantSound;
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USpringArmComponent> SpringArmComp;
 
@@ -129,7 +132,7 @@ public:
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
-private:
+protected:
 
 	float CachedOverlayMaxDistance;
 

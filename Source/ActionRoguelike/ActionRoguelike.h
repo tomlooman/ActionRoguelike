@@ -19,6 +19,12 @@ ACTIONROGUELIKE_API DECLARE_LOG_CATEGORY_EXTERN(LogGame, Log, All);
 #define TEAM_ID_BOTS 1
 #define TEAM_ID_PLAYERS 2
 
+namespace Animation
+{
+	static FName NAME_Foot_Plant_L = FName(TEXT("l_foot_plant"));
+	static FName NAME_Foot_Plant_R = FName(TEXT("r_foot_plant"));
+}
+
 namespace Collision
 {
 	static FName Ragdoll_ProfileName = FName(TEXT("Ragdoll"));

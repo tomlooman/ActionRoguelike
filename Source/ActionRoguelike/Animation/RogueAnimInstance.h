@@ -7,6 +7,7 @@
 #include "RogueAnimInstance.generated.h"
 
 class URogueActionComponent;
+class USoundBase;
 
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnAnimNofify_MeleeOverlap, const TArray<FOverlapResult>&);
@@ -24,6 +25,10 @@ public:
 
 	/* Broadcast by AnimNotify_Melee anytime a melee successfully finds overlaps  */
 	FOnAnimNofify_MeleeOverlap OnMeleeOverlap;
+
+	/* Footsteps triggered via anim notifies */
+	UPROPERTY(EditDefaultsOnly, Category=Audio)
+	TObjectPtr<USoundBase> FootstepSound;
 	
 protected:
 
@@ -37,5 +42,7 @@ protected:
 	virtual void NativeInitializeAnimation() override;
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
+
+	virtual bool HandleNotify(const FAnimNotifyEvent& AnimNotifyEvent) override;
 
 };
