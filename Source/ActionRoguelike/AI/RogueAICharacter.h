@@ -62,10 +62,16 @@ protected:
 
 public:
 
-	virtual FGenericTeamId GetGenericTeamId() const;
+	virtual FGenericTeamId GetGenericTeamId() const override;
 
 	virtual void PostInitializeComponents() override;
 
 	ARogueAICharacter();
+
+protected:
+
+	float CachedOverlayMaxDistance;
+
+	FTimerHandle OverlayTimerHandle;
 
 };

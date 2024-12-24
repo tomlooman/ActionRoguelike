@@ -51,6 +51,10 @@ void ARogueAICharacter::PostInitializeComponents()
 
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ARogueAICharacter::OnHealthChanged);
 	SigManComp->OnSignificanceChanged.AddDynamic(this, &ARogueAICharacter::OnSignificanceChanged);
+	
+	// Cheap trick to disable until we need it in the health event
+	CachedOverlayMaxDistance = 	CachedOverlayMaxDistance = GetMesh()->GetOverlayMaterialMaxDrawDistance();
+	GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
 }
 
 
@@ -71,6 +75,16 @@ void ARogueAICharacter::OnHealthChanged(AActor* InstigatorActor, URogueAttribute
 
 		// Replaces the above "old" method of requiring unique material instances for every mesh element on the player 
 		GetMesh()->SetCustomPrimitiveDataFloat(HitFlash_CustomPrimitiveIndex, GetWorld()->TimeSeconds);
+
+		// We can skip rendering this at a distance
+		GetMesh()->SetOverlayMaterialMaxDrawDistance(CachedOverlayMaxDistance);
+
+		// After 1.0seconds we should be finished with the hitflash (re-use the handle to reset timer if we get hit again)
+		GetWorldTimerManager().SetTimer(OverlayTimerHandle, [this]()
+		{
+			// Cheap trick to skip rendering this all the time unless we are actively hit flashing
+			GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
+		}, 1.0f, false);
 
 		// Died
 		if (NewHealth <= 0.0f)

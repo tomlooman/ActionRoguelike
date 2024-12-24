@@ -122,6 +122,10 @@ public:
 
 private:
 
+	float CachedOverlayMaxDistance;
+
+	FTimerHandle OverlayTimerHandle;
+
 	FTraceHandle TraceHandle;
 	
 	bool bHasPawnTarget;

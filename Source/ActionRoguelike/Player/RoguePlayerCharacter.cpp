@@ -75,6 +75,10 @@ void ARoguePlayerCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ARoguePlayerCharacter::OnHealthChanged);
+
+	// Cheap trick to disable until we need it in the health event
+	CachedOverlayMaxDistance = GetMesh()->GetOverlayMaterialMaxDrawDistance();
+	GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
 }
 
 
@@ -300,8 +304,18 @@ void ARoguePlayerCharacter::OnHealthChanged(AActor* InstigatorActor, URogueAttri
 	// Damaged
 	if (Delta < 0.0f)
 	{
-		// Replaces the above "old" method of requiring unique material instances for every mesh element on the player 
+		// Materials, including the mesh "OverlayMaterial" can get their data via the component
 		GetMesh()->SetCustomPrimitiveDataFloat(HitFlash_CustomPrimitiveIndex, GetWorld()->TimeSeconds);
+
+		// Activate, we can skip rendering this at a distance
+		GetMesh()->SetOverlayMaterialMaxDrawDistance(CachedOverlayMaxDistance);
+
+		// After 1.0seconds we should be finished with the hitflash (re-use the handle to reset timer if we get hit again)
+		GetWorldTimerManager().SetTimer(OverlayTimerHandle, [this]()
+		{
+			// Cheap trick to skip rendering this all the time unless we are actively hit flashing
+			GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
+		}, 1.0f, false);
 
 		// Rage added equal to damage received (Abs to turn into positive rage number)
 		const float RageDelta = FMath::Abs(Delta);
