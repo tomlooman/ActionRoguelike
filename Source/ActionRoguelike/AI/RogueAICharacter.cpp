@@ -53,7 +53,7 @@ void ARogueAICharacter::PostInitializeComponents()
 	SigManComp->OnSignificanceChanged.AddDynamic(this, &ARogueAICharacter::OnSignificanceChanged);
 	
 	// Cheap trick to disable until we need it in the health event
-	CachedOverlayMaxDistance = GetMesh()->GetOverlayMaterialMaxDrawDistance();
+	CachedOverlayMaxDistance = GetMesh()->OverlayMaterialMaxDrawDistance;
 	GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
 }
 
