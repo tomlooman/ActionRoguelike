@@ -7,12 +7,16 @@
 #include "Components/StaticMeshComponent.h"
 #include "DrawDebugHelpers.h"
 #include "NiagaraComponent.h"
+#include "ActionSystem/RogueAttributeComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueExplosiveBarrel)
 
 
 ARogueExplosiveBarrel::ARogueExplosiveBarrel()
 {
+	AttributeComponent = CreateDefaultSubobject<URogueAttributeComponent>(TEXT("AttributeComp"));
+	AttributeComponent->OnHealthChanged.AddDynamic(this, &ThisClass::OnHealthChanged);
+	
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetSimulatePhysics(true);
 	// Enabling Simulate physics automatically changes the Profile to PhysicsActor in Blueprint, in C++ we need to change this manually.
@@ -44,13 +48,20 @@ ARogueExplosiveBarrel::ARogueExplosiveBarrel()
 	ExplosionDelayTime = 2.0f;
 }
 
-
+/*
 float ARogueExplosiveBarrel::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	AActor* DamageCauser)
 {
+	return DamageAmount;
+}
+*/
+
+void ARogueExplosiveBarrel::OnHealthChanged(AActor* InstigatorActor, URogueAttributeComponent* OwningComp,
+	float NewHealth, float Delta)
+{
 	if (bExploded)
 	{
-		return 0.0f;
+		return;
 	}
 	
 	// Either use a hit counter or 'hitpoints' (For early assignment, we don't have any kind of attributes yet)
@@ -59,6 +70,8 @@ float ARogueExplosiveBarrel::TakeDamage(float DamageAmount, FDamageEvent const& 
 	if (HitCounter == 1)
 	{
 		GetWorldTimerManager().SetTimer(DelayedExplosionHandle, this, &ThisClass::Explode, ExplosionDelayTime);
+
+		FlamesFXComp->Activate();
 	}
 	else if (HitCounter == 2)
 	{
@@ -71,9 +84,7 @@ float ARogueExplosiveBarrel::TakeDamage(float DamageAmount, FDamageEvent const& 
 	// Structured Logging Example
 	UE_LOGFMT(LogGame, Log, "OnActorHit in Explosive Barrel");
 	// Warnings as structured logs even show up in the "Message Log" window of UnrealEd
-	UE_LOGFMT(LogGame, Warning, "OnActorHit, OtherActor: {name}, at game time: {timeseconds}", GetNameSafe(DamageCauser), GetWorld()->TimeSeconds);
-
-	return DamageAmount;
+	UE_LOGFMT(LogGame, Warning, "OnActorHit, OtherActor: {name}, at game time: {timeseconds}", GetNameSafe(InstigatorActor), GetWorld()->TimeSeconds);
 }
 
 void ARogueExplosiveBarrel::Explode()
@@ -85,6 +96,8 @@ void ARogueExplosiveBarrel::Explode()
 	}
 
 	bExploded = true;
+
+	FlamesFXComp->Deactivate();
 	
 	ForceComp->FireImpulse();
 
