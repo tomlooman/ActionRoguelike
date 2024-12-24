@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "BehaviorTree/Blackboard/BlackboardKey.h"
 #include "RogueAIController.generated.h"
+
 
 class UBehaviorTree;
 class UAIPerceptionComponent;
@@ -24,6 +26,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAIPerceptionComponent> PerceptionComp;
+
+	EBlackboardNotificationResult OnTargetActorChanged(const UBlackboardComponent& Comp, FBlackboard::FKey KeyID);
 
 	virtual void BeginPlay() override;
 

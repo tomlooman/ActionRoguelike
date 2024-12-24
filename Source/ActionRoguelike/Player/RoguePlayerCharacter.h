@@ -10,6 +10,7 @@
 #include "InputAction.h"
 #include "RoguePlayerCharacter.generated.h"
 
+class ARogueAIController;
 class UAIPerceptionStimuliSourceComponent;
 class UInputMappingContext;
 class UCameraComponent;
@@ -76,6 +77,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category= Effects)
 	TObjectPtr<UAnimMontage> DeathMontage;
 
+	/* Widget to display when bot first sees a player. */
+	UPROPERTY(EditDefaultsOnly, Category = UI)
+	TSubclassOf<UUserWidget> SpottedWidgetClass;
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USpringArmComponent> SpringArmComp;
 
@@ -135,6 +140,9 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
+
+	UFUNCTION(Client, Unreliable)
+	void ClientOnSeenBy(ARogueAICharacter* SeenByPawn);
 
 protected:
 

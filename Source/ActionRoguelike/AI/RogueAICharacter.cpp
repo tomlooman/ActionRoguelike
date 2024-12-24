@@ -112,18 +112,6 @@ void ARogueAICharacter::OnHealthChanged(AActor* InstigatorActor, URogueAttribute
 }
 
 
-void ARogueAICharacter::MulticastPawnSeen_Implementation()
-{
-	URogueWorldUserWidget* NewWidget = CreateWidget<URogueWorldUserWidget>(GetWorld(), SpottedWidgetClass);
-	// Can be nullptr if we didnt specify a class to use in Blueprint
-	if (NewWidget)
-	{
-		NewWidget->AttachedActor = this;
-		URogueWorldUserWidget::AddToRootCanvasPanel(NewWidget);
-	}
-}
-
-
 AActor* ARogueAICharacter::GetTargetActor() const
 {
 	AAIController* AIC = GetController<AAIController>();

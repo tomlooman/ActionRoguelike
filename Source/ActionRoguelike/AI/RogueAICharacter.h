@@ -30,10 +30,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> HealthBarWidgetClass;
 
-	/* Widget to display when bot first sees a player. */
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<UUserWidget> SpottedWidgetClass;
-
 	/* Index must match the CustomPrimitiveData index used in the Overlay material */
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	int32 HitFlash_CustomPrimitiveIndex;
@@ -54,9 +50,6 @@ protected:
 	UFUNCTION()
 	void OnSignificanceChanged(ESignificanceValue Significance);
 
-	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastPawnSeen();
-	
 	UPROPERTY(Transient)
 	TObjectPtr<URogueWorldUserWidget> ActiveHealthBar;
 

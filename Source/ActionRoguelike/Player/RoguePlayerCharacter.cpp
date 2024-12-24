@@ -11,14 +11,16 @@
 #include "ActionSystem/RogueActionComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "SharedGameplayTags.h"
-
-// Enhanced Input
 #include "ActionRoguelike.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "RoguePlayerController.h"
+#include "AI/RogueAICharacter.h"
+#include "AI/RogueAIController.h"
+#include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "UI/RogueWorldUserWidget.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RoguePlayerCharacter)
 
@@ -177,6 +179,17 @@ void ARoguePlayerCharacter::CrosshairTraceComplete(const FTraceHandle& InTraceHa
 }
 
 
+void ARoguePlayerCharacter::ClientOnSeenBy_Implementation(ARogueAICharacter* SeenByPawn)
+{
+	URogueWorldUserWidget* NewWidget = CreateWidget<URogueWorldUserWidget>(GetWorld(), SpottedWidgetClass);
+	// Can be nullptr if we do not specify a class to use in Blueprint
+	if (NewWidget)
+	{
+		NewWidget->AttachedActor = SeenByPawn;
+		URogueWorldUserWidget::AddToRootCanvasPanel(NewWidget);
+	}
+}
+
 void ARoguePlayerCharacter::Move(const FInputActionInstance& Instance)
 {
 	FRotator ControlRot = GetControlRotation();
@@ -328,9 +341,6 @@ void ARoguePlayerCharacter::OnHealthChanged(AActor* InstigatorActor, URogueAttri
 	// Died
 	if (NewHealth <= 0.0f && Delta < 0.0f)
 	{
-		APlayerController* PC = GetController<ARoguePlayerController>();
-		DisableInput(PC);
-		
 		UGameplayStatics::PlaySoundAtLocation(this, DeathVOSound, GetActorLocation(), FRotator::ZeroRotator);
 
 		PlayAnimMontage(DeathMontage);
@@ -339,11 +349,14 @@ void ARoguePlayerCharacter::OnHealthChanged(AActor* InstigatorActor, URogueAttri
 
 		// Prevent bots from seeing us as a threat
 		PerceptionStimuliComp->UnregisterFromPerceptionSystem();
-
-		// for local player, play a "UI" sound on death
-		if (PC->IsLocalController())
+		
+		APlayerController* PC = GetController<ARoguePlayerController>();
+		if (PC && PC->IsLocalController())
 		{
+			// for local player, play a "UI" sound on death
 			UGameplayStatics::PlaySound2D(this, DeathUISound);
+
+			DisableInput(PC);
 		}
 	}
 }
