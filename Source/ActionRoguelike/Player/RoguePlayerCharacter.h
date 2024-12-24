@@ -72,6 +72,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category= Effects)
 	TObjectPtr<USoundBase> FootPlantSound;
 
+	/* Plays on DefaultSlot, make sure the "auto blendout" is disabled on the AnimSequence to keep the final pose  */
+	UPROPERTY(EditDefaultsOnly, Category= Effects)
+	TObjectPtr<UAnimMontage> DeathMontage;
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USpringArmComponent> SpringArmComp;
 

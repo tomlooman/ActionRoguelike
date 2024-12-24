@@ -333,6 +333,8 @@ void ARoguePlayerCharacter::OnHealthChanged(AActor* InstigatorActor, URogueAttri
 		
 		UGameplayStatics::PlaySoundAtLocation(this, DeathVOSound, GetActorLocation(), FRotator::ZeroRotator);
 
+		PlayAnimMontage(DeathMontage);
+
 		SetLifeSpan(5.0f);
 
 		// Prevent bots from seeing us as a threat
