@@ -11,10 +11,7 @@
 
 FPlayerSaveData* URogueSaveGame::GetPlayerData(APlayerState* PlayerState)
 {
-	if (PlayerState == nullptr)
-	{
-		return nullptr;
-	}
+	check(PlayerState);
 
 	// Will not give unique ID while PIE so we skip that step while testing in editor.
 	// UObjects don't have access to UWorld, so we grab it via PlayerState instead
