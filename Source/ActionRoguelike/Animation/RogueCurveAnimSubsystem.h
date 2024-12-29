@@ -44,7 +44,7 @@ struct FActiveCurveAnim
 
 	void Tick(float DeltaTime)
 	{
-		CurrentTime += DeltaTime;
+		CurrentTime += (DeltaTime*PlayRate);
 
 		float CurrentValue = Curve->GetFloatValue(CurrentTime);
 
