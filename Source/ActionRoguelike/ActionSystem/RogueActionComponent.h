@@ -221,8 +221,6 @@ protected:
 	/* Interchangeable set of attributes such as Health, BaseDamage, Strength, Stamina, MoveSpeed, etc. */
 	UPROPERTY(EditAnywhere, Category=Attributes, meta = (BaseStruct = "RogueAttributeSet", ExcludeBaseStruct))
 	FInstancedStruct AttributeSet;
-	
-	bool GetAttributeName(const FGameplayTag InTag, FName& OutAttributeName);
 
 	UFUNCTION(Server, Reliable)
 	void ServerStartAction(AActor* Instigator, FGameplayTag ActionName);

@@ -80,22 +80,6 @@ bool URogueActionComponent::GetAttribute(FGameplayTag InAttributeTag, FRogueAttr
 		OutAttribute = *FoundAttribute;
 		return true;
 	}
-	
-
-	// Split the tag to only the attribute name, eg. "Health"
-	//FName PropertyName;
-	//if (GetAttributeName(InAttributeTag, PropertyName))
-	{
-		// With Unreal Property/Reflection system we can find and get all data so long as members are marked with UPROPERTY()
-		/*FStructProperty* AttributeProp = CastField<FStructProperty>(AttributeSet.GetScriptStruct()->FindPropertyByName(PropertyName));
-		if (AttributeProp)
-		{
-			// Convert the found container data to our attribute struct
-			const FRogueAttribute* FoundAttribute = AttributeProp->ContainerPtrToValuePtr<FRogueAttribute>(AttributeSet.GetMemory());
-			OutAttribute = *FoundAttribute;
-			return true;
-		}*/
-	}
 
 	return false;
 }
@@ -228,25 +212,6 @@ void URogueActionComponent::BroadcastAttributeListener(FGameplayTag AttributeTag
 			Delegate.Execute(NewValue, AppliedMod);
 		}
 	}
-}
-
-
-bool URogueActionComponent::GetAttributeName(const FGameplayTag InTag, FName& OutAttributeName)
-{
-	// Attribute names should reflect the Tag name in project. eg. Grab "Health" (property name) from "Attribute.Health" GameplayTag
-	FString LeftStr;
-	FString RightStr;
-	InTag.ToString().Split(".", &LeftStr, &RightStr, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
-#if !UE_BUILD_SHIPPING
-	if (RightStr.IsEmpty())
-	{
-		UE_LOG(LogGame, Warning, TEXT("Failed to split GameplayTag (%s) in GetAttribute."), *InTag.ToString());
-		return false;
-	}
-#endif
-
-	OutAttributeName = FName(*RightStr);
-	return true;
 }
 
 
