@@ -24,6 +24,10 @@
 			"Enabled": true
 		},
 		{
+			"Name": "StructUtils",
+			"Enabled": true
+		},
+		{
 			"Name": "OnlineSubsystemSteam",
 			"Enabled": true
 		},
