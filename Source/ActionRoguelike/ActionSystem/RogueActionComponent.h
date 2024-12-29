@@ -237,6 +237,11 @@ protected:
 	UPROPERTY(Transient, BlueprintReadOnly, Replicated)
 	TArray<TObjectPtr<URogueAction>> Actions;
 
+	/* Fetch from properties stored inside the AttributeSet for quick access */
+	TMap<FGameplayTag, const FRogueAttribute*> AttributeCache;
+
+	virtual void InitializeComponent() override;
+
 	virtual void BeginPlay() override;
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

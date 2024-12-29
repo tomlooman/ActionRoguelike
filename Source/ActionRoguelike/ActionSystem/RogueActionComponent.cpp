@@ -15,6 +15,7 @@
 URogueActionComponent::URogueActionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	bWantsInitializeComponent = true;
 
 	SetIsReplicatedByDefault(true);
 
@@ -22,21 +23,78 @@ URogueActionComponent::URogueActionComponent()
 	bReplicateUsingRegisteredSubObjectList = true;
 }
 
+
+void URogueActionComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	for (TFieldIterator<FStructProperty> PropertyIt(AttributeSet.GetScriptStruct()); PropertyIt; ++PropertyIt)
+	{
+		const FRogueAttribute* FoundAttribute = PropertyIt->ContainerPtrToValuePtr<FRogueAttribute>(AttributeSet.GetMemory());
+
+		// Build the tag "Attribute.Health" where "Health" is the variable name of the RogueAttribute we just iterated
+		FString TagName = TEXT("Attribute." + PropertyIt->GetName());
+		FGameplayTag AttributeTag = FGameplayTag::RequestGameplayTag(FName(TagName));
+
+		AttributeCache.Add(AttributeTag, FoundAttribute);
+	}
+}
+
+
+void URogueActionComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Server Only
+	if (GetOwner()->HasAuthority())
+	{
+		for (TSubclassOf<URogueAction> ActionClass : DefaultActions)
+		{
+			AddAction(GetOwner(), ActionClass);
+		}
+	}
+}
+
+
+void URogueActionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	// Stop all
+	TArray<URogueAction*> ActionsCopy = Actions;
+	for (URogueAction* Action : ActionsCopy)
+	{
+		if (Action->IsRunning())
+		{
+			Action->StopAction(GetOwner());
+		}
+	}
+
+	Super::EndPlay(EndPlayReason);
+}
+
+
 bool URogueActionComponent::GetAttribute(FGameplayTag InAttributeTag, FRogueAttribute& OutAttribute)
 {
+	const FRogueAttribute* FoundAttribute = *AttributeCache.Find(InAttributeTag);
+	if (FoundAttribute)
+	{
+		OutAttribute = *FoundAttribute;
+		return true;
+	}
+	
+
 	// Split the tag to only the attribute name, eg. "Health"
-	FName PropertyName;
-	if (GetAttributeName(InAttributeTag, PropertyName))
+	//FName PropertyName;
+	//if (GetAttributeName(InAttributeTag, PropertyName))
 	{
 		// With Unreal Property/Reflection system we can find and get all data so long as members are marked with UPROPERTY()
-		FStructProperty* AttributeProp = CastField<FStructProperty>(AttributeSet.GetScriptStruct()->FindPropertyByName(PropertyName));
+		/*FStructProperty* AttributeProp = CastField<FStructProperty>(AttributeSet.GetScriptStruct()->FindPropertyByName(PropertyName));
 		if (AttributeProp)
 		{
 			// Convert the found container data to our attribute struct
 			const FRogueAttribute* FoundAttribute = AttributeProp->ContainerPtrToValuePtr<FRogueAttribute>(AttributeSet.GetMemory());
 			OutAttribute = *FoundAttribute;
 			return true;
-		}
+		}*/
 	}
 
 	return false;
@@ -191,36 +249,6 @@ bool URogueActionComponent::GetAttributeName(const FGameplayTag InTag, FName& Ou
 	return true;
 }
 
-
-void URogueActionComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// Server Only
-	if (GetOwner()->HasAuthority())
-	{
-		for (TSubclassOf<URogueAction> ActionClass : DefaultActions)
-		{
-			AddAction(GetOwner(), ActionClass);
-		}
-	}
-}
-
-
-void URogueActionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	// Stop all
-	TArray<URogueAction*> ActionsCopy = Actions;
-	for (URogueAction* Action : ActionsCopy)
-	{
-		if (Action->IsRunning())
-		{
-			Action->StopAction(GetOwner());
-		}
-	}
-
-	Super::EndPlay(EndPlayReason);
-}
 
 void URogueActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
