@@ -16,8 +16,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "RoguePlayerController.h"
 #include "AI/RogueAICharacter.h"
-#include "AI/RogueAIController.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "UI/RogueWorldUserWidget.h"
@@ -48,6 +48,13 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 	ActionComp = CreateDefaultSubobject<URogueActionComponent>(TEXT("ActionComp"));
 
 	PerceptionStimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("PerceptionStimuliComp"));
+
+	AttackSoundsComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AttackSoundsComp"));
+	AttackSoundsComp->SetupAttachment(RootComponent);
+	AttackSoundsComp->bAutoActivate = false;
+	// Don't follow player unless actively playing a sound
+	AttackSoundsComp->bAutoManageAttachment = true;
+	
 
 	UCharacterMovementComponent* CharMoveComp = GetCharacterMovement();
 	CharMoveComp->bOrientRotationToMovement = true;
@@ -188,6 +195,13 @@ void ARoguePlayerCharacter::ClientOnSeenBy_Implementation(ARogueAICharacter* See
 		NewWidget->AttachedActor = SeenByPawn;
 		URogueWorldUserWidget::AddToRootCanvasPanel(NewWidget);
 	}
+}
+
+void ARoguePlayerCharacter::PlayAttackSound(USoundBase* InSound)
+{
+	// This may interrupt previously playing sounds, so you'd want to test for this
+	AttackSoundsComp->SetSound(InSound);
+	AttackSoundsComp->Play();
 }
 
 void ARoguePlayerCharacter::Move(const FInputActionInstance& Instance)

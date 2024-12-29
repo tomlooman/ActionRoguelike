@@ -5,9 +5,11 @@
 #include "ActionRoguelike.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
 #include "Sound/SoundBase.h"
 #include "GameFramework/Character.h"
 #include "Performance/RogueActorPoolingSubsystem.h"
+#include "Player/RoguePlayerCharacter.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueAction_ProjectileAttack)
 
@@ -26,14 +28,17 @@ void URogueAction_ProjectileAttack::StartAction_Implementation(AActor* Instigato
 {
 	Super::StartAction_Implementation(Instigator);
 
-	ACharacter* Character = CastChecked<ACharacter>(Instigator);
+	ARoguePlayerCharacter* Character = CastChecked<ARoguePlayerCharacter>(Instigator);
 	Character->PlayAnimMontage(AttackAnim);
 
 	// Auto-released particle pooling
 	UNiagaraFunctionLibrary::SpawnSystemAttached(CastingEffect, Character->GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator,
 		EAttachLocation::SnapToTarget, true, true, ENCPoolMethod::AutoRelease);
 
-	UGameplayStatics::SpawnSoundAttached(CastingSound, Character->GetMesh());
+	//UGameplayStatics::SpawnSoundAttached(CastingSound, Character->GetMesh());
+	// Alternative to spawning fresh instances for short-lived attacks every time (via SpawnSoundAttached above)
+	// we use a single audio component on the player, which uses AutoManageAttachment to detach itself when not active
+	Character->PlayAttackSound(CastingSound);
 
 	if (Character->HasAuthority())
 	{
@@ -46,7 +51,7 @@ void URogueAction_ProjectileAttack::StartAction_Implementation(AActor* Instigato
 }
 
 
-void URogueAction_ProjectileAttack::AttackDelay_Elapsed(ACharacter* InstigatorCharacter)
+void URogueAction_ProjectileAttack::AttackDelay_Elapsed(ARoguePlayerCharacter* InstigatorCharacter)
 {
 	// Blueprint has not been properly configured yet if this fails
 	if (ensureAlways(ProjectileClass))

@@ -48,7 +48,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	TObjectPtr<USoundBase> CastingSound;
 	
-	void AttackDelay_Elapsed(ACharacter* InstigatorCharacter);
+	void AttackDelay_Elapsed(class ARoguePlayerCharacter* InstigatorCharacter);
 
 public:
 

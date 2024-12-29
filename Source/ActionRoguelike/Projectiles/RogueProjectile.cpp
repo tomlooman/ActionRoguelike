@@ -8,7 +8,6 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
-#include "Sound/SoundCue.h"
 #include "ProfilingDebugging/CountersTrace.h"
 #include "Performance/RogueActorPoolingSubsystem.h"
 

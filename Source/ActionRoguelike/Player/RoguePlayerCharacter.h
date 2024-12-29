@@ -25,6 +25,10 @@ class ACTIONROGUELIKE_API ARoguePlayerCharacter : public ACharacter, public IGen
 {
 	GENERATED_BODY()
 
+public:
+
+	void PlayAttackSound(USoundBase* InSound);
+
 protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
@@ -98,6 +102,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAIPerceptionStimuliSourceComponent> PerceptionStimuliComp;
+
+	/* Re-usable audio component for all (attached) attack sounds such as casting sound from the magic projectile attack */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UAudioComponent> AttackSoundsComp;
 
 	// Enhanced Input
 	// Three parameter options available (FInputActionInstance, FInputActionValue, or none)
