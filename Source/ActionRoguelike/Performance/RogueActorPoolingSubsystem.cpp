@@ -12,7 +12,7 @@
 
 static TAutoConsoleVariable CVarActorPoolingEnabled(
 	TEXT("game.ActorPooling"),
-	true,
+	false, // Disabled by default in sample project. Has some issues to work out (such as properly resetting all VFX like the black hole projectile)
 	TEXT("Enable actor pooling for selected objects."),
 	ECVF_Default);
 
