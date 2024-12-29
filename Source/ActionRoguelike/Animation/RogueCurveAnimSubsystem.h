@@ -7,17 +7,17 @@
 #include "RogueCurveAnimSubsystem.generated.h"
 
 
-DECLARE_DYNAMIC_DELEGATE_OneParam(FTweenAnimCallback, float, CurrentValue);
+//DECLARE_DYNAMIC_DELEGATE_OneParam(FTweenAnimCallback, float, CurrentValue);
 
 
 USTRUCT()
-struct FActiveTweenData
+struct FActiveCurveAnim
 {
 	GENERATED_BODY()
 
-	FActiveTweenData() {}
+	FActiveCurveAnim() {}
 
-	FActiveTweenData(UCurveFloat* InCurve, TFunction<void (float)> InCallback, float InRate = 1.0f)
+	FActiveCurveAnim(UCurveFloat* InCurve, TFunction<void (float)> InCallback, float InRate = 1.0f)
 	{
 		Curve = InCurve;
 		Callback = InCallback;
@@ -31,15 +31,40 @@ struct FActiveTweenData
 	UCurveFloat* Curve = nullptr;
 
 	float PlayRate = 1.0f;
-	
-	TFunction<void(float)> Callback;
-	//FTweenAnimCallback Callback;
 
 	/* Current time along curve */
 	float CurrentTime = 0.0f;
 
 	/* Cached max time to know when we finished */
 	float MaxTime = 0.0f;
+
+	// @todo: TFunction takes many bytes in the struct, we could replace it with a smaller delegate if we want to optimize this to be as small as possible
+	// keeping this to look into at a later time
+	TFunction<void(float)> Callback;
+
+	void Tick(float DeltaTime)
+	{
+		CurrentTime += DeltaTime;
+
+		float CurrentValue = Curve->GetFloatValue(CurrentTime);
+
+		Callback(CurrentValue);
+
+		// Check if animation has completed
+		// Remove on complete
+		// if this was only anim playing, disable tick
+
+		if (CurrentTime >= MaxTime)
+		{
+			// Mark as "Finished", will be cleaned up by subsystem
+			Curve = nullptr;
+		}
+	}
+
+	bool IsValid() const
+	{
+		return Curve != nullptr;
+	}
 };
 
 
@@ -47,23 +72,22 @@ struct FActiveTweenData
  * 
  */
 UCLASS()
-class ACTIONROGUELIKE_API URogueCurveAnimSubsystem : public UTickableWorldSubsystem // "RogueCurveAnimSubsystem
+class ACTIONROGUELIKE_API URogueCurveAnimSubsystem : public UTickableWorldSubsystem
 {
 	GENERATED_BODY()
-
-	// This will be an array
-	FActiveTweenData CurrentAnimation;
+	
+	TArray<FActiveCurveAnim> ActiveAnims;
 
 	virtual void Tick(float DeltaTime) override;
 
 	virtual TStatId GetStatId() const override;
 
-	// @todo: maybe just make 2 overloads to handle Vector and float rather than rely on CurveBase
-
 public:
-	
-	/* Start animation based on curve */  // add loop and pingpong enum
-	//UFUNCTION(BlueprintCallable) // @todo: do I need this in BP, can I provide a different function for it so it has a nice 'on tick' exec pin
+
+	// @todo: do I need this in BP, can I provide a different function for it so it has a nice 'on tick' exec pin
+	// @todo: add loop and pingpong enum
+	/* Start animation based on curve */
+	//UFUNCTION(BlueprintCallable) 
 	// eg. could just wrap that with the original delegate for BP calls.
-	void PlayTween(UCurveFloat* InCurveAsset, float InPlayRate, TFunction<void(float)> Func); 
+	void PlayCurveAnim(UCurveFloat* InCurveAsset, float InPlayRate, const TFunction<void(float)>& Func);
 };

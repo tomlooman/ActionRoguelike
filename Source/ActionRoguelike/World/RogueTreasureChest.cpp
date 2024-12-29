@@ -29,46 +29,61 @@ ARogueTreasureChest::ARogueTreasureChest()
 	// Directly set bool instead of going through SetReplicates(true) within constructor,
 	// Only use SetReplicates() outside constructor
 	bReplicates = true;
+
+	//PrimaryActorTick.bCanEverTick = true;
 }
 
 
 void ARogueTreasureChest::Interact_Implementation(APawn* InstigatorPawn)
 {
 	bLidOpened = true;
-	if (bLidOpened)
-	{
-		OpenChest();
-	}
+	ConditionalOpenChest();
 }
 
 
 void ARogueTreasureChest::OnActorLoaded_Implementation()
 {
+	ConditionalOpenChest();
+}
+
+
+void ARogueTreasureChest::ConditionalOpenChest()
+{
 	if (bLidOpened)
 	{
-		OpenChest();
+		// @todo: lidmesh still as replicated relative rotation?
+		
+		URogueCurveAnimSubsystem* AnimSubsystem = GetWorld()->GetSubsystem<URogueCurveAnimSubsystem>();
+		AnimSubsystem->PlayCurveAnim(LidAnimCurve, 1.0f, [&](float CurrValue)
+		{
+			LidMesh->SetRelativeRotation(FRotator(CurrValue, 0, 0));
+		});
+
+		OpenChestEffect->Activate(true);
+
+		// manually handled variation to tick yourself
+		/*CurveAnimInst = new FActiveCurveAnim(LidAnimCurve, [&](float CurrValue)
+		{
+			LidMesh->SetRelativeRotation(FRotator(CurrValue, 0, 0));
+		}, 1.0f);*/
 	}
 }
 
-
-void ARogueTreasureChest::OpenChest()
+/*
+void ARogueTreasureChest::Tick(float DeltaSeconds)
 {
-	// @todo: lidmesh still as replicated relative rotation?
-	URogueCurveAnimSubsystem* AnimSubsystem = GetWorld()->GetSubsystem<URogueCurveAnimSubsystem>();
-	AnimSubsystem->PlayTween(LidAnimCurve, 1.0f, [&](float CurrValue)
-	{
-		LidMesh->SetRelativeRotation(FRotator(CurrValue, 0, 0));
-	});
+	Super::Tick(DeltaSeconds);
 
-	OpenChestEffect->Activate(true);
-}
+	if (CurveAnimInst && CurveAnimInst->IsValid())
+	{
+		CurveAnimInst->Tick(DeltaSeconds);
+	}
+}*/
+
 
 void ARogueTreasureChest::OnRep_LidOpened()
 {
-	if (bLidOpened)
-	{
-		OpenChest();
-	}
+	ConditionalOpenChest();
 }
 
 

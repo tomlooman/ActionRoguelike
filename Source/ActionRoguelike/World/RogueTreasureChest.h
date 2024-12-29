@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+//#include "Animation/RogueCurveAnimSubsystem.h"
 #include "GameFramework/Actor.h"
 #include "Core/RogueGameplayInterface.h"
 #include "RogueTreasureChest.generated.h"
@@ -29,10 +30,14 @@ protected:
 	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly, SaveGame)
 	bool bLidOpened;
 
-	void OpenChest();
+	void ConditionalOpenChest();
 
 	UFUNCTION()
 	void OnRep_LidOpened();
+
+	//virtual void Tick(float DeltaSeconds) override;
+
+	//FActiveCurveAnim* CurveAnimInst;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> BaseMesh;
@@ -45,6 +50,5 @@ protected:
 
 public:	
 
-	// Sets default values for this actor's properties
 	ARogueTreasureChest();
 };

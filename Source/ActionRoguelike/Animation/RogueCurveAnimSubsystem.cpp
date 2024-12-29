@@ -8,39 +8,35 @@
 
 void URogueCurveAnimSubsystem::Tick(float DeltaTime)
 {
-	if (CurrentAnimation.Curve == nullptr)
+	/*
+	for (FActiveCurveAnim& Anim : ActiveAnims)
 	{
-		// for now skip until we assigned a curve
-		return;
-	}
-	
-	CurrentAnimation.CurrentTime += DeltaTime;
+		Anim.Tick(DeltaTime);
 
-	float CurrentValue = CurrentAnimation.Curve->GetFloatValue(CurrentAnimation.CurrentTime);
+		// once nulled, we are 'finished'
+		if (Anim.Curve == nullptr)
+		{
+			
+		}
+	}*/
 
-	CurrentAnimation.Callback(CurrentValue);
-
-	// Check if animation has completed
-		// Remove on complete
-		// if this was only anim playing, disable tick
-
-	if (CurrentAnimation.CurrentTime >= CurrentAnimation.MaxTime)
+	for (int i = ActiveAnims.Num() - 1; i >= 0; --i)
 	{
-		// Mark as "Finished"
-		CurrentAnimation.Curve = nullptr;
+		ActiveAnims[i].Tick(DeltaTime);
 
-		// Remove from array
+		if (ActiveAnims[i].Curve == nullptr)
+		{
+			ActiveAnims.RemoveAt(i);
+		}
 	}
 }
 
 
-void URogueCurveAnimSubsystem::PlayTween(UCurveFloat* InCurveAsset, float InPlayRate, TFunction<void (float CurrentValue)> Func /*const FTweenAnimCallback& Callback*/)
+void URogueCurveAnimSubsystem::PlayCurveAnim(UCurveFloat* InCurveAsset, float InPlayRate, const TFunction<void (float CurrentValue)>& Func)
 {
-	// @todo: if valid, pass into array and start playing.
-	CurrentAnimation = FActiveTweenData(InCurveAsset, Func, InPlayRate);
+	check(InCurveAsset);
 
-	// @todo: activate tick if this was first entry into the array
-	
+	ActiveAnims.Add(FActiveCurveAnim(InCurveAsset, Func, InPlayRate));
 }
 
 
