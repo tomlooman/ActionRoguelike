@@ -6,6 +6,17 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "RogueGameplayFunctionLibrary.generated.h"
 
+
+USTRUCT()
+struct FDamageInfo
+{
+	GENERATED_BODY()
+
+	TWeakObjectPtr<AActor> DamageInstigator;
+
+	float AttackDamage;
+};
+
 /**
  * 
  */
@@ -22,6 +33,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
 	static bool ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, float DamageAmount, const FHitResult& HitResult);
 
+	/*static*/ bool ApplyRadialDamage(AActor* DamageCauser, FVector Origin, float DamageRadius, float DamageAmount);
+
+	void OnDamageOverlapComplete(const FTraceHandle& TraceHandle, FOverlapDatum& OverlapDatum, FDamageInfo DamageInfo);
+	
 	UFUNCTION(BlueprintPure, Category = "PSO Caching")
 	static int32 GetRemainingBundledPSOs();
 };
