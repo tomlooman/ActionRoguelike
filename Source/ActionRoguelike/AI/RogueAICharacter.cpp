@@ -8,11 +8,13 @@
 #include "DrawDebugHelpers.h"
 #include "ActionSystem/RogueAttributeComponent.h"
 #include "BrainComponent.h"
+#include "NiagaraComponent.h"
 #include "UI/RogueWorldUserWidget.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ActionSystem/RogueActionComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Components/AudioComponent.h"
 #include "Components/CanvasPanel.h"
 #include "Performance/RogueSignificanceComponent.h"
 #include "Perception/AISense_Damage.h"
@@ -24,6 +26,19 @@ ARogueAICharacter::ARogueAICharacter()
 {
 	AttributeComp = CreateDefaultSubobject<URogueAttributeComponent>(TEXT("AttributeComp"));
 	ActionComp = CreateDefaultSubobject<URogueActionComponent>(TEXT("ActionComp"));
+
+	AttackSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AttackAudioComp"));
+	AttackSoundComp->SetupAttachment(RootComponent);
+	AttackSoundComp->bAutoManageAttachment = true;
+	AttackSoundComp->SetAutoActivate(false);
+
+	// Default set up for the MinionRanged
+	AttackFX_Socket = "Muzzle_Front";
+
+	AttackParticleComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("AttackParticleComp"));
+	AttackParticleComp->SetupAttachment(GetMesh(), AttackFX_Socket);
+	AttackParticleComp->bAutoManageAttachment = true;
+	AttackParticleComp->SetAutoActivate(false);
 
 	// Make sure to configure the distance values in Blueprint
 	SigManComp = CreateDefaultSubobject<URogueSignificanceComponent>(TEXT("SigManComp"));
@@ -121,6 +136,16 @@ AActor* ARogueAICharacter::GetTargetActor() const
 		return Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject("TargetActor"));
 	}
 	return nullptr;
+}
+
+
+void ARogueAICharacter::PlayAttackFX()
+{
+	AttackSoundComp->Play();
+
+	AttackParticleComp->Activate(true);
+	
+	PlayAnimMontage(AttackMontage);
 }
 
 void ARogueAICharacter::OnSignificanceChanged(ESignificanceValue Significance)

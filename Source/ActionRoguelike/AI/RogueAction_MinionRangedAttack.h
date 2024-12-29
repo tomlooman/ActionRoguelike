@@ -15,10 +15,10 @@ class ACTIONROGUELIKE_API URogueAction_MinionRangedAttack : public URogueAction
 	GENERATED_BODY()
 
 	/* Max Random Bullet Spread (in Degrees) in positive and negative angle (shared between Yaw and Pitch) */
-	UPROPERTY(EditAnywhere, Category = "AI")
+	UPROPERTY(EditAnywhere, Category = "Attack")
 	float MaxBulletSpread = 2.0f;
 
-	UPROPERTY(EditAnywhere, Category = "AI")
+	UPROPERTY(EditAnywhere, Category = "Attack")
 	TSubclassOf<AActor> ProjectileClass;
 
 	virtual void StartAction_Implementation(AActor* Instigator) override;

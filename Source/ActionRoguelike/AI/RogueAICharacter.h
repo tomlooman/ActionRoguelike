@@ -9,6 +9,7 @@
 #include "RogueAICharacter.generated.h"
 
 
+class UNiagaraComponent;
 class URogueSignificanceComponent;
 class URogueAttributeComponent;
 class UUserWidget;
@@ -25,6 +26,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AI")
 	AActor* GetTargetActor() const;
 
+	void PlayAttackFX();
+
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
@@ -34,6 +37,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	int32 HitFlash_CustomPrimitiveIndex;
 
+	UPROPERTY(EditDefaultsOnly, Category="Effects")
+	FName AttackFX_Socket;
+
+	UPROPERTY(EditDefaultsOnly, Category="Effects")
+	TObjectPtr<UAnimMontage> AttackMontage;
+
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, URogueAttributeComponent* OwningComp, float NewHealth, float Delta);
 
@@ -42,6 +51,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<URogueActionComponent> ActionComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UAudioComponent> AttackSoundComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UNiagaraComponent> AttackParticleComp;
 
 	/* Handle fidelity for AI as they are off-screen or at far distances */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
