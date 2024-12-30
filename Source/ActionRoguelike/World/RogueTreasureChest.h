@@ -39,14 +39,17 @@ protected:
 
 	//FActiveCurveAnim* CurveAnimInst;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category=Components)
 	TObjectPtr<UStaticMeshComponent> BaseMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Components)
 	TObjectPtr<UStaticMeshComponent> LidMesh;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category=Components)
 	TObjectPtr<UNiagaraComponent> OpenChestEffect;
+
+	UPROPERTY(VisibleAnywhere, Category=Components)
+	TObjectPtr<UAudioComponent> OpenChestSound;
 
 public:	
 

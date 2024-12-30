@@ -3,11 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "RogueCurveAnimSubsystem.generated.h"
-
-
-//DECLARE_DYNAMIC_DELEGATE_OneParam(FTweenAnimCallback, float, CurrentValue);
 
 
 USTRUCT()
@@ -23,7 +21,7 @@ struct FActiveCurveAnim
 		Callback = InCallback;
 		PlayRate = InRate;
 
-		// @todo: check when this is non-zero and how that should be handled
+		// We use first keyframe as start time, you could choose to always start at 0.0f
 		Curve->GetTimeRange(CurrentTime, MaxTime);
 	}
 
@@ -38,8 +36,6 @@ struct FActiveCurveAnim
 	/* Cached max time to know when we finished */
 	float MaxTime = 0.0f;
 
-	// @todo: TFunction takes many bytes in the struct, we could replace it with a smaller delegate if we want to optimize this to be as small as possible
-	// keeping this to look into at a later time
 	TFunction<void(float)> Callback;
 
 	void Tick(float DeltaTime)
@@ -50,10 +46,6 @@ struct FActiveCurveAnim
 
 		Callback(CurrentValue);
 
-		// Check if animation has completed
-		// Remove on complete
-		// if this was only anim playing, disable tick
-
 		if (CurrentTime >= MaxTime)
 		{
 			// Mark as "Finished", will be cleaned up by subsystem
@@ -61,9 +53,46 @@ struct FActiveCurveAnim
 		}
 	}
 
-	bool IsValid() const
+	bool IsFinished() const
 	{
-		return Curve != nullptr;
+		return Curve == nullptr;
+	}
+};
+
+
+USTRUCT()
+struct FActiveEasingFunc
+{
+	GENERATED_BODY()
+
+	FActiveEasingFunc() {}
+
+	FActiveEasingFunc(float InEasingExp, float InPlayRate, TFunction<void (float)> InCallback)
+		: EasingExp(InEasingExp), PlayRate(InPlayRate), Callback(InCallback) 	{}
+
+	float EasingExp = 2.0f;
+	
+	float PlayRate = 1.0f;
+	
+	float Time = 0.0f;
+
+	TFunction<void(float)> Callback;
+
+	void Tick(float DeltaTime)
+	{
+		Time += (DeltaTime*PlayRate);
+
+		// Clamp
+		FMath::Min(Time, 1.0f);
+
+		float CurrentValue = FMath::InterpEaseInOut(0.0f, 1.0f, Time, EasingExp);
+
+		Callback(CurrentValue);
+	}
+
+	bool IsFinished()
+	{
+		return Time >= 1.0f;;
 	}
 };
 
@@ -75,8 +104,11 @@ UCLASS()
 class ACTIONROGUELIKE_API URogueCurveAnimSubsystem : public UTickableWorldSubsystem
 {
 	GENERATED_BODY()
-	
+
+	// This could be a FInstancedStruct array if we want a variety of struct options with different sets of data
 	TArray<FActiveCurveAnim> ActiveAnims;
+
+	TArray<FActiveEasingFunc> ActiveEasingFuncs;
 
 	virtual void Tick(float DeltaTime) override;
 
@@ -84,10 +116,9 @@ class ACTIONROGUELIKE_API URogueCurveAnimSubsystem : public UTickableWorldSubsys
 
 public:
 
-	// @todo: do I need this in BP, can I provide a different function for it so it has a nice 'on tick' exec pin
-	// @todo: add loop and pingpong enum
 	/* Start animation based on curve */
-	//UFUNCTION(BlueprintCallable) 
-	// eg. could just wrap that with the original delegate for BP calls.
 	void PlayCurveAnim(UCurveFloat* InCurveAsset, float InPlayRate, const TFunction<void(float)>& Func);
+
+	/* Play easing function with output between 0.0 - 1.0 */
+	void PlayEasingFunc(EEasingFunc::Type EasingType, float EasingExp, float InPlayRate, const TFunction<void(float)>& Func);
 };

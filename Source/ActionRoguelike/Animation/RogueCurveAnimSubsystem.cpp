@@ -8,25 +8,27 @@
 
 void URogueCurveAnimSubsystem::Tick(float DeltaTime)
 {
-	/*
-	for (FActiveCurveAnim& Anim : ActiveAnims)
-	{
-		Anim.Tick(DeltaTime);
-
-		// once nulled, we are 'finished'
-		if (Anim.Curve == nullptr)
-		{
-			
-		}
-	}*/
-
+	TRACE_CPUPROFILER_EVENT_SCOPE(CurveAnimationsTick)
+	
+	// Curve Based Anims - Reverse to easily remove completed anims during iteration
 	for (int i = ActiveAnims.Num() - 1; i >= 0; --i)
 	{
 		ActiveAnims[i].Tick(DeltaTime);
 
-		if (ActiveAnims[i].Curve == nullptr)
+		if (ActiveAnims[i].IsFinished())
 		{
 			ActiveAnims.RemoveAt(i);
+		}
+	}
+
+	// Easing Functions
+	for (int i = ActiveEasingFuncs.Num() - 1; i >= 0; --i)
+	{
+		ActiveEasingFuncs[i].Tick(DeltaTime);
+
+		if (ActiveEasingFuncs[i].IsFinished())
+		{
+			ActiveEasingFuncs.RemoveAt(i);
 		}
 	}
 }
@@ -37,6 +39,15 @@ void URogueCurveAnimSubsystem::PlayCurveAnim(UCurveFloat* InCurveAsset, float In
 	check(InCurveAsset);
 
 	ActiveAnims.Add(FActiveCurveAnim(InCurveAsset, Func, InPlayRate));
+}
+
+
+void URogueCurveAnimSubsystem::PlayEasingFunc(EEasingFunc::Type EasingType, float EasingExp, float InPlayRate, const TFunction<void(float)>& Func)
+{
+	// In prototype only supporting this one type...
+	check(EasingType == EEasingFunc::EaseInOut);
+
+	ActiveEasingFuncs.Add(FActiveEasingFunc(EasingExp, InPlayRate, Func));
 }
 
 
