@@ -27,8 +27,8 @@ void URogueAction_MinionRangedAttack::StartAction_Implementation(AActor* Instiga
 		return;
 	}
 
-	// Handle the cosmetic parts
-	MyPawn->PlayAttackFX();
+	// Handle the cosmetic parts, push to all clients
+	MyPawn->MulticastPlayAttackFX();
 
 	const FVector MuzzleLocation = MyPawn->GetMesh()->GetSocketLocation(MeshSockets::Muzzle);
 	// using TargetLocation instead of ActorLocation we *could* retrieve 'better' aiming location if implemented

@@ -105,9 +105,12 @@ void ARogueAICharacter::OnHealthChanged(AActor* InstigatorActor, URogueAttribute
 		if (NewHealth <= 0.0f)
 		{
 			// stop BT
-			AAIController* AIC = GetController<AAIController>();
-			AIC->GetBrainComponent()->StopLogic("Killed");
-
+			if (HasAuthority())
+			{
+				AAIController* AIC = GetController<AAIController>();
+				AIC->GetBrainComponent()->StopLogic("Killed");
+			}
+			
 			// ragdoll
 			GetMesh()->SetAllBodiesSimulatePhysics(true);
 			GetMesh()->SetCollisionProfileName(Collision::Ragdoll_ProfileName);
@@ -139,7 +142,7 @@ AActor* ARogueAICharacter::GetTargetActor() const
 }
 
 
-void ARogueAICharacter::PlayAttackFX()
+void ARogueAICharacter::MulticastPlayAttackFX_Implementation()
 {
 	AttackSoundComp->Play();
 

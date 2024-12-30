@@ -26,7 +26,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AI")
 	AActor* GetTargetActor() const;
 
-	void PlayAttackFX();
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastPlayAttackFX();
 
 protected:
 
