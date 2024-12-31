@@ -7,6 +7,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "DrawDebugHelpers.h"
 #include "NiagaraComponent.h"
+#include "SharedGameplayTags.h"
+#include "ActionSystem/RogueActionComponent.h"
 #include "ActionSystem/RogueAttributeComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueExplosiveBarrel)
@@ -14,8 +16,8 @@
 
 ARogueExplosiveBarrel::ARogueExplosiveBarrel()
 {
-	AttributeComponent = CreateDefaultSubobject<URogueAttributeComponent>(TEXT("AttributeComp"));
-	AttributeComponent->OnHealthChanged.AddDynamic(this, &ThisClass::OnHealthChanged);
+	ActionComp = CreateDefaultSubobject<URogueActionComponent>(TEXT("ActionComp"));
+	ActionComp->SetDefaultAttributeSet(FRogueHealthAttributeSet::StaticStruct());
 	
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetSimulatePhysics(true);
@@ -48,16 +50,16 @@ ARogueExplosiveBarrel::ARogueExplosiveBarrel()
 	ExplosionDelayTime = 2.0f;
 }
 
-/*
-float ARogueExplosiveBarrel::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
-	AActor* DamageCauser)
+void ARogueExplosiveBarrel::PostInitializeComponents()
 {
-	return DamageAmount;
-}
-*/
+	Super::PostInitializeComponents();
 
-void ARogueExplosiveBarrel::OnHealthChanged(AActor* InstigatorActor, URogueAttributeComponent* OwningComp,
-	float NewHealth, float Delta)
+	FRogueAttribute* FoundAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health);
+	FoundAttribute->OnAttributeChanged.AddUObject(this, &ThisClass::OnHealthAttributeChanged);
+}
+
+
+void ARogueExplosiveBarrel::OnHealthAttributeChanged(float NewValue, const FAttributeModification& AttributeModification)
 {
 	if (bExploded)
 	{
@@ -84,8 +86,10 @@ void ARogueExplosiveBarrel::OnHealthChanged(AActor* InstigatorActor, URogueAttri
 	// Structured Logging Example
 	UE_LOGFMT(LogGame, Log, "OnActorHit in Explosive Barrel");
 	// Warnings as structured logs even show up in the "Message Log" window of UnrealEd
-	UE_LOGFMT(LogGame, Warning, "OnActorHit, OtherActor: {name}, at game time: {timeseconds}", GetNameSafe(InstigatorActor), GetWorld()->TimeSeconds);
+	UE_LOGFMT(LogGame, Warning, "OnActorHit, OtherActor: {name}, at game time: {timeseconds}",
+		GetNameSafe(AttributeModification.Instigator->GetOwner()), GetWorld()->TimeSeconds);
 }
+
 
 void ARogueExplosiveBarrel::Explode()
 {
@@ -108,3 +112,4 @@ void ARogueExplosiveBarrel::Explode()
 	//FString CombinedString = FString::Printf(TEXT("Hit at location: %s"), *Hit.ImpactPoint.ToString());
 	//DrawDebugString(GetWorld(), Hit.ImpactPoint, CombinedString, nullptr, FColor::Green, 2.0f, true);
 }
+

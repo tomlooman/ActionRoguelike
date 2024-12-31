@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "RogueGameplayFunctionLibrary.generated.h"
 
@@ -27,15 +28,21 @@ class ACTIONROGUELIKE_API URogueGameplayFunctionLibrary : public UBlueprintFunct
 	
 public:
 
-	UFUNCTION(BlueprintCallable, Category = "Gameplay")
-	static bool ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageAmount);
+	UFUNCTION(BlueprintCallable, Category=Gameplay)
+	static URogueActionComponent* GetActionComponentFromActor(AActor* FromActor);
 
-	UFUNCTION(BlueprintCallable, Category = "Gameplay")
-	static bool ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, float DamageAmount, const FHitResult& HitResult);
+	UFUNCTION(BlueprintCallable, Category=Gameplay)
+	static bool IsAlive(AActor* InActor);
 
-	/*static*/ bool ApplyRadialDamage(AActor* DamageCauser, FVector Origin, float DamageRadius, float DamageAmount);
+	UFUNCTION(BlueprintCallable, Category=Gameplay)
+	static bool ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient);
 
-	void OnDamageOverlapComplete(const FTraceHandle& TraceHandle, FOverlapDatum& OverlapDatum, FDamageInfo DamageInfo);
+	UFUNCTION(BlueprintCallable, Category=Gameplay)
+	static bool ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient, const FHitResult& HitResult);
+/*
+	static bool ApplyRadialDamage(AActor* DamageCauser, FVector Origin, float DamageRadius, float DamageCoefficient);
+*/
+	//void OnDamageOverlapComplete(const FTraceHandle& TraceHandle, FOverlapDatum& OverlapDatum, FDamageInfo DamageInfo);
 	
 	UFUNCTION(BlueprintPure, Category = "PSO Caching")
 	static int32 GetRemainingBundledPSOs();

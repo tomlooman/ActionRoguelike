@@ -6,9 +6,9 @@
 #include "ActionRoguelike.h"
 #include "AIController.h"
 #include "DrawDebugHelpers.h"
-#include "ActionSystem/RogueAttributeComponent.h"
 #include "BrainComponent.h"
 #include "NiagaraComponent.h"
+#include "SharedGameplayTags.h"
 #include "UI/RogueWorldUserWidget.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -24,8 +24,9 @@
 
 ARogueAICharacter::ARogueAICharacter()
 {
-	AttributeComp = CreateDefaultSubobject<URogueAttributeComponent>(TEXT("AttributeComp"));
 	ActionComp = CreateDefaultSubobject<URogueActionComponent>(TEXT("ActionComp"));
+	// Set some defaults, ideally we handle this through some data asset instead
+	ActionComp->SetDefaultAttributeSet(FRogueMonsterAttributeSet::StaticStruct());
 
 	AttackSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AttackAudioComp"));
 	AttackSoundComp->SetupAttachment(RootComponent);
@@ -64,7 +65,22 @@ void ARogueAICharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	AttributeComp->OnHealthChanged.AddDynamic(this, &ARogueAICharacter::OnHealthChanged);
+	//FOnAttributeChangedNonDynamic Delegate = FOnAttributeChangedNonDynamic::CreateUObject(this, &ARogueAICharacter::OnHealthAttributeChanged);
+	//ActionComp->AddAttributeListener(SharedGameplayTags::Attribute_Health, Delegate);
+
+	// BP version has slightly different syntax to set up binding in C++
+	//FOnAttributeChangedDynamic K2_Delegate;
+	//K2_Delegate.BindDynamic(this, &ARogueAICharacter::K2_OnHealthAttributeChanged);
+	//ActionComp->K2_AddAttributeListener(SharedGameplayTags::Attribute_Health, K2_Delegate);
+
+	// The "simplest" syntax compared to the other convoluted attempts
+	if (FRogueAttribute* FoundAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health))
+	{
+		// may not be found during 'init', but we should handle that better
+		FoundAttribute->OnAttributeChanged.AddUObject(this, &ThisClass::OnHealthAttributeChanged);
+	}
+
+	//AttributeComp->OnHealthChanged.AddDynamic(this, &ARogueAICharacter::OnHealthChanged);
 	SigManComp->OnSignificanceChanged.AddDynamic(this, &ARogueAICharacter::OnSignificanceChanged);
 	
 	// Cheap trick to disable until we need it in the health event
@@ -73,12 +89,15 @@ void ARogueAICharacter::PostInitializeComponents()
 }
 
 
-void ARogueAICharacter::OnHealthChanged(AActor* InstigatorActor, URogueAttributeComponent* OwningComp, float NewHealth, float Delta)
+void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttributeModification& AttributeModification)
 {
+	float Delta = AttributeModification.Magnitude;
+	AActor* InstigatorActor = AttributeModification.Instigator.Get();
+	
 	if (Delta < 0.0f)
 	{
 		// Create once, and skip on instant kill
-		if (ActiveHealthBar == nullptr && NewHealth > 0.0)
+		if (ActiveHealthBar == nullptr && NewValue > 0.0)
 		{
 			ActiveHealthBar = CreateWidget<URogueWorldUserWidget>(GetWorld(), HealthBarWidgetClass);
 			if (ActiveHealthBar)
@@ -102,7 +121,7 @@ void ARogueAICharacter::OnHealthChanged(AActor* InstigatorActor, URogueAttribute
 		}, 1.0f, false);
 
 		// Died
-		if (NewHealth <= 0.0f)
+		if (NewValue <= 0.0f)
 		{
 			// stop BT
 			if (HasAuthority())

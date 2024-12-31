@@ -16,11 +16,11 @@ struct FMagicProjectileSparseData : public FProjectileSparseData
 	GENERATED_BODY()
 
 	FMagicProjectileSparseData()
-	: DamageAmount(100.0f)
+	: DamageCoefficient(100.0f)
 	{}
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Damage", meta=(Units="Percent"))
-	float DamageAmount;
+	float DamageCoefficient;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	FGameplayTag ParryTag;
@@ -51,7 +51,7 @@ public:
 	
 private:
 	UPROPERTY()
-	float DamageAmount_DEPRECATED;
+	float DamageCoefficient_DEPRECATED;
 
 	UPROPERTY()
 	FGameplayTag ParryTag_DEPRECATED;

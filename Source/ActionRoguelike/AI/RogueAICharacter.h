@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GenericTeamAgentInterface.h"
+#include "ActionSystem/RogueAttributeSet.h"
 #include "Performance/RogueSignificanceComponent.h"
 #include "GameFramework/Character.h"
 #include "RogueAICharacter.generated.h"
@@ -11,7 +12,6 @@
 
 class UNiagaraComponent;
 class URogueSignificanceComponent;
-class URogueAttributeComponent;
 class UUserWidget;
 class URogueWorldUserWidget;
 class URogueActionComponent;
@@ -44,11 +44,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Effects")
 	TObjectPtr<UAnimMontage> AttackMontage;
 
-	UFUNCTION()
-	void OnHealthChanged(AActor* InstigatorActor, URogueAttributeComponent* OwningComp, float NewHealth, float Delta);
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	TObjectPtr<URogueAttributeComponent> AttributeComp;
+	void OnHealthAttributeChanged(float NewValue, const FAttributeModification& AttributeModification);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<URogueActionComponent> ActionComp;

@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ActionSystem/RogueAttributeSet.h"
 #include "GameFramework/Actor.h"
 #include "RogueExplosiveBarrel.generated.h"
 
 
+class URogueActionComponent;
 class URogueAttributeComponent;
 class UNiagaraComponent;
 class UStaticMeshComponent;
@@ -29,6 +31,9 @@ class ACTIONROGUELIKE_API ARogueExplosiveBarrel : public AActor
 protected:
 
 	UPROPERTY(VisibleAnywhere, Category = Components)
+	TObjectPtr<URogueActionComponent> ActionComp;
+
+	UPROPERTY(VisibleAnywhere, Category = Components)
 	TObjectPtr<UStaticMeshComponent> MeshComp;
 
 	UPROPERTY(VisibleAnywhere, Category = Components)
@@ -40,16 +45,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Components)
 	TObjectPtr<UNiagaraComponent> FlamesFXComp;
 
-	UPROPERTY(VisibleAnywhere, Category = Components)
-	TObjectPtr<URogueAttributeComponent> AttributeComponent;
-
-	//virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-
-	UFUNCTION()
-	void OnHealthChanged(AActor* InstigatorActor, URogueAttributeComponent* OwningComp, float NewHealth, float Delta);
-
 	void Explode();
+
+	void OnHealthAttributeChanged(float NewValue, const FAttributeModification& AttributeModification);
 	
 public:	
 	ARogueExplosiveBarrel();
+
+	virtual void PostInitializeComponents() override;
 };

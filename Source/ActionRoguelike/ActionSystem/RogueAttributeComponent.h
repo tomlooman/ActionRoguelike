@@ -25,10 +25,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	static URogueAttributeComponent* GetAttributes(AActor* FromActor);
-
+/*
 	UFUNCTION(BlueprintCallable, Category = "Attributes", meta = (DisplayName = "IsAlive"))
 	static bool IsActorAlive(AActor* Actor);
-
+*/
 	URogueAttributeComponent();
 
 protected:

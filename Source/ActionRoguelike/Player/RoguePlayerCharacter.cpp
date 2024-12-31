@@ -7,7 +7,6 @@
 #include "DrawDebugHelpers.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "RogueInteractionComponent.h"
-#include "ActionSystem/RogueAttributeComponent.h"
 #include "ActionSystem/RogueActionComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "SharedGameplayTags.h"
@@ -43,9 +42,8 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 
 	InteractionComp = CreateDefaultSubobject<URogueInteractionComponent>(TEXT("InteractionComp"));
 
-	AttributeComp = CreateDefaultSubobject<URogueAttributeComponent>(TEXT("AttributeComp"));
-
 	ActionComp = CreateDefaultSubobject<URogueActionComponent>(TEXT("ActionComp"));
+	ActionComp->SetDefaultAttributeSet(FRogueSurvivorAttributeSet::StaticStruct());
 
 	PerceptionStimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("PerceptionStimuliComp"));
 
@@ -54,7 +52,6 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 	AttackSoundsComp->bAutoActivate = false;
 	// Don't follow player unless actively playing a sound
 	AttackSoundsComp->bAutoManageAttachment = true;
-	
 
 	UCharacterMovementComponent* CharMoveComp = GetCharacterMovement();
 	CharMoveComp->bOrientRotationToMovement = true;
@@ -84,8 +81,8 @@ void ARoguePlayerCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	AttributeComp->OnHealthChanged.AddDynamic(this, &ARoguePlayerCharacter::OnHealthChanged);
-
+	ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health)->OnAttributeChanged.AddUObject(this, &ThisClass::OnHealthAttributeChanged);
+	
 	// Cheap trick to disable until we need it in the health event
 	CachedOverlayMaxDistance = GetMesh()->OverlayMaterialMaxDrawDistance;
 	GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
@@ -320,17 +317,10 @@ void ARoguePlayerCharacter::PrimaryInteract()
 }
 
 
-FGenericTeamId ARoguePlayerCharacter::GetGenericTeamId() const
-{
-	// We have no team switching support during gameplay
-	return FGenericTeamId(TEAM_ID_PLAYERS);
-}
-
-
-void ARoguePlayerCharacter::OnHealthChanged(AActor* InstigatorActor, URogueAttributeComponent* OwningComp, float NewHealth, float Delta)
+void ARoguePlayerCharacter::OnHealthAttributeChanged(float NewValue, const FAttributeModification& AttributeModification)
 {
 	// Damaged
-	if (Delta < 0.0f)
+	if (AttributeModification.Magnitude < 0.0f)
 	{
 		// Materials, including the mesh "OverlayMaterial" can get their data via the component
 		GetMesh()->SetCustomPrimitiveDataFloat(HitFlash_CustomPrimitiveIndex, GetWorld()->TimeSeconds);
@@ -346,14 +336,15 @@ void ARoguePlayerCharacter::OnHealthChanged(AActor* InstigatorActor, URogueAttri
 		}, 1.0f, false);
 
 		// Rage added equal to damage received (Abs to turn into positive rage number)
-		const float RageDelta = FMath::Abs(Delta);
-		AttributeComp->ApplyRage(InstigatorActor, RageDelta);
+		// @TODO: change behavior of RAGE mechanic
+		//const float RageDelta = FMath::Abs(AttributeModification.Magnitude);
+		//AttributeComp->ApplyRage(AttributeModification.Instigator, RageDelta);
 
 		UGameplayStatics::PlaySoundAtLocation(this, TakeDamageVOSound, GetActorLocation(), FRotator::ZeroRotator);
 	}
 
 	// Died
-	if (NewHealth <= 0.0f && Delta < 0.0f)
+	if (NewValue <= 0.0f && AttributeModification.Magnitude < 0.0f)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, DeathVOSound, GetActorLocation(), FRotator::ZeroRotator);
 
@@ -373,6 +364,13 @@ void ARoguePlayerCharacter::OnHealthChanged(AActor* InstigatorActor, URogueAttri
 			DisableInput(PC);
 		}
 	}
+}
+
+
+FGenericTeamId ARoguePlayerCharacter::GetGenericTeamId() const
+{
+	// We have no team switching support during gameplay
+	return FGenericTeamId(TEAM_ID_PLAYERS);
 }
 
 

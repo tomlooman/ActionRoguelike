@@ -4,28 +4,94 @@
 #include "Core/RogueGameplayFunctionLibrary.h"
 
 #include "ActionRoguelike.h"
-#include "ActionSystem/RogueAttributeComponent.h"
 #include "ShaderPipelineCache.h"
+#include "SharedGameplayTags.h"
+#include "ActionSystem/RogueActionComponent.h"
+#include "ActionSystem/RogueActionSystemInterface.h"
 #include "Engine/OverlapResult.h"
 #include "Kismet/GameplayStatics.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueGameplayFunctionLibrary)
 
 
-bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageAmount)
+URogueActionComponent* URogueGameplayFunctionLibrary::GetActionComponentFromActor(AActor* FromActor)
 {
-	URogueAttributeComponent* AttributeComp = URogueAttributeComponent::GetAttributes(TargetActor);
-	if (AttributeComp)
+	if (!ensure(FromActor))
 	{
-		return AttributeComp->ApplyHealthChange(DamageCauser, -DamageAmount);
+		// Log this?
+		return nullptr;
 	}
+	
+	// Note: Cast<T> on interface only works if the interface was implemented on the Actor in C++
+	// For BP implemented we should change this code to call Execute_GetActionComponent instead...
+	const IRogueActionSystemInterface* ASI = Cast<IRogueActionSystemInterface>(FromActor);
+	if (ASI)
+	{
+		return ASI->GetActionComponent();
+	}
+	/*if (InActor && InActor->Implements<URogueGameplayInterface>()) // example reference for a BP interface
+	{
+		URogueActionComponent* ActionComp = nullptr;
+		if (IRogueGameplayInterface::Execute_GetActionComponent(InActor, ActionComp))
+		{
+			return ActionComp;
+		}
+	}*/
+
+	// Fallback when interface is missing
+	return FromActor->FindComponentByClass<URogueActionComponent>();
+}
+
+bool URogueGameplayFunctionLibrary::IsAlive(AActor* InActor)
+{
+	if (IsValid(InActor))
+	{
+		return false;
+	}
+
+	URogueActionComponent* ActionComp = GetActionComponentFromActor(InActor);
+	if (ActionComp)
+	{
+		return ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health)->GetValue() > 0.0f;
+	}
+
 	return false;
 }
 
 
-bool URogueGameplayFunctionLibrary::ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, float DamageAmount, const FHitResult& HitResult)
+bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient)
 {
-	if (ApplyDamage(DamageCauser, TargetActor, DamageAmount))
+	URogueActionComponent* InstigatorComp = GetActionComponentFromActor(DamageCauser);
+	check(InstigatorComp);
+
+	FRogueAttribute* FoundAttribute = InstigatorComp->GetAttribute(SharedGameplayTags::Attribute_AttackDamage);
+
+	// Coefficient is a %, to scale all out damage off the instigator's base attack damage
+	float TotalDamage = FoundAttribute->GetValue() * (DamageCoefficient*0.01f);
+
+	URogueActionComponent* VictimComp = GetActionComponentFromActor(TargetActor);
+	if (VictimComp == nullptr)
+	{
+		UE_LOG(LogGame, Warning, TEXT("ApplyDamage Victim (%s) does not contain an ActionComponent."), *GetNameSafe(TargetActor));
+		return false;
+	}
+
+	FAttributeModification AttriMod = FAttributeModification(
+		SharedGameplayTags::Attribute_Health,
+		-TotalDamage, // Make sure we apply a negative amount to the Health
+		VictimComp,
+		DamageCauser,
+		EAttributeModifyType::AddDelta);
+	
+	VictimComp->ApplyAttributeChange(AttriMod);
+	
+	return true;
+}
+
+
+bool URogueGameplayFunctionLibrary::ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient, const FHitResult& HitResult)
+{
+	if (ApplyDamage(DamageCauser, TargetActor, DamageCoefficient))
 	{
 		UPrimitiveComponent* HitComp = HitResult.GetComponent();
 		if (HitComp->bApplyImpulseOnDamage && HitComp->IsSimulatingPhysics(HitResult.BoneName))
@@ -42,13 +108,14 @@ bool URogueGameplayFunctionLibrary::ApplyDirectionalDamage(AActor* DamageCauser,
 
 
 	// Call into Unreal built in logic for early course damaging of explosive barrel
-	// Don't have a proper way of knowing it was processed
-	UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, nullptr, DamageCauser, nullptr);
+	// Don't have a proper way of knowing it was processed, so we return false
+	//UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, nullptr, DamageCauser, nullptr);
 
 	return false;
 }
 
-bool URogueGameplayFunctionLibrary::ApplyRadialDamage(AActor* DamageCauser, FVector Origin, float DamageRadius, float DamageAmount)
+/*
+bool URogueGameplayFunctionLibrary::ApplyRadialDamage(AActor* DamageCauser, FVector Origin, float DamageRadius, float DamageCoefficient)
 {
 	UWorld* World = DamageCauser->GetWorld();
 	// do async overlap to find list of potential victims
@@ -66,7 +133,7 @@ bool URogueGameplayFunctionLibrary::ApplyRadialDamage(AActor* DamageCauser, FVec
 	//Params.MobilityType = EQueryMobilityType::Dynamic;
 
 	FCollisionResponseParams ResponseParams;
-
+*/
 	/*
 	FOverlapDelegate* Delegate;
 	Delegate->BindLambda([](const FTraceHandle& Handle, FOverlapDatum& Datum)
@@ -76,11 +143,11 @@ bool URogueGameplayFunctionLibrary::ApplyRadialDamage(AActor* DamageCauser, FVec
 
 	//FTraceHandle Handle; // @todo: can pass in additional params here if needed for multi-pass stuff
 	// @todo:need to pass "this", which wont work in static function
-
+/*
 	// Fill any useful dmg info
 	FDamageInfo Info;
 	Info.DamageInstigator = DamageCauser;
-	Info.AttackDamage = DamageAmount;
+	Info.AttackDamage = 0.0f; // InstigatorDmg * (DamageCoefficient*0.01f)
 	
 	FOverlapDelegate Delegate = FOverlapDelegate::CreateUObject(this, &URogueGameplayFunctionLibrary::OnDamageOverlapComplete, Info);
 
@@ -91,7 +158,9 @@ bool URogueGameplayFunctionLibrary::ApplyRadialDamage(AActor* DamageCauser, FVec
 
 	return false;
 }
+*/
 
+/*	
 void URogueGameplayFunctionLibrary::OnDamageOverlapComplete(const FTraceHandle& TraceHandle, FOverlapDatum& OverlapDatum, FDamageInfo DamageInfo)
 {
 	// if second pass w/ line traces is async too, we are two frames 'behind' the initial request for damage.
@@ -105,7 +174,7 @@ void URogueGameplayFunctionLibrary::OnDamageOverlapComplete(const FTraceHandle& 
 		ApplyDamage(DamageInfo.DamageInstigator.Get(), Overlap.GetActor(), DamageInfo.AttackDamage);
 	}
 }
-
+*/
 
 int32 URogueGameplayFunctionLibrary::GetRemainingBundledPSOs()
 {

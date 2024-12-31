@@ -5,8 +5,8 @@
 
 #include "ActionRoguelike.h"
 #include "ActionSystem/RogueActionComponent.h"
-#include "ActionSystem/RogueAttributeComponent.h"
 #include "AI/RogueAICharacter.h"
+#include "Core/RogueGameplayFunctionLibrary.h"
 #include "GameFramework/Character.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueAction_MinionRangedAttack)
@@ -22,7 +22,7 @@ void URogueAction_MinionRangedAttack::StartAction_Implementation(AActor* Instiga
 		return;
 	}
 
-	if (!URogueAttributeComponent::IsActorAlive(TargetActor))
+	if (!URogueGameplayFunctionLibrary::IsAlive(TargetActor))
 	{
 		return;
 	}

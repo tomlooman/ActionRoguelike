@@ -23,9 +23,6 @@ class ACTIONROGUELIKE_API URogueActionComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	
-	UFUNCTION(BlueprintCallable)
-	static URogueActionComponent* GetComponent(AActor* InActor);
 
 	UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, Category = "Tags")
 	FGameplayTagContainer ActiveGameplayTags;
@@ -48,35 +45,32 @@ public:
 
 	URogueActionComponent();
 
-	bool GetAttribute(FGameplayTag InAttributeTag, FRogueAttribute& OutAttribute);
+	FRogueAttribute* GetAttribute(FGameplayTag InAttributeTag);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Attributes, meta = (Keywords = "Add, Set"))
+	bool ApplyAttributeChange(const FAttributeModification& Modification);
+
+	/* Provide a default attribute set type for (base) classes, blueprint can set this via the details panel instead */
+	void SetDefaultAttributeSet(UScriptStruct* InDefaultType);
+
+protected:
 
 	UFUNCTION(BlueprintCallable, Category=Attributes, DisplayName="GetAttribute")
 	bool K2_GetAttribute(FGameplayTag InAttributeTag, float& CurrentValue, float& Base, float& Delta);
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Attributes, meta = (Keywords = "Add, Set"))
-	bool ApplyAttributeChange(FGameplayTag InAttributeTag, FAttributeModification Modification);
-
-	void BroadcastAttributeListener(FGameplayTag AttributeTag, float NewValue, const FAttributeModification& AppliedMod);
-
-	void K2_AddAttributeListener(FGameplayTag AttributeTag, const FOnAttributeChangedDynamic& Event);
-
-	FDelegateHandle AddAttributeListener(FGameplayTag AttributeTag, const FOnAttributeChangedNonDynamic& Func);
-
-	void RemoveAttributeListener(FGameplayTag AttributeTag, FDelegateHandle Handle);
-	
-	void RemoveAttributeListener(FGameplayTag AttributeTag, FAttributeDelegateHandle Handle);
-
-	// Keep a list of delegates per unique gameplaytag
-	TMap<FGameplayTag, FOnAttributeChangedList> AttributeListeners;
-
-	TMap<FGameplayTag, TArray<FAttributeDelegateHandle>> Listeners;
-
-protected:
-	
+	/* Marked protected, C++ can use direct access to the OnAttributeChanged inside an Attribute */
+	UFUNCTION(BlueprintCallable, DisplayName="AddAttributeListener", meta = (Keywords = "Bind, Delegate", AdvancedDisplay="bCallImmediately"))
+	void K2_AddAttributeListener(FGameplayTag AttributeTag, FOnAttributeChangedDynamic Event, bool bCallImmediately = false);
 
 	/* Interchangeable set of attributes such as Health, BaseDamage, Strength, Stamina, MoveSpeed, etc. */
-	UPROPERTY(EditAnywhere, Category=Attributes, meta = (BaseStruct = "RogueAttributeSet", ExcludeBaseStruct))
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category=Attributes, meta = (BaseStruct = "RogueAttributeSet", ExcludeBaseStruct))
 	FInstancedStruct AttributeSet;
+
+	/* Fetch from properties stored inside the AttributeSet for quick access */
+	TMap<FGameplayTag, FRogueAttribute*> AttributeCache;
+
+	/* List of delegates that came from Blueprint to ensure we can clean up "dead" hooks */
+	TMap<FOnAttributeChangedDynamic, FDelegateHandle> DynamicDelegateHandles;
 
 	UFUNCTION(Server, Reliable)
 	void ServerStartAction(AActor* Instigator, FGameplayTag ActionName);
@@ -91,9 +85,6 @@ protected:
 	UPROPERTY(Transient, BlueprintReadOnly, Replicated)
 	TArray<TObjectPtr<URogueAction>> Actions;
 
-	/* Fetch from properties stored inside the AttributeSet for quick access */
-	TMap<FGameplayTag, const FRogueAttribute*> AttributeCache;
-
 	virtual void InitializeComponent() override;
 
 	virtual void BeginPlay() override;
@@ -107,7 +98,5 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnActionStateChanged OnActionStopped;
-
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 };

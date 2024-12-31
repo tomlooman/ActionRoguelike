@@ -17,7 +17,6 @@ class UCameraComponent;
 class USpringArmComponent;
 class URogueInteractionComponent;
 class UAnimMontage;
-class URogueAttributeComponent;
 class URogueActionComponent;
 
 UCLASS()
@@ -95,9 +94,6 @@ protected:
 	TObjectPtr<URogueInteractionComponent> InteractionComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	TObjectPtr<URogueAttributeComponent> AttributeComp;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<URogueActionComponent> ActionComp;
 
 	UPROPERTY(VisibleAnywhere)
@@ -128,8 +124,7 @@ protected:
 
 	void PrimaryInteract();
 
-	UFUNCTION()
-	void OnHealthChanged(AActor* InstigatorActor, URogueAttributeComponent* OwningComp, float NewHealth, float Delta);
+	void OnHealthAttributeChanged(float NewValue, const FAttributeModification& AttributeModification);
 
 	virtual void PostInitializeComponents() override;
 

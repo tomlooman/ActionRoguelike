@@ -2,9 +2,11 @@
 
 
 #include "AI/RogueBTService_CheckHealth.h"
-#include "ActionSystem/RogueAttributeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
+#include "SharedGameplayTags.h"
+#include "ActionSystem/RogueActionComponent.h"
+#include "Core/RogueGameplayFunctionLibrary.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueBTService_CheckHealth)
 
@@ -20,13 +22,17 @@ void URogueBTService_CheckHealth::TickNode(UBehaviorTreeComponent& OwnerComp, ui
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
 	APawn* AIPawn = OwnerComp.GetAIOwner()->GetPawn();
+	check(AIPawn);
 
-	URogueAttributeComponent* AttributeComp = URogueAttributeComponent::GetAttributes(AIPawn);
-	if (ensure(AttributeComp))
-	{
-		const bool bLowHealth = (AttributeComp->GetHealth() / AttributeComp->GetHealthMax()) < LowHealthFraction;
+	URogueActionComponent* ActionComp = URogueGameplayFunctionLibrary::GetActionComponentFromActor(AIPawn);
+	check(ActionComp);
 
-		UBlackboardComponent* BlackBoardComp = OwnerComp.GetBlackboardComponent();
-		BlackBoardComp->SetValueAsBool(LowHealthKey.SelectedKeyName, bLowHealth);
-	}
+	float Health = ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health)->GetValue();
+	float HealthMax = ActionComp->GetAttribute(SharedGameplayTags::Attribute_HealthMax)->GetValue();
+
+	const bool bLowHealth = (Health / HealthMax) < LowHealthFraction;
+
+	UBlackboardComponent* BlackBoardComp = OwnerComp.GetBlackboardComponent();
+	BlackBoardComp->SetValueAsBool(LowHealthKey.SelectedKeyName, bLowHealth);
+	
 }

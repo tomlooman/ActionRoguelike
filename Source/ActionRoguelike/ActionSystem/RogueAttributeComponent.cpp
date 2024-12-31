@@ -96,13 +96,14 @@ URogueAttributeComponent* URogueAttributeComponent::GetAttributes(AActor* FromAc
 {
 	if (FromActor)
 	{
+		// @todo: allow "quick access" via interface callback to optionally implement
 		return FromActor->FindComponentByClass<URogueAttributeComponent>();
 	}
 
 	return nullptr;
 }
 
-
+/*
 bool URogueAttributeComponent::IsActorAlive(AActor* Actor)
 {
 	URogueAttributeComponent* AttributeComp = GetAttributes(Actor);
@@ -113,7 +114,7 @@ bool URogueAttributeComponent::IsActorAlive(AActor* Actor)
 
 	return false;
 }
-
+*/
 
 bool URogueAttributeComponent::Kill(AActor* InstigatorActor)
 {

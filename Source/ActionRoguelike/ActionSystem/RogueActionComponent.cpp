@@ -6,7 +6,6 @@
 #include "Core/RogueGameplayInterface.h"
 #include "../ActionRoguelike.h"
 #include "Net/UnrealNetwork.h"
-#include "RogueTypes.h"
 #include "Engine/ActorChannel.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueActionComponent)
@@ -28,15 +27,19 @@ void URogueActionComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
-	for (TFieldIterator<FStructProperty> PropertyIt(AttributeSet.GetScriptStruct()); PropertyIt; ++PropertyIt)
 	{
-		const FRogueAttribute* FoundAttribute = PropertyIt->ContainerPtrToValuePtr<FRogueAttribute>(AttributeSet.GetMemory());
+		TRACE_CPUPROFILER_EVENT_SCOPE(CacheAllAttributes);
 
-		// Build the tag "Attribute.Health" where "Health" is the variable name of the RogueAttribute we just iterated
-		FString TagName = TEXT("Attribute." + PropertyIt->GetName());
-		FGameplayTag AttributeTag = FGameplayTag::RequestGameplayTag(FName(TagName));
+		for (TFieldIterator<FStructProperty> PropertyIt(AttributeSet.GetScriptStruct()); PropertyIt; ++PropertyIt)
+		{
+			const FRogueAttribute* FoundAttribute = PropertyIt->ContainerPtrToValuePtr<FRogueAttribute>(AttributeSet.GetMemory());
 
-		AttributeCache.Add(AttributeTag, FoundAttribute);
+			// Build the tag "Attribute.Health" where "Health" is the variable name of the RogueAttribute we just iterated
+			FString TagName = TEXT("Attribute." + PropertyIt->GetName());
+			FGameplayTag AttributeTag = FGameplayTag::RequestGameplayTag(FName(TagName));
+
+			AttributeCache.Add(AttributeTag, const_cast<FRogueAttribute*>(FoundAttribute));
+		}
 	}
 }
 
@@ -72,53 +75,50 @@ void URogueActionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 }
 
 
-bool URogueActionComponent::GetAttribute(FGameplayTag InAttributeTag, FRogueAttribute& OutAttribute)
+FRogueAttribute* URogueActionComponent::GetAttribute(FGameplayTag InAttributeTag)
 {
-	const FRogueAttribute* FoundAttribute = *AttributeCache.Find(InAttributeTag);
+	FRogueAttribute** FoundAttribute = AttributeCache.Find(InAttributeTag);
 	if (FoundAttribute)
 	{
-		OutAttribute = *FoundAttribute;
-		return true;
+		return *FoundAttribute;
 	}
 
-	return false;
+	return nullptr;
 }
 
 
 bool URogueActionComponent::K2_GetAttribute(FGameplayTag InAttributeTag, float& CurrentValue, float& Base, float& Delta)
 {
-	FRogueAttribute FoundAttribute;
-	if (GetAttribute(InAttributeTag, FoundAttribute))
+	if (FRogueAttribute* FoundAttribute = GetAttribute(InAttributeTag))
 	{
-		CurrentValue = FoundAttribute.GetValue();
-		Base = FoundAttribute.Base;
-		Delta = FoundAttribute.Delta;
+		CurrentValue = FoundAttribute->GetValue();
+		Base = FoundAttribute->Base;
+		Delta = FoundAttribute->Delta;
 	}
 
 	return false;
 }
 
 
-bool URogueActionComponent::ApplyAttributeChange(FGameplayTag InAttributeTag, FAttributeModification Modification)
+bool URogueActionComponent::ApplyAttributeChange(const FAttributeModification& Modification)
 {
-	FRogueAttribute Attribute;
-	GetAttribute(InAttributeTag, Attribute);
+	FRogueAttribute* Attribute = GetAttribute(Modification.AttributeTag);
 
 	switch (Modification.ModifyType)
 	{
 		case EAttributeModifyType::AddBase:
 			{
-				Attribute.Base += Modification.Magnitude;
+				Attribute->Base += Modification.Magnitude;
 				break;
 			}
 		case EAttributeModifyType::AddDelta:
 			{
-				Attribute.Delta += Modification.Magnitude;
+				Attribute->Delta += Modification.Magnitude;
 				break;
 			}
 		case EAttributeModifyType::OverrideBase:
 			{
-				Attribute.Base = Modification.Magnitude;
+				Attribute->Base = Modification.Magnitude;
 				break;
 			}
 		default:
@@ -126,130 +126,62 @@ bool URogueActionComponent::ApplyAttributeChange(FGameplayTag InAttributeTag, FA
 			check(false);
 	}
 
-	BroadcastAttributeListener(InAttributeTag, Attribute.GetValue(), Modification);
-	
+	Attribute->OnAttributeChanged.Broadcast(Attribute->GetValue(), Modification);
+
 	return true;
 }
 
 
-void URogueActionComponent::K2_AddAttributeListener(FGameplayTag AttributeTag, const FOnAttributeChangedDynamic& Event)
+void URogueActionComponent::K2_AddAttributeListener(FGameplayTag AttributeTag, FOnAttributeChangedDynamic Event, bool bCallImmediately /*= false*/)
 {
-	//FAttributeDelegateHandle Wrapper;
-	//Wrapper.DynamicDelegate = Event;
-	//AttributeListeners.Add(TPair<FGameplayTag, FAttributeDelegateHandle>(AttributeTag, Wrapper));
-
-
-	if (TArray<FAttributeDelegateHandle>* Handles = Listeners.Find(AttributeTag))
+	if (!AttributeTag.IsValid())
 	{
-		Handles->Add(FAttributeDelegateHandle(Event));
+		UE_LOG(LogGame, Log, TEXT("No valid GameplayTag specified in AddAttributeListener for %s"), *GetNameSafe(GetOwner()));
+		return;
 	}
-}
-
-
-FDelegateHandle URogueActionComponent::AddAttributeListener(FGameplayTag AttributeTag, const FOnAttributeChangedNonDynamic& Func)
-{
-	//FAttributeDelegateHandle Wrapper;
-	//Wrapper.Delegate = Func;
-	//AttributeListeners.Add(TPair<FGameplayTag, FAttributeDelegateHandle>(AttributeTag, Wrapper));
-
-	if (FOnAttributeChangedList* DelegateList = AttributeListeners.Find(AttributeTag))
-	{
-		// Append delegate to exist list for specific tag
-		DelegateList->Delegates.Add(Func);
-	}
-	else
-	{
-		// Did not find any for this tag, create a fresh list
-		FOnAttributeChangedList NewList;
-		NewList.Delegates.Add(Func);
-		AttributeListeners.Add(AttributeTag, NewList);
-	}
-
-	return Func.GetHandle();
-}
-
-
-void URogueActionComponent::RemoveAttributeListener(FGameplayTag AttributeTag, FDelegateHandle Handle)
-{
-	if (FOnAttributeChangedList* DelegateList = AttributeListeners.Find(AttributeTag))
-	{
-		for (int32 i = 0; i < DelegateList->Delegates.Num(); i++)
-		{
-			if (Handle == DelegateList->Delegates[i].GetHandle())
-			{
-				// Clear
-				DelegateList->Delegates[i] = nullptr;
-				break;
-			}
-		}
-	}
-}
-
-
-void URogueActionComponent::RemoveAttributeListener(FGameplayTag AttributeTag, FAttributeDelegateHandle Handle)
-{
-	TArray<FAttributeDelegateHandle> DelegateList = *Listeners.Find(AttributeTag);
-	check(DelegateList.Num() > 0);
 	
-	for (int32 i = 0; i < DelegateList.Num(); i++)
+	FRogueAttribute* FoundAttribute = GetAttribute(AttributeTag);
+
+	// An unusual "Wrapper" to make the binding easier in blueprint (returns handle to unbind from Blueprint if needed)
+	FDelegateHandle Handle = FoundAttribute->OnAttributeChanged.AddLambda([Event, FoundAttribute, this](float NewValue, FAttributeModification AttriMod)
 	{
-		if (Handle == DelegateList[i])
+		bool bIsBound = Event.ExecuteIfBound(NewValue, AttriMod);
+
+		// We instance was deleted, the event is no longer valid
+		if (!bIsBound)
 		{
-			// Clear
-			DelegateList.RemoveAt(i);
-			break;
+			FDelegateHandle Handle = *DynamicDelegateHandles.Find(Event);
+			FoundAttribute->OnAttributeChanged.Remove(Handle);
 		}
+	});
+
+	// Keep track so it can be cleaned up if blueprint owning is deleted
+	DynamicDelegateHandles.Add(Event, Handle);
+
+	// Calling immediately is convenient for setting up initial states like in UI
+	if (bCallImmediately)
+	{
+		// @todo: maybe change EAttributeModifyType?
+		FAttributeModification AttriMod = FAttributeModification(AttributeTag,
+			0.0f, this, GetOwner(), EAttributeModifyType::Invalid);
+		
+		Event.Execute(FoundAttribute->GetValue(), AttriMod);
 	}
 }
 
 
-void URogueActionComponent::BroadcastAttributeListener(FGameplayTag AttributeTag, float NewValue, const FAttributeModification& AppliedMod)
+void URogueActionComponent::SetDefaultAttributeSet(UScriptStruct* InDefaultType)
 {
-	if (FOnAttributeChangedList* DelegateList = AttributeListeners.Find(AttributeTag))
-	{
-		for (FOnAttributeChangedNonDynamic& Delegate : DelegateList->Delegates)
-		{
-			Delegate.Execute(NewValue, AppliedMod);
-		}
-	}
+	// @todo: maybe add safeguards to only allow this during init. We don't want to swap out set during gameplay
+	
+	//AttributeSet = InAttributeSet;
+
+	// @FIXME: find way to init the attribute set class in C++
+	//AttributeSet.Make(InDefaultType->GetClass());
+
+	AttributeSet = FInstancedStruct(InDefaultType);
 }
 
-
-void URogueActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	//FString DebugMsg = GetNameSafe(GetOwner()) + " : " + ActiveGameplayTags.ToStringSimple();
-	//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::White, DebugMsg);
-
-	// Draw All Actions
-// 	for (URogueAction* Action : Actions)
-// 	{
-// 		FColor TextColor = Action->IsRunning() ? FColor::Blue : FColor::White;
-// 		FString ActionMsg = FString::Printf(TEXT("[%s] Action: %s"), *GetNameSafe(GetOwner()), *GetNameSafe(Action));
-// 
-// 		LogOnScreen(this, ActionMsg, TextColor, 0.0f);
-// 	}
-}
-
-
-URogueActionComponent* URogueActionComponent::GetComponent(AActor* InActor)
-{
-	if (InActor && InActor->Implements<URogueGameplayInterface>())
-	{
-		URogueActionComponent* ActionComp = nullptr;
-		if (IRogueGameplayInterface::Execute_GetActionComponent(InActor, ActionComp))
-		{
-			return ActionComp;
-		}
-	}
-
-	// @todo: log warn about interface not implemented yet
-
-	// Iterate over all components anyway if not implemented. But warn about this
-
-	return InActor->GetComponentByClass<URogueActionComponent>();
-}
 
 void URogueActionComponent::AddAction(AActor* Instigator, TSubclassOf<URogueAction> ActionClass)
 {
@@ -393,4 +325,5 @@ void URogueActionComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(URogueActionComponent, Actions);
+	DOREPLIFETIME(URogueActionComponent, AttributeSet);
 }

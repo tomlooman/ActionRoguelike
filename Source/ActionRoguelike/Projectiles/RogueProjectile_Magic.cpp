@@ -48,15 +48,13 @@ void ARogueProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedCompo
 		}
 
 		// re-use the dmg amount as a 'coefficient', a percentage based off the base damage from player.
-		float DmgCoefficient = GetDamageAmount();
-
-		URogueAttributeComponent* InstigatorAttributes = URogueAttributeComponent::GetAttributes(GetInstigator());
-		float TotalDamage = InstigatorAttributes->BaseDamage * (DmgCoefficient*0.01f);
+		// (this function is generated from a "SparseData" optimization code example)
+		float DmgCoefficient = GetDamageCoefficient();
 
 		// Apply Damage & Impulse
-		if (URogueGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, TotalDamage, SweepResult))
+		if (URogueGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DmgCoefficient, SweepResult))
 		{
-			// We only explode if the target can be damaged, it ignores anything it Overlaps that it cannot Damage (it requires an AttributeComponent on the target)
+			// We only explode if the target can be damaged, it ignores anything it Overlaps that it cannot Damage
 			Explode();
 
 			if (OtherActionComp && GetBurningActionClass() && HasAuthority())
@@ -86,7 +84,7 @@ void ARogueProjectile_Magic::MoveDataToSparseClassDataStruct() const
 	FMagicProjectileSparseData* SparseClassData = GetMagicProjectileSparseData();
 
 	// Modify these lines to include all Sparse Class Data properties.
-	SparseClassData->DamageAmount = DamageAmount_DEPRECATED;
+	SparseClassData->DamageCoefficient = DamageCoefficient_DEPRECATED;
 	SparseClassData->ParryTag = ParryTag_DEPRECATED;
 	SparseClassData->BurningActionClass = BurningActionClass_DEPRECATED;
 #endif // WITH_EDITORONLY_DATA
