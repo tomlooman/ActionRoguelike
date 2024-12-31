@@ -113,7 +113,7 @@ AActor* URogueActorPoolingSubsystem::AcquireFromPool_Internal(TSubclassOf<AActor
 
 		// Remove from pool
 		// @todo: keep in pool but mark as in-use
-		ActorPool->FreeActors.RemoveAt(0, 1, false);
+		ActorPool->FreeActors.RemoveAtSwap(0, 1, false);
 	}
 
 	// Failed to find actor

@@ -20,6 +20,7 @@
 #include "Engine/AssetManager.h"
 #include "Performance/RogueActorPoolingSubsystem.h"
 #include "UI/RogueHUD.h"
+#include "Windows/WindowsPlatformPerfCounters.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueGameModeBase)
 
@@ -263,12 +264,17 @@ void ARogueGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector Spawn
 
 void ARogueGameModeBase::OnPowerupSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result)
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE(OnPowerupSpawnQueryCompleted);
+	
 	FEnvQueryResult* QueryResult = Result.Get();
 	if (!QueryResult->IsSuccessful())
 	{
 		UE_LOGFMT(LogGame, Warning, "Spawn bot EQS Query Failed!");
 		return;
 	}
+	
+
+	uint32 CyclesStart = FWindowsPlatformTime::Cycles();
 
 	// Retrieve all possible locations that passed the query
 	TArray<FVector> Locations;
@@ -286,7 +292,7 @@ void ARogueGameModeBase::OnPowerupSpawnQueryCompleted(TSharedPtr<FEnvQueryResult
 
 		FVector PickedLocation = Locations[RandomLocationIndex];
 		// Remove to avoid picking again
-		Locations.RemoveAt(RandomLocationIndex);
+		Locations.RemoveAtSwap(RandomLocationIndex);
 
 		// Check minimum distance requirement
 		bool bValidLocation = true;
@@ -321,6 +327,10 @@ void ARogueGameModeBase::OnPowerupSpawnQueryCompleted(TSharedPtr<FEnvQueryResult
 		UsedLocations.Add(PickedLocation);
 		SpawnCounter++;
 	}
+
+	uint32 CyclesEnd = FWindowsPlatformTime::Cycles();
+
+	UE_LOG(LogGame, Log, TEXT("OnPowerupSpawnQueryCompleted: %i Cycles"), (CyclesEnd - CyclesStart));
 }
 
 

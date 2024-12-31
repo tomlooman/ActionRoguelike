@@ -17,7 +17,7 @@ void URogueCurveAnimSubsystem::Tick(float DeltaTime)
 
 		if (ActiveAnims[i].IsFinished())
 		{
-			ActiveAnims.RemoveAt(i);
+			ActiveAnims.RemoveAtSwap(i);
 		}
 	}
 
@@ -28,7 +28,7 @@ void URogueCurveAnimSubsystem::Tick(float DeltaTime)
 
 		if (ActiveEasingFuncs[i].IsFinished())
 		{
-			ActiveEasingFuncs.RemoveAt(i);
+			ActiveEasingFuncs.RemoveAtSwap(i);
 		}
 	}
 }
