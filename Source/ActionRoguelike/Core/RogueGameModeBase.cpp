@@ -137,9 +137,6 @@ void ARogueGameModeBase::SpawnBotTimerElapsed()
 	// TActorRange simplifies the code compared to TActorIterator<T>
 	for (ARogueAICharacter* Bot : TActorRange<ARogueAICharacter>(GetWorld()))
 	{
-		// @todo: bots can register themselves with gamemode or director subsystem and remove on death
-		// @todo: game director class to handle the spawning, coin-system and registration would be a better fit
-		// @todo: downside is that subsystems are always loaded
 		URogueAttributeComponent* AttributeComp = URogueAttributeComponent::GetAttributes(Bot);
 		if (ensure(AttributeComp) && AttributeComp->IsAlive())
 		{
