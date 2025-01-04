@@ -5,6 +5,7 @@
 #include "ActionSystem/RogueAction.h"
 #include "Core/RogueGameplayInterface.h"
 #include "../ActionRoguelike.h"
+#include "Core/RogueGameplayFunctionLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "Engine/ActorChannel.h"
 
@@ -61,15 +62,7 @@ void URogueActionComponent::BeginPlay()
 
 void URogueActionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	// Stop all
-	TArray<URogueAction*> ActionsCopy = Actions;
-	for (URogueAction* Action : ActionsCopy)
-	{
-		if (Action->IsRunning())
-		{
-			Action->StopAction(GetOwner());
-		}
-	}
+	StopAllActions();
 
 	Super::EndPlay(EndPlayReason);
 }
@@ -104,6 +97,8 @@ bool URogueActionComponent::ApplyAttributeChange(const FAttributeModification& M
 {
 	FRogueAttribute* Attribute = GetAttribute(Modification.AttributeTag);
 
+	float OriginalValue = Attribute->GetValue();
+
 	switch (Modification.ModifyType)
 	{
 		case EAttributeModifyType::AddBase:
@@ -126,9 +121,15 @@ bool URogueActionComponent::ApplyAttributeChange(const FAttributeModification& M
 			check(false);
 	}
 
-	Attribute->OnAttributeChanged.Broadcast(Attribute->GetValue(), Modification);
-
-	return true;
+	// With clamping inside the attribute (or a zero delta) no real change might have occured
+	if (!FMath::IsNearlyEqual(OriginalValue, Attribute->GetValue()))
+	{
+		Attribute->OnAttributeChanged.Broadcast(Attribute->GetValue(), Modification);
+		return true;
+	}
+	
+	// no actual change occured
+	return false;
 }
 
 
@@ -173,13 +174,13 @@ void URogueActionComponent::K2_AddAttributeListener(FGameplayTag AttributeTag, F
 void URogueActionComponent::SetDefaultAttributeSet(UScriptStruct* InDefaultType)
 {
 	// @todo: maybe add safeguards to only allow this during init. We don't want to swap out set during gameplay
-	
-	//AttributeSet = InAttributeSet;
-
-	// @FIXME: find way to init the attribute set class in C++
-	//AttributeSet.Make(InDefaultType->GetClass());
-
 	AttributeSet = FInstancedStruct(InDefaultType);
+}
+
+
+URogueActionComponent* URogueActionComponent::GetActionComponent(AActor* FromActor)
+{
+	return URogueGameplayFunctionLibrary::GetActionComponentFromActor(FromActor);
 }
 
 
@@ -305,6 +306,19 @@ bool URogueActionComponent::StopActionByName(AActor* Instigator, FGameplayTag Ac
 	}
 
 	return false;
+}
+
+void URogueActionComponent::StopAllActions()
+{
+	// Stop all
+	TArray<URogueAction*> ActionsCopy = Actions;
+	for (URogueAction* Action : ActionsCopy)
+	{
+		if (Action->IsRunning())
+		{
+			Action->StopAction(GetOwner());
+		}
+	}
 }
 
 

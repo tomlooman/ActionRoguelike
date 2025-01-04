@@ -2,7 +2,8 @@
 
 
 #include "RogueActionEffect_Thorns.h"
-#include "ActionSystem/RogueAttributeComponent.h"
+
+#include "SharedGameplayTags.h"
 #include "ActionSystem/RogueActionComponent.h"
 #include "Core/RogueGameplayFunctionLibrary.h"
 
@@ -24,11 +25,7 @@ void URogueActionEffect_Thorns::StartAction_Implementation(AActor* Instigator)
 	Super::StartAction_Implementation(Instigator);
 
 	// Start listening
-	URogueAttributeComponent* Attributes = URogueAttributeComponent::GetAttributes(GetOwningComponent()->GetOwner());
-	if (Attributes)
-	{
-		Attributes->OnHealthChanged.AddDynamic(this, &URogueActionEffect_Thorns::OnHealthChanged);
-	}
+	AttriChangedHandle = ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health)->OnAttributeChanged.AddUObject(this, &ThisClass::OnHealthChanged);
 }
 
 
@@ -37,32 +34,32 @@ void URogueActionEffect_Thorns::StopAction_Implementation(AActor* Instigator)
 	Super::StopAction_Implementation(Instigator);
 
 	// Stop listening
-	URogueAttributeComponent* Attributes = URogueAttributeComponent::GetAttributes(GetOwningComponent()->GetOwner());
-	if (Attributes)
-	{
-		Attributes->OnHealthChanged.RemoveDynamic(this, &URogueActionEffect_Thorns::OnHealthChanged);
-	}
+	ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health)->OnAttributeChanged.Remove(AttriChangedHandle);
 }
 
 
-void URogueActionEffect_Thorns::OnHealthChanged(AActor* InstigatorActor, URogueAttributeComponent* OwningComp, float NewHealth, float Delta)
+void URogueActionEffect_Thorns::OnHealthChanged(float NewValue, const FAttributeModification& AttributeModification)
 {
 	AActor* OwningActor = GetOwningComponent()->GetOwner();
 
 	// Damage Only
-	if (Delta < 0.0f && OwningActor != InstigatorActor)
+	if (AttributeModification.Magnitude < 0.0f && OwningActor != AttributeModification.Instigator)
 	{
+		/*
 		// Round to nearest to avoid 'ugly' damage numbers and tiny reflections
-		int32 ReflectedAmount = FMath::RoundToInt(Delta * ReflectFraction);
+		int32 ReflectedAmount = FMath::RoundToInt(AttributeModification.Magnitude * ReflectFraction);
 		if (ReflectedAmount == 0)
 		{
 			return;
 		}
 
 		// Flip to positive, so we don't end up healing ourselves when passed into damage
-		ReflectedAmount = FMath::Abs(ReflectedAmount);
+		ReflectedAmount = FMath::Abs(ReflectedAmount);*/
 
-		// Return damage sender...
-		URogueGameplayFunctionLibrary::ApplyDamage(OwningActor, InstigatorActor, ReflectedAmount);
+		// @todo: maybe thorns can still base DMG on base dmg from hit rather than using player baseDmg attribute as with all normal damage
+		float DmgCoefficient = 5.0f;
+
+		// Return damage to sender...
+		URogueGameplayFunctionLibrary::ApplyDamage(OwningActor, AttributeModification.Instigator.Get(), DmgCoefficient);
 	}
 }

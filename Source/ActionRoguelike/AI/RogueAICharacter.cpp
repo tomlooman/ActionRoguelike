@@ -65,22 +65,11 @@ void ARogueAICharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	//FOnAttributeChangedNonDynamic Delegate = FOnAttributeChangedNonDynamic::CreateUObject(this, &ARogueAICharacter::OnHealthAttributeChanged);
-	//ActionComp->AddAttributeListener(SharedGameplayTags::Attribute_Health, Delegate);
-
-	// BP version has slightly different syntax to set up binding in C++
-	//FOnAttributeChangedDynamic K2_Delegate;
-	//K2_Delegate.BindDynamic(this, &ARogueAICharacter::K2_OnHealthAttributeChanged);
-	//ActionComp->K2_AddAttributeListener(SharedGameplayTags::Attribute_Health, K2_Delegate);
-
 	// The "simplest" syntax compared to the other convoluted attempts
-	if (FRogueAttribute* FoundAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health))
-	{
-		// may not be found during 'init', but we should handle that better
-		FoundAttribute->OnAttributeChanged.AddUObject(this, &ThisClass::OnHealthAttributeChanged);
-	}
+	FRogueAttribute* FoundAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health);
+	FoundAttribute->OnAttributeChanged.AddUObject(this, &ThisClass::OnHealthAttributeChanged);
+	
 
-	//AttributeComp->OnHealthChanged.AddDynamic(this, &ARogueAICharacter::OnHealthChanged);
 	SigManComp->OnSignificanceChanged.AddDynamic(this, &ARogueAICharacter::OnSignificanceChanged);
 	
 	// Cheap trick to disable until we need it in the health event
@@ -128,6 +117,9 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 			{
 				AAIController* AIC = GetController<AAIController>();
 				AIC->GetBrainComponent()->StopLogic("Killed");
+
+				// Clears active actions, and (de)buffs.
+				ActionComp->StopAllActions();
 			}
 			
 			// ragdoll

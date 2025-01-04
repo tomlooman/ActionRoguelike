@@ -92,7 +92,8 @@ struct FRogueAttribute
 	/* All game logic should get the value through here */
 	float GetValue() const
 	{
-		return Base + Delta;
+		// always clamp public value to zero, you could opt to make this a bool per attribute
+		return FMath::Max(Base + Delta, 0.0f);
 	}
 };
 

@@ -44,7 +44,7 @@ URogueActionComponent* URogueGameplayFunctionLibrary::GetActionComponentFromActo
 
 bool URogueGameplayFunctionLibrary::IsAlive(AActor* InActor)
 {
-	if (IsValid(InActor))
+	if (!IsValid(InActor))
 	{
 		return false;
 	}
@@ -82,10 +82,9 @@ bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* Ta
 		VictimComp,
 		DamageCauser,
 		EAttributeModifyType::AddDelta);
-	
-	VictimComp->ApplyAttributeChange(AttriMod);
-	
-	return true;
+
+	// Could pass through dead enemies
+	return VictimComp->ApplyAttributeChange(AttriMod);
 }
 
 

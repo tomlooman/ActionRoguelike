@@ -42,12 +42,12 @@ void URogueActionEffect::StartAction_Implementation(AActor* Instigator)
 
 void URogueActionEffect::StopAction_Implementation(AActor* Instigator)
 {
+	Super::StopAction_Implementation(Instigator);
+
 	if (GetWorld()->GetTimerManager().GetTimerRemaining(PeriodHandle) < KINDA_SMALL_NUMBER)
 	{
 		ExecutePeriodicEffect(Instigator);
 	}
-
-	Super::StopAction_Implementation(Instigator);
 
 	GetWorld()->GetTimerManager().ClearTimer(PeriodHandle);
 	GetWorld()->GetTimerManager().ClearTimer(DurationHandle);

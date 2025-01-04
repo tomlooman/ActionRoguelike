@@ -19,8 +19,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Thorns")
 	float ReflectFraction;
 
-	UFUNCTION()
-	void OnHealthChanged(AActor* InstigatorActor, URogueAttributeComponent* OwningComp, float NewHealth, float Delta);
+	void OnHealthChanged(float NewValue, const FAttributeModification& AttributeModification);
+
+	FDelegateHandle AttriChangedHandle;
 
 public:
 	virtual void StartAction_Implementation(AActor* Instigator) override;

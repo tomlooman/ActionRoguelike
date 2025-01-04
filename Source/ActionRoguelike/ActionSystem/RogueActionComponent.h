@@ -22,7 +22,9 @@ class ACTIONROGUELIKE_API URogueActionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
+
+	URogueActionComponent* GetActionComponent(AActor* FromActor);
 
 	UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, Category = "Tags")
 	FGameplayTagContainer ActiveGameplayTags;
@@ -42,6 +44,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 	bool StopActionByName(AActor* Instigator, FGameplayTag ActionName);
+
+	/* Stop every action, for example during death */
+	void StopAllActions();
 
 	URogueActionComponent();
 
