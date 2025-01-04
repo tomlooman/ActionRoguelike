@@ -81,7 +81,7 @@ bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* Ta
 		-TotalDamage, // Make sure we apply a negative amount to the Health
 		VictimComp,
 		DamageCauser,
-		EAttributeModifyType::AddDelta);
+		EAttributeModifyType::AddModifier);
 
 	// Could pass through dead enemies
 	return VictimComp->ApplyAttributeChange(AttriMod);

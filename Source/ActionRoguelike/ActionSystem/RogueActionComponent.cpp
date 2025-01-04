@@ -86,7 +86,7 @@ bool URogueActionComponent::K2_GetAttribute(FGameplayTag InAttributeTag, float& 
 	{
 		CurrentValue = FoundAttribute->GetValue();
 		Base = FoundAttribute->Base;
-		Delta = FoundAttribute->Delta;
+		Delta = FoundAttribute->Modifier;
 	}
 
 	return false;
@@ -106,9 +106,9 @@ bool URogueActionComponent::ApplyAttributeChange(const FAttributeModification& M
 				Attribute->Base += Modification.Magnitude;
 				break;
 			}
-		case EAttributeModifyType::AddDelta:
+		case EAttributeModifyType::AddModifier:
 			{
-				Attribute->Delta += Modification.Magnitude;
+				Attribute->Modifier += Modification.Magnitude;
 				break;
 			}
 		case EAttributeModifyType::OverrideBase:

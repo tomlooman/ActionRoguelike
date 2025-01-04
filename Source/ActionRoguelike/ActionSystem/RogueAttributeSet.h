@@ -13,7 +13,7 @@ class URogueActionComponent;
 UENUM(BlueprintType)
 enum class EAttributeModifyType: uint8
 {
-	AddDelta,
+	AddModifier,
 
 	AddBase,
 
@@ -59,7 +59,7 @@ struct FAttributeModification
 	float Magnitude = 0.0f;
 
 	UPROPERTY(BlueprintReadOnly)
-	EAttributeModifyType ModifyType = EAttributeModifyType::AddDelta;
+	EAttributeModifyType ModifyType = EAttributeModifyType::AddModifier;
 };
 
 
@@ -84,7 +84,7 @@ struct FRogueAttribute
 
 	/* Temporary modifier from buffs/debuffs, equipped items. This would not be 'saved to disk' as items would re-apply themselves on load */
 	UPROPERTY(Transient)
-	float Delta = 0.0f;
+	float Modifier = 0.0f;
 
 	/* No use in exposing this to blueprint directly as we have no good access to bind to it */
 	FAttributeChangedSignature OnAttributeChanged;
@@ -93,7 +93,7 @@ struct FRogueAttribute
 	float GetValue() const
 	{
 		// always clamp public value to zero, you could opt to make this a bool per attribute
-		return FMath::Max(Base + Delta, 0.0f);
+		return FMath::Max(Base + Modifier, 0.0f);
 	}
 };
 
