@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameplayTagContainer.h"
-#include "InstancedStruct.h"
 #include "RogueAttributeSet.h"
+#include "StructUtils/InstancedStruct.h"
 #include "RogueActionComponent.generated.h"
 
 class URogueActionComponent;
