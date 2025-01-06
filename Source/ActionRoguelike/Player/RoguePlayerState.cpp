@@ -24,7 +24,7 @@ void ARoguePlayerState::AddCredits(int32 Delta)
 }
 
 
-bool ARoguePlayerState::RemoveCredits(int32 Delta)
+bool ARoguePlayerState::TryRemoveCredits(int32 Delta)
 {
 	// Avoid user-error of adding a subtracting negative amount
 	if (!ensure(Delta >= 0.0f))

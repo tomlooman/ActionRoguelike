@@ -59,6 +59,26 @@ bool URogueGameplayFunctionLibrary::IsAlive(AActor* InActor)
 }
 
 
+bool URogueGameplayFunctionLibrary::KillActor(AActor* InActor)
+{
+	URogueActionComponent* ActionComp = URogueActionComponent::GetActionComponent(InActor);
+	const FRogueAttribute* HealthMaxAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_HealthMax);
+	
+	return ActionComp->ApplyAttributeChange(SharedGameplayTags::Attribute_Health, HealthMaxAttribute->GetValue(), InActor, EAttributeModifyType::AddModifier);
+}
+
+
+bool URogueGameplayFunctionLibrary::IsFullHealth(AActor* InActor)
+{
+	URogueActionComponent* ActionComp = URogueActionComponent::GetActionComponent(InActor);
+
+	const FRogueAttribute* HealthAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health);
+	const FRogueAttribute* HealthMaxAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_HealthMax);
+
+	return HealthAttribute->GetValue() >= HealthMaxAttribute->GetValue();
+}
+
+
 bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient)
 {
 	URogueActionComponent* InstigatorComp = GetActionComponentFromActor(DamageCauser);

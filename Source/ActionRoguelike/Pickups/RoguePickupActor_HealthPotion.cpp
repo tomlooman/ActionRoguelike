@@ -2,7 +2,10 @@
 
 
 #include "RoguePickupActor_HealthPotion.h"
-#include "ActionSystem/RogueAttributeComponent.h"
+
+#include "SharedGameplayTags.h"
+#include "ActionSystem/RogueActionComponent.h"
+#include "Core/RogueGameplayFunctionLibrary.h"
 #include "Player/RoguePlayerState.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RoguePickupActor_HealthPotion)
@@ -24,16 +27,24 @@ void ARoguePickupActor_HealthPotion::Interact_Implementation(APawn* InstigatorPa
 		return;
 	}
 
-	URogueAttributeComponent* AttributeComp = URogueAttributeComponent::GetAttributes(InstigatorPawn);
+	URogueActionComponent* ActionComp = URogueActionComponent::GetActionComponent(InstigatorPawn);
 	// Check if not already at max health
-	if (ensure(AttributeComp) && !AttributeComp->IsFullHealth())
+	if (ensure(ActionComp) && !URogueGameplayFunctionLibrary::IsFullHealth(InstigatorPawn))
 	{
 		if (ARoguePlayerState* PS = InstigatorPawn->GetPlayerState<ARoguePlayerState>())
 		{
-			if (PS->RemoveCredits(CreditCost) && AttributeComp->ApplyHealthChange(this, AttributeComp->GetHealthMax()))
+			
+			if (PS->TryRemoveCredits(CreditCost))
 			{
-				// Only activate if healed successfully
-				HideAndCooldown();
+				if (ActionComp->ApplyAttributeChange(
+					SharedGameplayTags::Attribute_Health,
+					ActionComp->GetAttribute(SharedGameplayTags::Attribute_HealthMax)->GetValue(),
+					this,
+					EAttributeModifyType::AddModifier))
+				{
+					// Only activate if healed successfully
+					HideAndCooldown();
+				}
 			}
 		}
 	}
@@ -42,8 +53,7 @@ void ARoguePickupActor_HealthPotion::Interact_Implementation(APawn* InstigatorPa
 
 FText ARoguePickupActor_HealthPotion::GetInteractText_Implementation(APawn* InstigatorPawn)
 {
-	URogueAttributeComponent* AttributeComp = URogueAttributeComponent::GetAttributes(InstigatorPawn);
-	if (AttributeComp && AttributeComp->IsFullHealth())
+	if (URogueGameplayFunctionLibrary::IsFullHealth(InstigatorPawn))
 	{
 		return LOCTEXT("HealthPotion_FullHealthWarning", "Already at full health.");
 	}

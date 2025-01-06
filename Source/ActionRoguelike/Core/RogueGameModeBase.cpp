@@ -5,7 +5,6 @@
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "EnvironmentQuery/EnvQueryTypes.h"
 #include "AI/RogueAICharacter.h"
-#include "ActionSystem/RogueAttributeComponent.h"
 #include "EngineUtils.h"
 #include "DrawDebugHelpers.h"
 #include "Player/RoguePlayerCharacter.h"
@@ -14,6 +13,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "RogueMonsterData.h"
 #include "ActionRoguelike.h"
+#include "RogueGameplayFunctionLibrary.h"
 #include "ActionSystem/RogueActionComponent.h"
 #include "SaveSystem/RogueSaveGameSubsystem.h"
 #include "Development/RogueDeveloperSettings.h"
@@ -134,11 +134,10 @@ void ARogueGameModeBase::SpawnBotTimerElapsed()
 
 	// Count alive bots before spawning
 	int32 NrOfAliveBots = 0;
-	// TActorRange simplifies the code compared to TActorIterator<T>
+	// TActorRange simplifies the code compared to TActorIterator<T> (uses internally cached list of all ARogueAICharacter instances)
 	for (ARogueAICharacter* Bot : TActorRange<ARogueAICharacter>(GetWorld()))
 	{
-		URogueAttributeComponent* AttributeComp = URogueAttributeComponent::GetAttributes(Bot);
-		if (ensure(AttributeComp) && AttributeComp->IsAlive())
+		if (URogueGameplayFunctionLibrary::IsAlive(Bot))
 		{
 			NrOfAliveBots++;
 		}

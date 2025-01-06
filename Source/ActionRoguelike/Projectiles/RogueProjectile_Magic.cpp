@@ -7,7 +7,6 @@
 #include "ActionSystem/RogueActionComponent.h"
 #include "Projectiles/RogueProjectileMovementComponent.h"
 #include "ActionSystem/RogueActionEffect.h"
-#include "ActionSystem/RogueAttributeComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueProjectile_Magic)
 

@@ -96,6 +96,11 @@ bool URogueActionComponent::K2_GetAttribute(FGameplayTag InAttributeTag, float& 
 bool URogueActionComponent::ApplyAttributeChange(const FAttributeModification& Modification)
 {
 	FRogueAttribute* Attribute = GetAttribute(Modification.AttributeTag);
+	if (Attribute == nullptr)
+	{
+		UE_LOG(LogGame, Warning, TEXT("Attribute (%s) not found on Actor (%s)."), *Modification.AttributeTag.ToString(), *GetNameSafe(GetOwner()));
+		return false;
+	}
 
 	float OriginalValue = Attribute->GetValue();
 
@@ -130,6 +135,15 @@ bool URogueActionComponent::ApplyAttributeChange(const FAttributeModification& M
 	
 	// no actual change occured
 	return false;
+}
+
+
+bool URogueActionComponent::ApplyAttributeChange(FGameplayTag InAttributeTag, float InMagnitude, AActor* Instigator, EAttributeModifyType ModType)
+{
+	FAttributeModification AttriMod = FAttributeModification(
+		InAttributeTag, InMagnitude, this, Instigator, ModType);
+
+	return ApplyAttributeChange(AttriMod);
 }
 
 

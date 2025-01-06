@@ -9,7 +9,6 @@
 #include "NiagaraComponent.h"
 #include "SharedGameplayTags.h"
 #include "ActionSystem/RogueActionComponent.h"
-#include "ActionSystem/RogueAttributeComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueExplosiveBarrel)
 

@@ -5,7 +5,6 @@
 #include "AIController.h"
 #include "GameFramework/Character.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "ActionSystem/RogueAttributeComponent.h"
 #include "Core/RogueGameplayFunctionLibrary.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueBTTask_RangedAttack)

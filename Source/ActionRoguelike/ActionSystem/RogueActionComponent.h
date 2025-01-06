@@ -24,7 +24,7 @@ class ACTIONROGUELIKE_API URogueActionComponent : public UActorComponent
 
 public:
 
-	URogueActionComponent* GetActionComponent(AActor* FromActor);
+	static URogueActionComponent* GetActionComponent(AActor* FromActor);
 
 	UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, Category = "Tags")
 	FGameplayTagContainer ActiveGameplayTags;
@@ -52,8 +52,11 @@ public:
 
 	FRogueAttribute* GetAttribute(FGameplayTag InAttributeTag);
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Attributes, meta = (Keywords = "Add, Set"))
+	//UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Attributes, meta = (Keywords = "Add, Set"))
 	bool ApplyAttributeChange(const FAttributeModification& Modification);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Attributes, meta = (Keywords = "Add, Set"))
+	bool ApplyAttributeChange(FGameplayTag InAttributeTag, float InMagnitude, AActor* Instigator, EAttributeModifyType ModType);
 
 	/* Provide a default attribute set type for (base) classes, blueprint can set this via the details panel instead */
 	void SetDefaultAttributeSet(UScriptStruct* InDefaultType);

@@ -9,7 +9,6 @@
 
 
 class URogueActionComponent;
-class URogueAttributeComponent;
 class UNiagaraComponent;
 class UStaticMeshComponent;
 class URadialForceComponent;
