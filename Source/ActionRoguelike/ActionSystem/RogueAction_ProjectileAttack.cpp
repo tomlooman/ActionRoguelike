@@ -4,8 +4,6 @@
 #include "RogueAction_ProjectileAttack.h"
 #include "ActionRoguelike.h"
 #include "NiagaraFunctionLibrary.h"
-#include "Kismet/GameplayStatics.h"
-#include "Components/AudioComponent.h"
 #include "Sound/SoundBase.h"
 #include "GameFramework/Character.h"
 #include "Performance/RogueActorPoolingSubsystem.h"

@@ -47,7 +47,7 @@ public:
 	void AddCredits(int32 Delta);
 
 	UFUNCTION(BlueprintCallable, Category = "Credits")
-	bool RemoveCredits(int32 Delta);
+	bool TryRemoveCredits(int32 Delta);
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnCreditsChanged OnCreditsChanged;

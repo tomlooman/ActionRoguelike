@@ -17,12 +17,7 @@ void URogueAction_MinionRangedAttack::StartAction_Implementation(AActor* Instiga
 	ARogueAICharacter* MyPawn = CastChecked<ARogueAICharacter>(GetOwningComponent()->GetOwner());
 
 	AActor* TargetActor = MyPawn->GetTargetActor();
-	if (TargetActor == nullptr)
-	{
-		return;
-	}
-
-	if (!URogueGameplayFunctionLibrary::IsAlive(TargetActor))
+	if (TargetActor == nullptr || !URogueGameplayFunctionLibrary::IsAlive(TargetActor))
 	{
 		return;
 	}
