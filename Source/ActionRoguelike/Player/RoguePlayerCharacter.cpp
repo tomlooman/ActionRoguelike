@@ -213,26 +213,8 @@ void ARoguePlayerCharacter::Move(const FInputActionInstance& Instance)
 	AddMovementInput(ControlRot.Vector(), AxisValue.Y);
 
 	// Move Right/Left strafe
-	const FVector RightVector = FRotationMatrix(ControlRot).GetScaledAxis(EAxis::Y);
+	const FVector RightVector = ControlRot.RotateVector(FVector::RightVector);
 	AddMovementInput(RightVector, AxisValue.X);
-
-	// Alternative Copied from Lyra
-	/*
-	{
-		const FRotator MovementRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
-
-		if (Value.X != 0.0f)
-		{
-			const FVector MovementDirection = MovementRotation.RotateVector(FVector::RightVector);
-			Pawn->AddMovementInput(MovementDirection, Value.X);
-		}
-
-		if (Value.Y != 0.0f)
-		{
-			const FVector MovementDirection = MovementRotation.RotateVector(FVector::ForwardVector);
-			Pawn->AddMovementInput(MovementDirection, Value.Y);
-		}
-	}*/
 }
 
 void ARoguePlayerCharacter::LookMouse(const FInputActionValue& InputValue)
