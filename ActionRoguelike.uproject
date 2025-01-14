@@ -442,6 +442,14 @@
 		{
 			"Name": "EditorSysConfigAssistant",
 			"Enabled": true
+		},
+		{
+			"Name": "GameplayInsights",
+			"Enabled": true
+		},
+		{
+			"Name": "TraceSourceFilters",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
