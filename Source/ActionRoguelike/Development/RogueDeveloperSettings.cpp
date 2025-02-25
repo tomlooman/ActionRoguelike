@@ -12,6 +12,7 @@ FName URogueDeveloperSettings::GetCategoryName() const
 	return FApp::GetProjectName();
 }
 
+
 void URogueDeveloperSettings::PostInitProperties()
 {
 #if WITH_EDITOR

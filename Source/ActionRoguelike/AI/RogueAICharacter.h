@@ -5,19 +5,18 @@
 #include "CoreMinimal.h"
 #include "GenericTeamAgentInterface.h"
 #include "ActionSystem/RogueAttributeSet.h"
-#include "Performance/RogueSignificanceComponent.h"
 #include "GameFramework/Character.h"
+#include "Performance/RogueSignificanceInterface.h"
 #include "RogueAICharacter.generated.h"
 
 
 class UNiagaraComponent;
-class URogueSignificanceComponent;
 class UUserWidget;
 class URogueWorldUserWidget;
 class URogueActionComponent;
 
 UCLASS()
-class ACTIONROGUELIKE_API ARogueAICharacter : public ACharacter, public IGenericTeamAgentInterface
+class ACTIONROGUELIKE_API ARogueAICharacter : public ACharacter, public IGenericTeamAgentInterface, public IRogueSignificanceInterface
 {
 	GENERATED_BODY()
 
@@ -55,25 +54,28 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UNiagaraComponent> AttackParticleComp;
 
-	/* Handle fidelity for AI as they are off-screen or at far distances */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	TObjectPtr<URogueSignificanceComponent> SigManComp;
-
-	UFUNCTION()
-	void OnSignificanceChanged(ESignificanceValue Significance);
-
 	UPROPERTY(Transient)
 	TObjectPtr<URogueWorldUserWidget> ActiveHealthBar;
 
 public:
-
+	
+	virtual void SignificanceLODChanged(int32 NewLOD) override;
+	
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
 	virtual void PostInitializeComponents() override;
 
 	ARogueAICharacter();
 
+	virtual void BeginPlay() override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 protected:
+
+	/* Specifies a category for Significance Manager. Each unique Tag will have its own set of "Buckets" to sort and assign LODs based on distance etc. */
+	UPROPERTY(EditDefaultsOnly, Category="Performance")
+	FName SignificanceTag;
 
 	float CachedOverlayMaxDistance;
 

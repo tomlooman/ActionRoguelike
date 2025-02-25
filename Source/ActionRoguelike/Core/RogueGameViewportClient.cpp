@@ -14,18 +14,21 @@ void URogueGameViewportClient::Tick(float DeltaTime)
 
 	if (USignificanceManager* SignificanceManager = USignificanceManager::Get(World))
 	{
-		// Update once per frame, using only Player 0
-		if (APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0))
+		// Iterate all playercontrollers, for hosting player this means all clients too
+		// Helps keeping significance in sync between each client and server
+		// Main desync issue right now could be WasRecentlyRendered which isn't going to be replicated on the host
+		ViewpointsArray.Empty(GetWorld()->GetNumPlayerControllers());
+		for( FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 		{
+			APlayerController* PlayerController = Iterator->Get();
+
 			FVector ViewLocation;
 			FRotator ViewRotation;
-			PC->GetPlayerViewPoint(ViewLocation, ViewRotation);
+			PlayerController->GetPlayerViewPoint(ViewLocation, ViewRotation);
 
-			// Viewpoints
-			TArray<FTransform> TransformArray;
-			TransformArray.Emplace(ViewRotation, ViewLocation, FVector::OneVector);
-
-			SignificanceManager->Update(TArrayView<FTransform>(TransformArray));
+			ViewpointsArray.Add(FTransform(ViewRotation, ViewLocation, FVector::OneVector));
 		}
+		
+		SignificanceManager->Update(ViewpointsArray);
 	}
 }

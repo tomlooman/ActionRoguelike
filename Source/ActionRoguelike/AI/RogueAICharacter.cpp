@@ -9,6 +9,7 @@
 #include "BrainComponent.h"
 #include "NiagaraComponent.h"
 #include "SharedGameplayTags.h"
+#include "SignificanceManager.h"
 #include "UI/RogueWorldUserWidget.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -16,7 +17,6 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/CanvasPanel.h"
-#include "Performance/RogueSignificanceComponent.h"
 #include "Perception/AISense_Damage.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueAICharacter)
@@ -41,9 +41,6 @@ ARogueAICharacter::ARogueAICharacter()
 	AttackParticleComp->bAutoManageAttachment = true;
 	AttackParticleComp->SetAutoActivate(false);
 
-	// Make sure to configure the distance values in Blueprint
-	SigManComp = CreateDefaultSubobject<URogueSignificanceComponent>(TEXT("SigManComp"));
-
 	// Ensures we receive a controlled when spawned in the level by our gamemode
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
@@ -58,6 +55,67 @@ ARogueAICharacter::ARogueAICharacter()
 
 	//TimeToHitParamName = "TimeToHit";
 	HitFlash_CustomPrimitiveIndex = 0;
+
+	SignificanceTag = "AICharacter";
+}
+
+void ARogueAICharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	{
+		USignificanceManager* SigMan = USignificanceManager::Get(GetWorld());
+		check(SigMan);
+
+		// This function will run async from the GameThread, make sure it's threadsafe
+		auto SignificanceFunc = [](USignificanceManager::FManagedObjectInfo* ObjectInfo, const FTransform& Viewpoint) -> float
+		{
+			TRACE_CPUPROFILER_EVENT_SCOPE(CalculateSignificance)
+			
+			/*AActor* MyActor = CastChecked<AActor>(ObjectInfo->GetObject());
+			check(IsValid(MyActor));
+			
+			float DistanceSqrt = (MyActor->GetActorLocation() - Viewpoint.GetLocation()).SizeSquared();
+			
+			if (MyActor->WasRecentlyRendered())
+			{
+				// while using negative sig values, use a <1.0 multiplier
+				DistanceSqrt *= 0.5f;
+			}*/
+
+			USkeletalMeshComponent* SkelMeshComp = CastChecked<USkeletalMeshComponent>(ObjectInfo->GetObject());
+			check(IsValid(SkelMeshComp));
+			
+			float DistanceSqrt = (SkelMeshComp->GetComponentLocation() - Viewpoint.GetLocation()).SizeSquared();
+			
+			if (SkelMeshComp->WasRecentlyRendered())
+			{
+				// while using negative sig values, use a <1.0 multiplier
+				DistanceSqrt *= 0.5f;
+			}
+
+			// Note: AI can further define significance, for example,
+			//			while in combat or having the player as a known target we could increase its significance
+
+			// Negative distance to easily have larger distance mean lower significance
+			return -DistanceSqrt;
+		};
+
+		// Instead of passing the entire Actor, we can pass the minimal data, such as the RootComponent, or SkeletalMeshComponent
+		// This should allow us to be more cache efficient (from simple testing this does run slightly faster than using the Actor)
+		SigMan->RegisterObject(GetMesh(), SignificanceTag, SignificanceFunc);
+	}
+}
+
+void ARogueAICharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	{
+		USignificanceManager* SigMan = USignificanceManager::Get(GetWorld());
+		check(SigMan);
+		SigMan->UnregisterObject(this);
+	}
 }
 
 
@@ -68,9 +126,6 @@ void ARogueAICharacter::PostInitializeComponents()
 	// The "simplest" syntax compared to the other convoluted attempts
 	FRogueAttribute* FoundAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health);
 	FoundAttribute->OnAttributeChanged.AddUObject(this, &ThisClass::OnHealthAttributeChanged);
-	
-
-	SigManComp->OnSignificanceChanged.AddDynamic(this, &ARogueAICharacter::OnSignificanceChanged);
 	
 	// Cheap trick to disable until we need it in the health event
 	CachedOverlayMaxDistance = GetMesh()->OverlayMaterialMaxDrawDistance;
@@ -162,44 +217,46 @@ void ARogueAICharacter::MulticastPlayAttackFX_Implementation()
 	PlayAnimMontage(AttackMontage);
 }
 
-void ARogueAICharacter::OnSignificanceChanged(ESignificanceValue Significance)
-{
-	// @todo: this may not work perfectly with falling and similar movement modes. (We don't support this on the AI character anyway)
-	// NavMesh based walking instead of using world geo
 
-	// @todo: this can crash in Chaos due to not being on the GameThread?
-	if (Significance <= ESignificanceValue::Medium)
+void ARogueAICharacter::SignificanceLODChanged(int32 NewLOD)
+{
+	// Set as 'dormant' if actor is hidden, otherwise we continue ticking the entire character
+	// @todo: Not yet implemented, could use -1 as a "Hidden" special state
+	//const bool bHiddenSignificance = (NewLOD == -1);
+	//SetActorTickEnabled(!bHiddenSignificance);
+	//GetCharacterMovement()->SetComponentTickEnabled(!bHiddenSignificance);
+
+	UE_LOG(LogGame, Log, TEXT("Actor: %s, NewLOD: %i (Bucket)"), *GetName(), NewLOD);
+
+	if (NewLOD == 0)
 	{
-		//GetCharacterMovement()->SetMovementMode(MOVE_NavWalking);
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	}
+	// Anything beside best LOD
 	else
 	{
-		//GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		GetCharacterMovement()->SetMovementMode(MOVE_NavWalking);
 	}
-	
-	// Set as 'dormant' if actor is hidden, otherwise we continue ticking the entire character
-	const bool bHiddenSignificance = Significance == ESignificanceValue::Hidden;
-	SetActorTickEnabled(!bHiddenSignificance);
-	GetCharacterMovement()->SetComponentTickEnabled(!bHiddenSignificance);
 
-
+/*
 	EVisibilityBasedAnimTickOption AnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
 	switch (Significance)
 	{
 		// Example, force to always tick pose when really nearby. might need the pose even while offscreen
-		case ESignificanceValue::Highest:
-			AnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
-			break;
-		case ESignificanceValue::Medium:
-			AnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
-			break;
-		case ESignificanceValue::Lowest:
-		case ESignificanceValue::Hidden:
-		case ESignificanceValue::Invalid:
-			AnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
+	case ESignificanceValue::Highest:
+		AnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+		break;
+	case ESignificanceValue::Medium:
+		AnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
+		break;
+	case ESignificanceValue::Lowest:
+	case ESignificanceValue::Hidden:
+	case ESignificanceValue::Invalid:
+		AnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
 	}
 	
 	GetMesh()->VisibilityBasedAnimTickOption = AnimTickOption;
+*/
 }
 
 

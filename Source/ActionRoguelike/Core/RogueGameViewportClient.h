@@ -15,5 +15,7 @@ class ACTIONROGUELIKE_API URogueGameViewportClient : public UGameViewportClient
 	GENERATED_BODY()
 	
 	virtual void Tick(float DeltaTime) override;
+
+	TArray<FTransform> ViewpointsArray;
 	
 };
