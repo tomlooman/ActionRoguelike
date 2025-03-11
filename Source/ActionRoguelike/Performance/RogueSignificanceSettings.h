@@ -27,7 +27,7 @@ class ACTIONROGUELIKE_API URogueSignificanceSettings : public UDeveloperSettings
 public:
 
 	/*
-	 * Return Current Bucket index based on the sorted signifance index we pass in and the maximum bucket sizes specified in the Settings. 
+	 * Return Current Bucket index based on the sorted significance index we pass in and the maximum bucket sizes specified in the Settings. 
 	 */
 	int32 GetBucketIndex(FName InTag, int32 InIndex) const;
 

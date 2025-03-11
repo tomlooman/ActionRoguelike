@@ -18,7 +18,7 @@ namespace SignificanceManager
 	/* Experimental: Resize the buckets based on Scalability setting. Could fit either in ViewDistance or Effect ScalabilityGroups */
 	static float SignifanceBucketSizeMultiplier = 1.0;
 	static FAutoConsoleVariableRef CVarSignificanceManager_BucketSizeMultiplier(
-		TEXT("SigMan.SignifanceBucketSizeMultiplier"),
+		TEXT("SigMan.SignificanceBucketSizeMultiplier"),
 		SignifanceBucketSizeMultiplier,
 		TEXT("Scalability multiplier to change the maximum number of Actors per Bucket.\n"),
 		ECVF_Scalability

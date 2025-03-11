@@ -63,15 +63,17 @@ void ARogueAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Significance Manager
 	{
 		USignificanceManager* SigMan = USignificanceManager::Get(GetWorld());
 		check(SigMan);
 
-		// This function will run async from the GameThread, make sure it's threadsafe
+		// This function will run async from the GameThread, so make sure it's threadsafe
 		auto SignificanceFunc = [](USignificanceManager::FManagedObjectInfo* ObjectInfo, const FTransform& Viewpoint) -> float
 		{
 			TRACE_CPUPROFILER_EVENT_SCOPE(CalculateSignificance)
-			
+
+			// Either use the Actor as done below, or scope this more tightly to a specific component, this may benefit from improved cpu caching
 			/*AActor* MyActor = CastChecked<AActor>(ObjectInfo->GetObject());
 			check(IsValid(MyActor));
 			
@@ -109,13 +111,15 @@ void ARogueAICharacter::BeginPlay()
 
 void ARogueAICharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::EndPlay(EndPlayReason);
-
+	// Remove from SigMan
 	{
 		USignificanceManager* SigMan = USignificanceManager::Get(GetWorld());
 		check(SigMan);
-		SigMan->UnregisterObject(this);
+		// Make sure we unregister the same object as during Registration, in our case that's the SkeletalMeshComponent instead of the Actor
+		SigMan->UnregisterObject(GetMesh());
 	}
+
+	Super::EndPlay(EndPlayReason);
 }
 
 
@@ -220,12 +224,6 @@ void ARogueAICharacter::MulticastPlayAttackFX_Implementation()
 
 void ARogueAICharacter::SignificanceLODChanged(int32 NewLOD)
 {
-	// Set as 'dormant' if actor is hidden, otherwise we continue ticking the entire character
-	// @todo: Not yet implemented, could use -1 as a "Hidden" special state
-	//const bool bHiddenSignificance = (NewLOD == -1);
-	//SetActorTickEnabled(!bHiddenSignificance);
-	//GetCharacterMovement()->SetComponentTickEnabled(!bHiddenSignificance);
-
 	UE_LOG(LogGame, Log, TEXT("Actor: %s, NewLOD: %i (Bucket)"), *GetName(), NewLOD);
 
 	if (NewLOD == 0)
@@ -238,25 +236,8 @@ void ARogueAICharacter::SignificanceLODChanged(int32 NewLOD)
 		GetCharacterMovement()->SetMovementMode(MOVE_NavWalking);
 	}
 
-/*
-	EVisibilityBasedAnimTickOption AnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
-	switch (Significance)
-	{
-		// Example, force to always tick pose when really nearby. might need the pose even while offscreen
-	case ESignificanceValue::Highest:
-		AnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
-		break;
-	case ESignificanceValue::Medium:
-		AnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
-		break;
-	case ESignificanceValue::Lowest:
-	case ESignificanceValue::Hidden:
-	case ESignificanceValue::Invalid:
-		AnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
-	}
-	
-	GetMesh()->VisibilityBasedAnimTickOption = AnimTickOption;
-*/
+	// Example with straight 1:1 mapping, will force the min LOD to be lowered even when they are close to the camera
+	GetMesh()->OverrideMinLOD(NewLOD);
 }
 
 

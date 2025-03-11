@@ -28,7 +28,8 @@ public:
 
 	virtual void Update(TArrayView<const FTransform> InViewpoints) override;
 
-	virtual void RegisterObject(UObject* Object, FName Tag, FManagedObjectSignificanceFunction SignificanceFunction, EPostSignificanceType InPostSignificanceType = EPostSignificanceType::None, FManagedObjectPostSignificanceFunction InPostSignificanceFunction = nullptr) override;
+	virtual void RegisterObject(UObject* Object, FName Tag, FManagedObjectSignificanceFunction SignificanceFunction, EPostSignificanceType InPostSignificanceType = EPostSignificanceType::None,
+		FManagedObjectPostSignificanceFunction InPostSignificanceFunction = nullptr) override;
 
 	virtual void UnregisterObject(UObject* Object) override;
 

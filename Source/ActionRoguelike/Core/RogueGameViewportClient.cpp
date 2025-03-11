@@ -16,7 +16,7 @@ void URogueGameViewportClient::Tick(float DeltaTime)
 	{
 		// Iterate all playercontrollers, for hosting player this means all clients too
 		// Helps keeping significance in sync between each client and server
-		// Main desync issue right now could be WasRecentlyRendered which isn't going to be replicated on the host
+		// ** Main desync issue right now could be WasRecentlyRendered which isn't going to be replicated on the host **
 		ViewpointsArray.Empty(GetWorld()->GetNumPlayerControllers());
 		for( FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 		{
