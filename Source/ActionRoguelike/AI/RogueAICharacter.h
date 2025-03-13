@@ -60,12 +60,14 @@ protected:
 public:
 	
 	virtual void SignificanceLODChanged(int32 NewLOD) override;
+
+	void OnReduceAnimationWork(class USkeletalMeshComponentBudgeted* InComponent, bool bReduce);
 	
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
 	virtual void PostInitializeComponents() override;
 
-	ARogueAICharacter();
+	ARogueAICharacter(const FObjectInitializer& ObjectInitializer);
 
 	virtual void BeginPlay() override;
 

@@ -193,7 +193,8 @@ float URogueSignificanceComponent::GetSignificanceByDistance(float DistanceSqrd)
 void URogueSignificanceComponent::UpdateParticleSignificance(float NewSignificance)
 {
 	// Niagara Particle Systems
-	TArray<UNiagaraComponent*> NiagaraSystems;
+	// @todo: we don't need to call into niagara, the EffectType significance handler can do this for us...
+	/*TArray<UNiagaraComponent*> NiagaraSystems;
 	GetOwner()->GetComponents<UNiagaraComponent>(NiagaraSystems);
 
 	for (UNiagaraComponent* Comp : NiagaraSystems)
@@ -201,5 +202,5 @@ void URogueSignificanceComponent::UpdateParticleSignificance(float NewSignifican
 		// Niagara uses 'int32 index' to set significance, you should map this with the input "float NewSignificance" (eg. not something between 0.0-1.0 as it gets rounded)
 		
 		Comp->SetSystemSignificanceIndex(NewSignificance);
-	}
+	}*/
 }

@@ -10,6 +10,7 @@
 #include "NiagaraComponent.h"
 #include "SharedGameplayTags.h"
 #include "SignificanceManager.h"
+#include "SkeletalMeshComponentBudgeted.h"
 #include "UI/RogueWorldUserWidget.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -18,11 +19,15 @@
 #include "Components/AudioComponent.h"
 #include "Components/CanvasPanel.h"
 #include "Perception/AISense_Damage.h"
+#include "IAnimationBudgetAllocator.h"
+#include "AnimationBudgetAllocator/Private/AnimationBudgetAllocatorModule.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueAICharacter)
 
 
-ARogueAICharacter::ARogueAICharacter()
+ARogueAICharacter::ARogueAICharacter(const FObjectInitializer& ObjectInitializer)
+	// Override the SkelMesh with the Anim Budget variant for balancing anim cost across all AI bots
+	:Super(ObjectInitializer.SetDefaultSubobjectClass<USkeletalMeshComponentBudgeted>(ACharacter::MeshComponentName))
 {
 	ActionComp = CreateDefaultSubobject<URogueActionComponent>(TEXT("ActionComp"));
 	// Set some defaults, ideally we handle this through some data asset instead
@@ -63,6 +68,14 @@ void ARogueAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Only needs to enable the module once, placing in beginplay for convenience
+	// They didn't expose the blueprint library, so we instead call directly into the module
+	FAnimationBudgetAllocatorModule& AnimationBudgetAllocatorModule = FModuleManager::LoadModuleChecked<FAnimationBudgetAllocatorModule>("AnimationBudgetAllocator");
+	if(IAnimationBudgetAllocator* AnimationBudgetAllocator = AnimationBudgetAllocatorModule.GetBudgetAllocatorForWorld(GetWorld()))
+	{
+		AnimationBudgetAllocator->SetEnabled(true);
+	}
+
 	// Significance Manager
 	{
 		USignificanceManager* SigMan = USignificanceManager::Get(GetWorld());
@@ -96,18 +109,32 @@ void ARogueAICharacter::BeginPlay()
 				DistanceSqrt *= 0.5f;
 			}
 
-			// Note: AI can further define significance, for example,
-			//			while in combat or having the player as a known target we could increase its significance
+			// Note: AI could further define significance, for example, while in combat or having the player as a known target we could increase its significance
 
 			// Negative distance to easily have larger distance mean lower significance
 			return -DistanceSqrt;
 		};
 
+		// Register with post significance function to easily tie-in with the animation budgeter
+		// We could also choose to let the budgeter calculate the significance itself instead
+		auto PostSignificanceFunc = [&](USignificanceManager::FManagedObjectInfo* ObjectInfo, float OldSignificance, float Significance, bool bFinal)
+		{
+			USkeletalMeshComponentBudgeted* BudgetMesh = Cast<USkeletalMeshComponentBudgeted>(GetMesh());
+			BudgetMesh->SetComponentSignificance(Significance);
+		};
+		
+
+		// Additional flag in the budgetter to allow us to 'toggle' and turn off certain animation features custom to the game, this could mean detaching components on our skeletal mesh
+		// it's entirely game dependent on what we could throttle here
+		USkeletalMeshComponentBudgeted* BudgetMesh = Cast<USkeletalMeshComponentBudgeted>(GetMesh());
+		BudgetMesh->OnReduceWork().BindUObject(this, &ARogueAICharacter::OnReduceAnimationWork);
+
 		// Instead of passing the entire Actor, we can pass the minimal data, such as the RootComponent, or SkeletalMeshComponent
 		// This should allow us to be more cache efficient (from simple testing this does run slightly faster than using the Actor)
-		SigMan->RegisterObject(GetMesh(), SignificanceTag, SignificanceFunc);
+		SigMan->RegisterObject(GetMesh(), SignificanceTag, SignificanceFunc, USignificanceManager::EPostSignificanceType::Concurrent, PostSignificanceFunc);
 	}
 }
+
 
 void ARogueAICharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
@@ -238,6 +265,14 @@ void ARogueAICharacter::SignificanceLODChanged(int32 NewLOD)
 
 	// Example with straight 1:1 mapping, will force the min LOD to be lowered even when they are close to the camera
 	GetMesh()->OverrideMinLOD(NewLOD);
+}
+
+
+void ARogueAICharacter::OnReduceAnimationWork(class USkeletalMeshComponentBudgeted* InComponent, bool bReduce)
+{
+	UE_LOG(LogGame, Warning, TEXT("OnReduceAnimWork for bot %s, reducing = %s"), *GetName(), (bReduce ? TEXT("true") : TEXT("false")));
+
+	// @todo: Actually throttle some work, for example, detach certain components on the skeletal mesh IF we had any in the first place
 }
 
 
