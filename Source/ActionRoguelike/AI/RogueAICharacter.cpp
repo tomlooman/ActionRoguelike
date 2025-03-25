@@ -122,12 +122,14 @@ void ARogueAICharacter::BeginPlay()
 			USkeletalMeshComponentBudgeted* BudgetMesh = Cast<USkeletalMeshComponentBudgeted>(GetMesh());
 			BudgetMesh->SetComponentSignificance(Significance);
 		};
-		
 
 		// Additional flag in the budgetter to allow us to 'toggle' and turn off certain animation features custom to the game, this could mean detaching components on our skeletal mesh
 		// it's entirely game dependent on what we could throttle here
 		USkeletalMeshComponentBudgeted* BudgetMesh = Cast<USkeletalMeshComponentBudgeted>(GetMesh());
 		BudgetMesh->OnReduceWork().BindUObject(this, &ARogueAICharacter::OnReduceAnimationWork);
+
+		// If not using Significance Manager already, we could let it calculate automatically instead
+		//BudgetMesh->SetAutoCalculateSignificance(true);
 
 		// Instead of passing the entire Actor, we can pass the minimal data, such as the RootComponent, or SkeletalMeshComponent
 		// This should allow us to be more cache efficient (from simple testing this does run slightly faster than using the Actor)
