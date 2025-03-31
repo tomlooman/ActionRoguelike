@@ -7,6 +7,20 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueDeveloperSettings)
 
+#if !UE_BUILD_SHIPPING
+namespace DevelopmentOnly
+{
+	static bool bDisableSpawnBotsOverride = false;
+	static FAutoConsoleVariableRef CVarSpawnBotsOverride(
+	TEXT("game.DisableBotSpawning"),
+	bDisableSpawnBotsOverride,
+	TEXT("Disable spawning of bots for development only."));
+
+}
+
+#endif
+
+
 FName URogueDeveloperSettings::GetCategoryName() const
 {
 	return FApp::GetProjectName();

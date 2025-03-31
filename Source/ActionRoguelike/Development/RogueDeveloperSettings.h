@@ -6,18 +6,6 @@
 #include "Engine/DeveloperSettingsBackedByCVars.h"
 #include "RogueDeveloperSettings.generated.h"
 
-#if !UE_BUILD_SHIPPING
-namespace DevelopmentOnly
-{
-	static bool bDisableSpawnBotsOverride = false;
-	static FAutoConsoleVariableRef CVarSpawnBotsOverride(
-	TEXT("game.DisableBotSpawning"),
-	bDisableSpawnBotsOverride,
-	TEXT("Disable spawning of bots for development only."));
-
-}
-
-#endif
 
 /**
  * 
