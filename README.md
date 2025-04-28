@@ -1,16 +1,14 @@
 # Action Roguelike C++ Unreal Engine Game
 
-**Want to learn how to build this C++ Game from scratch? Learn more at [Professional Game Development in C++ and Unreal Engine Course](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)**
-
 ![Course Header](https://i0.wp.com/www.tomlooman.com/wp-content/uploads/2023/05/coursecpp_banner_widenarrow-3.png)
 
-> **Main Branch Engine Version: 5.5** (Older versions available under 'Branches' dropdown)
-> 
-> **Use Branch "Lecture29-FinishedProject" for finished course code without additions from UE4.25**
+**Main Branch Engine Version: 5.5** <br>
 
-![GitHub Branch Selection Info](https://www.tomlooman.com/wp-content/uploads/2021/01/github_branchesinfo.jpg)
+> ### Learn Unrea Engine C++ The Epic Way
+> **Want to learn how to build this C++ Game from scratch? Learn more at [Professional Game Development in C++ and Unreal Engine Course](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)**
 
 # Project Features
+
 - Third-person Action Character Movement
 - **Enhanced Input**
 - **Action System** (similar to Gameplay Ability System in design)
@@ -47,6 +45,30 @@
   - Actor Pooling (Projectiles)
 - Async Line tracing Example
 - PSO Precaching & Bundled PSOs Setup for Windows DX12
+
+<br>
+
+# Melee Combat System
+
+The game includes Melee attacks for enemy AI behaviors. The melee system builds on the Action System (similar to GAS) and uses Behavior Trees to initiate the logic to run up and perform the melee attack.
+
+**Walkthrough**
+- The Enemy's BehaviorTree checks if target (player) is within certain distance, and initiate melee attack sequence (run closer + attack when in attack range)
+- **[RogueAction_MinionMeleeAttack](https://github.com/tomlooman/ActionRoguelike/blob/master/Source/ActionRoguelike/AI/RogueAction_MinionMeleeAttack.cpp)** (Action) handles the start/stop of the attack. Runs an AnimMontage with the attack animation. 
+- **[RogueAnimationInstance](https://github.com/tomlooman/ActionRoguelike/blob/master/Source/ActionRoguelike/Animation/RogueAnimInstance.cpp)** (AnimBlueprint) contains *OnMeleeOverlap* which the Melee Attack Action listens for.
+- **[RogueAnimNotifyState_Melee](https://github.com/tomlooman/ActionRoguelike/blob/master/Source/ActionRoguelike/Animation/RogueAnimNotifyState_Melee.cpp)** (AnimNotify) broadcasts *OnMeleeOverlap* event when an melee overlap is found by running *OverlapMultiByChannel* colision query while the AnimNotify is active.
+  - **game.drawdebugmelee 1** to visualize the overlap shape during melee attack.
+  - OnMeleeOverlap is handled by the Melee Attack Action to apply Damage to the hit target.
+
+Note: The AnimMontage holds a Melee Attack animation and requires the custom AnimNotify in order to handle the overlap checks.
+
+# Browsing Older Releases
+
+The project is ocassionally updated to keep up with the latest Unreal Engine release. Additionally, new features are sometimes added to the project, often related to new Articles or Tutorials posted on [tomlooman.com](https://tomlooman.com). These will be included on the main branch, on whatever the latest UE version is at the time.
+
+**For C++ Course Students: You may use branch "Lecture29-FinishedProject" for finished course code without additions all the way back to UE4.25**
+
+![GitHub Branch Selection Info](https://www.tomlooman.com/wp-content/uploads/2021/01/github_branchesinfo.jpg)
 
 # Credits
 
