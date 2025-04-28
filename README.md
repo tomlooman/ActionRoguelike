@@ -1,14 +1,12 @@
-# Action Roguelike Game (Course Project)
+# Action Roguelike C++ Unreal Engine Game
 
-This project is part of the **[Professional Game Development in C++ and Unreal Engine](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)** Course where we build this game project step-by-step.
+**Want to learn how to build this C++ Game from scratch? Learn more at [Professional Game Development in C++ and Unreal Engine Course](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)**
 
 ![Course Header](https://i0.wp.com/www.tomlooman.com/wp-content/uploads/2023/05/coursecpp_banner_widenarrow-3.png)
 
-
-
-> **Engine Version: 5.5** (Older UE4.X versions Available under 'Branches' dropdown)
+> **Main Branch Engine Version: 5.5** (Older versions available under 'Branches' dropdown)
 > 
-> **Use Branch "Lecture29-FinishedProject" for course-only code.** (UE 4.25, 'Main branch' includes additional features and extensions)
+> **Use Branch "Lecture29-FinishedProject" for finished course code without additions from UE4.25**
 
 ![GitHub Branch Selection Info](https://www.tomlooman.com/wp-content/uploads/2021/01/github_branchesinfo.jpg)
 
@@ -49,28 +47,6 @@ This project is part of the **[Professional Game Development in C++ and Unreal E
   - Actor Pooling (Projectiles)
 - Async Line tracing Example
 - PSO Precaching & Bundled PSOs Setup for Windows DX12
-
-
-This project is part of the **[Professional Game Development in C++ and Unreal Engine](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)** Course where we build this entire game project step-by-step.
-
-![Combat Example Still](https://www.tomlooman.com/wp-content/uploads/2023/02/Course_HeroBanner_TwoSplit_Narrow_1200.jpg)
-
-# Unreal Engine 5
-
-With the release of UE5, some new rendering features have been enabled. For lower end machines it may be required to turn these off. You can do so via the Project Settings or the config INI.
-
-### DefaultEngine.ini
-
-````[/Script/Engine.RendererSettings]
-r.ReflectionMethod=1 ;lumen reflection
-r.GenerateMeshDistanceFields=True
-r.DynamicGlobalIlluminationMethod=1 ;lumen global illumination
-r.Shadow.Virtual.Enable=1 ;virtual shadow maps
-
-[/Script/WindowsTargetPlatform.WindowsTargetSettings]
-DefaultGraphicsRHI=DefaultGraphicsRHI_DX12 // Use DX12 for new rendering features above
-
-````
 
 # Credits
 
