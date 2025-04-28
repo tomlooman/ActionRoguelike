@@ -4,7 +4,7 @@
 
 **Main Branch Engine Version: 5.5** <br>
 
-> ### Learn Unrea Engine C++ The Epic Way
+> ### Learn Unreal Engine C++ The Epic Way
 > **Want to learn how to build this C++ Game from scratch? Learn more at [Professional Game Development in C++ and Unreal Engine Course](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)**
 
 # Project Features
@@ -53,7 +53,7 @@
 The game includes Melee attacks for enemy AI behaviors. The melee system builds on the Action System (similar to GAS) and uses Behavior Trees to initiate the logic to run up and perform the melee attack.
 
 **Walkthrough**
-- The Enemy's BehaviorTree checks if target (player) is within certain distance, and initiate melee attack sequence (run closer + attack when in attack range)
+- The Enemy's BehaviorTree checks if target (player) is within certain distance, and initiate melee attack sequence (run closer then attack when in attack range)
 - **[RogueAction_MinionMeleeAttack](https://github.com/tomlooman/ActionRoguelike/blob/master/Source/ActionRoguelike/AI/RogueAction_MinionMeleeAttack.cpp)** (Action) handles the start/stop of the attack. Runs an AnimMontage with the attack animation. 
 - **[RogueAnimationInstance](https://github.com/tomlooman/ActionRoguelike/blob/master/Source/ActionRoguelike/Animation/RogueAnimInstance.cpp)** (AnimBlueprint) contains *OnMeleeOverlap* which the Melee Attack Action listens for.
 - **[RogueAnimNotifyState_Melee](https://github.com/tomlooman/ActionRoguelike/blob/master/Source/ActionRoguelike/Animation/RogueAnimNotifyState_Melee.cpp)** (AnimNotify) broadcasts *OnMeleeOverlap* event when an melee overlap is found by running *OverlapMultiByChannel* colision query while the AnimNotify is active.
