@@ -38,22 +38,16 @@ namespace MeshSockets
 }
 
 
-static void LogOnScreen(UObject* WorldContext, FString Msg, FColor Color = FColor::White, float Duration = 5.0f)
+static void LogOnScreen(const UObject* WorldContext, const FString& Msg, FColor Color = FColor::White, float Duration = 5.0f)
 {
-	if (!ensure(WorldContext))
-	{
-		return;
-	}
+	const UWorld* World = GEngine->GetWorldFromContextObject(WorldContext, EGetWorldErrorMode::LogAndReturnNull);
 
-	UWorld* World = WorldContext->GetWorld();
-	if (!ensure(World))
-	{
-		return;
-	}
-
-	FString NetPrefix = World->IsNetMode(NM_Client) ? "[CLIENT] " : "[SERVER] ";
+	// Net Prefix is helpful during PIE
+	FString FullMessage = World->IsNetMode(NM_Client) ? "[CLIENT] " : "[SERVER] " + Msg;
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, Duration, Color, NetPrefix + Msg);
+		GEngine->AddOnScreenDebugMessage(-1, Duration, Color, FullMessage);
 	}
+
+	UE_LOG(LogGame, Log, TEXT("%s"), *FullMessage);
 }
