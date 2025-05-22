@@ -66,7 +66,7 @@ Note: The AnimMontage holds a Melee Attack animation and requires the custom Ani
 
 ## Animation Budget Allocator
  
-Animation Budget Allocator plugin for the enemy AI. Define the allocated animation budget using scalability CVAR (**a.Budget.BudgetMs**) inside **DefaultScalability.ini**. View the budgeting debug information using **a.Budget.Debug.Enabled**. The ARogueAICharacter class includes the optional OnReduceAnimationWork callback to allow custom logic to further throttle anim quality when necessary.
+Animation Budget Allocator plugin for the enemy AI. Define the allocated animation budget using scalability CVAR (**a.Budget.BudgetMs**) inside **DefaultScalability.ini**. View the budgeting debug and profiling information using **a.Budget.Debug.Enabled** and **stat AnimationBudgetAllocator**. The ARogueAICharacter class includes the optional OnReduceAnimationWork callback to allow custom logic to further throttle anim quality when necessary.
 
 You can get a quick overview by checking out the [initial commit](https://github.com/tomlooman/ActionRoguelike/commit/bbf4ea3f1af05d2b3acdbcc3d2312137015d5789). Read more on the [Animation Budget Allocator Docs Page](https://dev.epicgames.com/documentation/en-us/unreal-engine/animation-budget-allocator-in-unreal-engine) which contains all the steps to implement this in your own projects.
 
