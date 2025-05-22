@@ -62,6 +62,14 @@ The game includes Melee attacks for enemy AI behaviors. The melee system builds 
 
 Note: The AnimMontage holds a Melee Attack animation and requires the custom AnimNotify in order to handle the overlap checks.
 
+# Performance & Optimization
+
+## Animation Budget Allocator
+ 
+Animation Budget Allocator plugin for the enemy AI. Define the allocated animation budget using scalability CVAR (**a.Budget.BudgetMs**) inside **DefaultScalability.ini**. View the budgeting debug information using **a.Budget.Debug.Enabled**. The ARogueAICharacter class includes the optional OnReduceAnimationWork callback to allow custom logic to further throttle anim quality when necessary.
+
+You can get a quick overview by checking out the [initial commit](https://github.com/tomlooman/ActionRoguelike/commit/bbf4ea3f1af05d2b3acdbcc3d2312137015d5789). Read more on the [Animation Budget Allocator Docs Page](https://dev.epicgames.com/documentation/en-us/unreal-engine/animation-budget-allocator-in-unreal-engine) which contains all the steps to implement this in your own projects.
+
 # Browsing Older Releases
 
 The project is ocassionally updated to keep up with the latest Unreal Engine release. Additionally, new features are sometimes added to the project, often related to new Articles or Tutorials posted on [tomlooman.com](https://tomlooman.com). These will be included on the main branch, on whatever the latest UE version is at the time.
