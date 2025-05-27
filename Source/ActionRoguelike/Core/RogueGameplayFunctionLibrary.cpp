@@ -16,12 +16,6 @@
 
 URogueActionComponent* URogueGameplayFunctionLibrary::GetActionComponentFromActor(AActor* FromActor)
 {
-	if (!ensure(FromActor))
-	{
-		// Log this?
-		return nullptr;
-	}
-	
 	// Note: Cast<T> on interface only works if the interface was implemented on the Actor in C++
 	// For BP implemented we should change this code to call Execute_GetActionComponent instead...
 	const IRogueActionSystemInterface* ASI = Cast<IRogueActionSystemInterface>(FromActor);
@@ -85,6 +79,10 @@ bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* Ta
 	check(InstigatorComp);
 
 	FRogueAttribute* FoundAttribute = InstigatorComp->GetAttribute(SharedGameplayTags::Attribute_AttackDamage);
+
+	// We might not have implemented the new attributes on every actor yet.
+	// Assert for now, later we just log this as we might not want to deal dmg to some things.
+	check(FoundAttribute);
 
 	// Coefficient is a %, to scale all out damage off the instigator's base attack damage
 	float TotalDamage = FoundAttribute->GetValue() * (DamageCoefficient*0.01f);

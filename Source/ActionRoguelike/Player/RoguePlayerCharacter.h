@@ -15,7 +15,6 @@ class UAIPerceptionStimuliSourceComponent;
 class UInputMappingContext;
 class UCameraComponent;
 class USpringArmComponent;
-class URogueInteractionComponent;
 class UAnimMontage;
 class URogueActionComponent;
 
@@ -44,10 +43,7 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UInputAction> Input_Jump;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> Input_Interact;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UInputAction> Input_Sprint;
 	
@@ -90,9 +86,6 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCameraComponent> CameraComp;
 
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<URogueInteractionComponent> InteractionComp;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<URogueActionComponent> ActionComp;
 
@@ -121,8 +114,6 @@ protected:
 	void BlackHoleAttack();
 
 	void Dash();
-
-	void PrimaryInteract();
 
 	void OnHealthAttributeChanged(float NewValue, const FAttributeModification& AttributeModification);
 

@@ -36,7 +36,7 @@ void ARogueProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedCompo
 	if (OtherActor && OtherActor != GetInstigator())
 	{
 		// Parry Ability (GameplayTag Example)
-		URogueActionComponent* OtherActionComp = OtherActor->FindComponentByClass<URogueActionComponent>();
+		URogueActionComponent* OtherActionComp = URogueGameplayFunctionLibrary::GetActionComponentFromActor(OtherActor);
 		if (OtherActionComp && OtherActionComp->ActiveGameplayTags.HasTag(GetParryTag()))
 		{
 			MoveComp->Velocity = -MoveComp->Velocity;

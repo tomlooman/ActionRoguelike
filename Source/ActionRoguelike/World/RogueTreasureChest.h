@@ -18,7 +18,7 @@ class ACTIONROGUELIKE_API ARogueTreasureChest : public AActor, public IRogueGame
 
 public:
 
-	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
+	virtual void Interact_Implementation(AController* InstigatorController) override;
 
 	virtual void OnActorLoaded_Implementation() override;
 

@@ -29,8 +29,8 @@ public:
 	void OnActorLoaded();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	FText GetInteractText(APawn* InstigatorPawn);
+	FText GetInteractText(AController* InstigatorController);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void Interact(APawn* InstigatorPawn);
+	void Interact(AController* InstigatorController);
 };

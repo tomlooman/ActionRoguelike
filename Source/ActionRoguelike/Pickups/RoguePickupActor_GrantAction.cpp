@@ -4,13 +4,14 @@
 #include "RoguePickupActor_GrantAction.h"
 #include "ActionSystem/RogueActionComponent.h"
 #include "ActionSystem/RogueAction.h"
+#include "Core/RogueGameplayFunctionLibrary.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RoguePickupActor_GrantAction)
 
 
 
 
-void ARoguePickupActor_GrantAction::Interact_Implementation(APawn* InstigatorPawn)
+void ARoguePickupActor_GrantAction::Interact_Implementation(AController* InstigatorController)
 {
 	// Make sure an action class was set up
 	if (!ensureAlways(ActionToGrant))
@@ -18,7 +19,7 @@ void ARoguePickupActor_GrantAction::Interact_Implementation(APawn* InstigatorPaw
 		return;
 	}
 
-	URogueActionComponent* ActionComp = InstigatorPawn->FindComponentByClass<URogueActionComponent>();
+	URogueActionComponent* ActionComp = URogueGameplayFunctionLibrary::GetActionComponentFromActor(InstigatorController->GetPawn());
 	check(ActionComp);
 	
 	// Check if Player already has action class
@@ -30,6 +31,6 @@ void ARoguePickupActor_GrantAction::Interact_Implementation(APawn* InstigatorPaw
 	}
 
 	// Give new Ability
-	ActionComp->AddAction(InstigatorPawn, ActionToGrant);	
+	ActionComp->AddAction(InstigatorController->GetPawn(), ActionToGrant);	
 	HideAndCooldown();
 }

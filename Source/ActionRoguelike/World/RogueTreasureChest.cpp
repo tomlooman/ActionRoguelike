@@ -42,7 +42,7 @@ ARogueTreasureChest::ARogueTreasureChest()
 }
 
 
-void ARogueTreasureChest::Interact_Implementation(APawn* InstigatorPawn)
+void ARogueTreasureChest::Interact_Implementation(AController* InstigatorController)
 {
 	bLidOpened = true;
 	ConditionalOpenChest();

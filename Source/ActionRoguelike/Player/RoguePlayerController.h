@@ -6,6 +6,9 @@
 #include "GameFramework/PlayerController.h"
 #include "RoguePlayerController.generated.h"
 
+class URogueInteractionComponent;
+class UInputAction;
+
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStateChanged, APlayerState*, NewPlayerState);
 
@@ -27,6 +30,14 @@ public:
 	}
 
 protected:
+	
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<URogueInteractionComponent> InteractionComp;
+		
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	TObjectPtr<UInputAction> Input_Interact;
+
+	void PrimaryInteract();
 
 	virtual void SetupInputComponent() override;
 

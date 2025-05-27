@@ -20,20 +20,16 @@ ARoguePickupActor_HealthPotion::ARoguePickupActor_HealthPotion()
 }
 
 
-void ARoguePickupActor_HealthPotion::Interact_Implementation(APawn* InstigatorPawn)
+void ARoguePickupActor_HealthPotion::Interact_Implementation(AController* InstigatorController)
 {
-	if (!ensure(InstigatorPawn))
-	{
-		return;
-	}
-
-	URogueActionComponent* ActionComp = URogueActionComponent::GetActionComponent(InstigatorPawn);
+	APawn* MyPawn = InstigatorController->GetPawn();
+	
+	URogueActionComponent* ActionComp = URogueActionComponent::GetActionComponent(MyPawn);
 	// Check if not already at max health
-	if (ensure(ActionComp) && !URogueGameplayFunctionLibrary::IsFullHealth(InstigatorPawn))
+	if (ensure(ActionComp) && !URogueGameplayFunctionLibrary::IsFullHealth(MyPawn))
 	{
-		if (ARoguePlayerState* PS = InstigatorPawn->GetPlayerState<ARoguePlayerState>())
+		if (ARoguePlayerState* PS = InstigatorController->GetPlayerState<ARoguePlayerState>())
 		{
-			
 			if (PS->TryRemoveCredits(CreditCost))
 			{
 				if (ActionComp->ApplyAttributeChange(
@@ -51,9 +47,9 @@ void ARoguePickupActor_HealthPotion::Interact_Implementation(APawn* InstigatorPa
 }
 
 
-FText ARoguePickupActor_HealthPotion::GetInteractText_Implementation(APawn* InstigatorPawn)
+FText ARoguePickupActor_HealthPotion::GetInteractText_Implementation(AController* InstigatorController)
 {
-	if (URogueGameplayFunctionLibrary::IsFullHealth(InstigatorPawn))
+	if (URogueGameplayFunctionLibrary::IsFullHealth(InstigatorController->GetPawn()))
 	{
 		return LOCTEXT("HealthPotion_FullHealthWarning", "Already at full health.");
 	}

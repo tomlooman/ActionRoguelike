@@ -54,9 +54,9 @@ public:
 	void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
-	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
+	virtual void Interact_Implementation(AController* InstigatorController) override;
 
-	virtual FText GetInteractText_Implementation(APawn* InstigatorPawn) override;
+	virtual FText GetInteractText_Implementation(AController* InstigatorController) override;
 
 	ARoguePickupActor();
 

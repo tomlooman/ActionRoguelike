@@ -14,9 +14,9 @@ ARoguePickupActor_Credits::ARoguePickupActor_Credits()
 }
 
 
-void ARoguePickupActor_Credits::Interact_Implementation(APawn* InstigatorPawn)
+void ARoguePickupActor_Credits::Interact_Implementation(AController* InstigatorController)
 {
-	if (ARoguePlayerState* PS = InstigatorPawn->GetPlayerState<ARoguePlayerState>())
+	if (ARoguePlayerState* PS = InstigatorController->GetPlayerState<ARoguePlayerState>())
 	{
 		PS->AddCredits(CreditsAmount);
 		HideAndCooldown();

@@ -3,6 +3,8 @@
 
 #include "RoguePlayerController.h"
 
+#include "EnhancedInputComponent.h"
+#include "RogueInteractionComponent.h"
 #include "Development/RogueCheatManager.h"
 #include "UI/RogueHUD.h"
 
@@ -14,12 +16,24 @@ ARoguePlayerController::ARoguePlayerController()
 {
 	CheatClass = URogueCheatManager::StaticClass();
 	bIsUsingGamepad = false;
+
+	// For multiplayer, its better to have this here so it only runs on the owning client (and the server, which can disable the tick)
+	InteractionComp = CreateDefaultSubobject<URogueInteractionComponent>(TEXT("InteractionComp"));
+}
+
+
+void ARoguePlayerController::PrimaryInteract()
+{
+	InteractionComp->PrimaryInteract();
 }
 
 
 void ARoguePlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
+	
+	UEnhancedInputComponent* EnhInputComp = CastChecked<UEnhancedInputComponent>(InputComponent);
+	EnhInputComp->BindAction(Input_Interact, ETriggerEvent::Triggered, this, &ARoguePlayerController::PrimaryInteract);
 
 	// @todo: replace with Enhanced Input
 	FInputActionBinding PauseBinding( "PauseMenu", IE_Pressed );
@@ -30,8 +44,6 @@ void ARoguePlayerController::SetupInputComponent()
 
 	// Keeping as 'old' input for now until we figure out how to do this easily in Enhanced input
 	InputComponent->BindAction("AnyKey", IE_Pressed, this, &ARoguePlayerController::AnyKeyInput);
-
-
 }
 
 

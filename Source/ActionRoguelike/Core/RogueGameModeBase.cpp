@@ -247,7 +247,7 @@ void ARogueGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector Spawn
 		LogOnScreen(this, FString::Printf(TEXT("Spawned enemy: %s (%s)"), *GetNameSafe(NewBot), *GetNameSafe(MonsterData)));
 
 		// Grant special actions, buffs etc.
-		URogueActionComponent* ActionComp = NewBot->FindComponentByClass<URogueActionComponent>();
+		URogueActionComponent* ActionComp = URogueGameplayFunctionLibrary::GetActionComponentFromActor(NewBot);
 		check(ActionComp);
 		
 		for (TSubclassOf<URogueAction> ActionClass : MonsterData->Actions)
@@ -332,12 +332,8 @@ void ARogueGameModeBase::OnPowerupSpawnQueryCompleted(TSharedPtr<FEnvQueryResult
 
 void ARogueGameModeBase::RespawnPlayerElapsed(AController* Controller)
 {
-	if (ensure(Controller))
-	{
-		Controller->UnPossess();
-
-		RestartPlayer(Controller);
-	}
+	Controller->UnPossess();
+	RestartPlayer(Controller);
 }
 
 

@@ -7,6 +7,7 @@
 #include "GameplayTagContainer.h"
 #include "ActionSystem/RogueActionComponent.h"
 #include "SharedGameplayTags.h"
+#include "Core/RogueGameplayFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueAnimInstance)
@@ -20,7 +21,7 @@ void URogueAnimInstance::NativeInitializeAnimation()
 	AActor* OwningActor = GetOwningActor();
 	check(OwningActor);
 
-	ActionComp = OwningActor->FindComponentByClass<URogueActionComponent>();
+	ActionComp = URogueGameplayFunctionLibrary::GetActionComponentFromActor(OwningActor);
 }
 
 

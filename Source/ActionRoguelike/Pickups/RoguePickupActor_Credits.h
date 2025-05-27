@@ -21,7 +21,7 @@ protected:
 	int32 CreditsAmount;
 
 public:
-	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
+	virtual void Interact_Implementation(AController* InstigatorController) override;
 
 	ARoguePickupActor_Credits();
 };

@@ -7,6 +7,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/RoguePlayerCharacter.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RoguePickupActor)
 
@@ -54,18 +55,22 @@ void ARoguePickupActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ARoguePickupActor::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                                      int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// @todo: prevent minions from pickup coins. GameplayTags or collision channel.
-	Execute_Interact(this, CastChecked<APawn>(OtherActor));
+	ARoguePlayerCharacter* MyPawn = Cast<ARoguePlayerCharacter>(OtherActor);
+	// Skip for non-local pawns
+	if (MyPawn && MyPawn->IsLocallyControlled())
+	{
+		Execute_Interact(this, CastChecked<AController>(MyPawn->GetController()));
+	}
 }
 
 
-void ARoguePickupActor::Interact_Implementation(APawn* InstigatorPawn)
+void ARoguePickupActor::Interact_Implementation(AController* InstigatorController)
 {
 	// logic in derived classes...
 }
 
 
-FText ARoguePickupActor::GetInteractText_Implementation(APawn* InstigatorPawn)
+FText ARoguePickupActor::GetInteractText_Implementation(AController* InstigatorController)
 {
 	return FText::GetEmpty();
 }

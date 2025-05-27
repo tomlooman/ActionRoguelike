@@ -6,6 +6,7 @@
 #include "ActionRoguelike.h"
 #include "Core/RogueGameplayInterface.h"
 #include "DrawDebugHelpers.h"
+#include "Core/RogueGameplayFunctionLibrary.h"
 #include "UI/RogueWorldUserWidget.h"
 #include "Engine/OverlapResult.h"
 
@@ -37,9 +38,9 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	
 	// Cast checked acts like static_cast in shipping builds. Less overhead compared to regular Cast<T> which does have safety nets.
-	// Can use this in places where the cast object should never be nullptr by design and we know exactly the base class it is.
-	const APawn* MyPawn = CastChecked<APawn>(GetOwner());
-	if (MyPawn->IsLocallyControlled()) // Todo: Ideally just disable tick on this component when owner is not locally controlled.
+	// Can use this in places where the cast object should never be nullptr by design, and we know exactly the base class it is.
+	const AController* MyController = CastChecked<AController>(GetOwner());
+	if (MyController->IsLocalController())
 	{
 		FindBestInteractable();
 	}
@@ -48,11 +49,22 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
 void URogueInteractionComponent::FindBestInteractable()
 {
+	AController* OwningController = Cast<AController>(GetOwner());
+	check(OwningController); // Only allow this to exist on (player)controllers
+	
+	APawn* OwningPawn = OwningController->GetPawn();
+	if (OwningPawn == nullptr || !URogueGameplayFunctionLibrary::IsAlive(OwningPawn))
+	{
+		// We do not always have a pawn, or we died
+		FocusedActor = nullptr;
+		return;
+	}
+
 	UWorld* World = GetWorld();
-
-	FVector TraceOrigin = GetOwner()->GetActorLocation();
-
-	// Find all potential interactables around the player
+	const FVector TraceOrigin = OwningPawn->GetActorLocation();
+	const FColor DebugLineColor = FColor::Green;
+	
+	// Find all potential interactable around the player
 	TArray<FOverlapResult> Overlaps;
 	World->OverlapMultiByChannel(
 		Overlaps,
@@ -61,16 +73,13 @@ void URogueInteractionComponent::FindBestInteractable()
 		TraceChannel,
 		FCollisionShape::MakeSphere(TraceRadius));
 	
-	FColor LineColor = FColor::Green;
+
 	if (DebugDrawing::bDrawInteractionVisualize)
 	{
-		DrawDebugSphere(World, TraceOrigin, TraceRadius, 32, LineColor, false, 0.0f);
+		DrawDebugSphere(World, TraceOrigin, TraceRadius, 32, DebugLineColor, false, 0.0f);
 	}
 
-	APawn* OwningPawn = Cast<APawn>(GetOwner());
-	AController* OwningController = OwningPawn->GetController();
-	check(OwningController); // We already check if locally controlled earlier
-	
+	// Reset
 	FocusedActor = nullptr;
 	float HighestWeight = -MAX_flt;
 
@@ -81,8 +90,8 @@ void URogueInteractionComponent::FindBestInteractable()
 		{
 			if (DebugDrawing::bDrawInteractionVisualize)
 			{
-				DrawDebugSphere(GetWorld(), HitActor->GetActorLocation(),
-					32, 16, LineColor, false, 0.0f);
+				DrawDebugSphere(World, HitActor->GetActorLocation(),
+					32, 16, DebugLineColor, false, 0.0f);
 			}
 			
 			if (HitActor->Implements<URogueGameplayInterface>())
@@ -114,9 +123,9 @@ void URogueInteractionComponent::FindBestInteractable()
 
 	if (FocusedActor)
 	{
-		if (WidgetInst == nullptr && ensure(DefaultWidgetClass))
+		if (WidgetInst == nullptr && ensureMsgf(DefaultWidgetClass, TEXT("DefaultWidgetClass for the interaction component is not specified in %s. Please update the Blueprint."), *GetNameSafe(OwningController)))
 		{
-			WidgetInst = CreateWidget<URogueWorldUserWidget>(GetWorld(), DefaultWidgetClass);
+			WidgetInst = CreateWidget<URogueWorldUserWidget>(World, DefaultWidgetClass);
 		}
 
 		if (WidgetInst)
@@ -142,10 +151,10 @@ void URogueInteractionComponent::FindBestInteractable()
 	{
 		if (FocusedActor)
 		{
-			DrawDebugBox(GetWorld(), FocusedActor->GetActorLocation(), FVector(20.f),
-				LineColor, false, 0.0f);
+			DrawDebugBox(World, FocusedActor->GetActorLocation(), FVector(20.f),
+				DebugLineColor, false, 0.0f);
 		}
-		//DrawDebugLine(GetWorld(), TraceOrigin, TraceEnd, LineColor, false, 2.0f, 0, 0.0f);
+		//DrawDebugLine(World, TraceOrigin, TraceEnd, LineColor, false, 2.0f, 0, 0.0f);
 	}
 }
 
@@ -164,7 +173,7 @@ void URogueInteractionComponent::ServerInteract_Implementation(AActor* InFocus)
 		return;
 	}
 
-	APawn* MyPawn = CastChecked<APawn>(GetOwner());
-	IRogueGameplayInterface::Execute_Interact(InFocus, MyPawn);
+	AController* MyController = CastChecked<AController>(GetOwner());
+	IRogueGameplayInterface::Execute_Interact(InFocus, MyController);
 }
 

@@ -6,7 +6,6 @@
 #include "Camera/CameraComponent.h"
 #include "DrawDebugHelpers.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "RogueInteractionComponent.h"
 #include "ActionSystem/RogueActionComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "SharedGameplayTags.h"
@@ -39,8 +38,6 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
-
-	InteractionComp = CreateDefaultSubobject<URogueInteractionComponent>(TEXT("InteractionComp"));
 
 	ActionComp = CreateDefaultSubobject<URogueActionComponent>(TEXT("ActionComp"));
 	ActionComp->SetDefaultAttributeSet(FRogueSurvivorAttributeSet::StaticStruct());
@@ -104,13 +101,12 @@ void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 	// Add mappings for our game, more complex games may have multiple Contexts that are added/removed at runtime
 	Subsystem->AddMappingContext(DefaultInputMapping, 0);
 
-	// New Enhanced Input system
+	// Enhanced Input
 	UEnhancedInputComponent* InputComp = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
 	// General
 	InputComp->BindAction(Input_Move, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::Move);
 	InputComp->BindAction(Input_Jump, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-	InputComp->BindAction(Input_Interact, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::PrimaryInteract);
 
 	// Sprint while key is held
 	InputComp->BindAction(Input_Sprint, ETriggerEvent::Started, this, &ARoguePlayerCharacter::SprintStart);
@@ -289,12 +285,6 @@ void ARoguePlayerCharacter::BlackHoleAttack()
 void ARoguePlayerCharacter::Dash()
 {	
 	ActionComp->StartActionByName(this, SharedGameplayTags::Action_Dash);
-}
-
-
-void ARoguePlayerCharacter::PrimaryInteract()
-{
-	InteractionComp->PrimaryInteract();
 }
 
 
