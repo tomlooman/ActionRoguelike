@@ -7,9 +7,11 @@
 
 #include "GenericTeamAgentInterface.h"
 // Included for struct FInputActionInstance (Enhanced Input)
+#include "GameplayTagContainer.h"
 #include "InputAction.h"
 #include "RoguePlayerCharacter.generated.h"
 
+class URoguePlayerData;
 class ARogueAIController;
 class UAIPerceptionStimuliSourceComponent;
 class UInputMappingContext;
@@ -18,7 +20,7 @@ class USpringArmComponent;
 class UAnimMontage;
 class URogueActionComponent;
 
-UCLASS()
+UCLASS(Abstract)
 class ACTIONROGUELIKE_API ARoguePlayerCharacter : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
@@ -28,33 +30,10 @@ public:
 	void PlayAttackSound(USoundBase* InSound);
 
 protected:
-	
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputMappingContext> DefaultInputMapping;
 
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> Input_Move;
-
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> Input_LookMouse;
-
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> Input_LookStick;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> Input_Jump;
-
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> Input_Sprint;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> Input_Dash;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> Input_PrimaryAttack;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputAction> Input_SecondaryAttack;
+	/* Contains most config data for the player including abilities and inputs */
+	UPROPERTY(EditDefaultsOnly, Category="Config")
+	TObjectPtr<URoguePlayerData> PlayerConfig;
 
 	/* Index must match the CustomPrimitiveData index used in the Overlay material */
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
@@ -98,22 +77,15 @@ protected:
 
 	// Enhanced Input
 	// Three parameter options available (FInputActionInstance, FInputActionValue, or none)
-	
 	void Move(const FInputActionInstance& Instance);
 
 	void LookMouse(const FInputActionValue& InputValue);
 	
 	void LookStick(const FInputActionValue& InputValue);
+
+	void StartActionByTag(const FInputActionValue& Instance, const FGameplayTag InActionTag);
 	
-	void SprintStart();
-
-	void SprintStop();
-
-	void PrimaryAttack();
-
-	void BlackHoleAttack();
-
-	void Dash();
+	void StopActionByTag(const FInputActionValue& Instance, const FGameplayTag InActionTag);
 
 	void OnHealthAttributeChanged(float NewValue, const FAttributeModification& AttributeModification);
 

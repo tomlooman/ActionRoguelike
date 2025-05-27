@@ -13,6 +13,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "RoguePlayerController.h"
+#include "RoguePlayerData.h"
 #include "AI/RogueAICharacter.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/AudioComponent.h"
@@ -90,6 +91,9 @@ void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	// Must be configured in the Blueprint
+	check(PlayerConfig);
+
 	const APlayerController* PC = GetController<APlayerController>();
 	const ULocalPlayer* LP = PC->GetLocalPlayer();
 	
@@ -99,28 +103,28 @@ void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 	Subsystem->ClearAllMappings();
 
 	// Add mappings for our game, more complex games may have multiple Contexts that are added/removed at runtime
-	Subsystem->AddMappingContext(DefaultInputMapping, 0);
+	Subsystem->AddMappingContext(PlayerConfig->DefaultInputMapping, 0);
 
 	// Enhanced Input
 	UEnhancedInputComponent* InputComp = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
 	// General
-	InputComp->BindAction(Input_Move, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::Move);
-	InputComp->BindAction(Input_Jump, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+	InputComp->BindAction(PlayerConfig->Input_Move, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::Move);
+	InputComp->BindAction(PlayerConfig->Input_Jump, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 
 	// Sprint while key is held
-	InputComp->BindAction(Input_Sprint, ETriggerEvent::Started, this, &ARoguePlayerCharacter::SprintStart);
-	InputComp->BindAction(Input_Sprint, ETriggerEvent::Completed, this, &ARoguePlayerCharacter::SprintStop);
+	InputComp->BindAction(PlayerConfig->Input_Sprint, ETriggerEvent::Started, this, &ARoguePlayerCharacter::StartActionByTag, SharedGameplayTags::Action_Sprint.GetTag());
+	InputComp->BindAction(PlayerConfig->Input_Sprint, ETriggerEvent::Completed, this, &ARoguePlayerCharacter::StopActionByTag, SharedGameplayTags::Action_Sprint.GetTag());
 
 	// MKB
-	InputComp->BindAction(Input_LookMouse, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::LookMouse);
+	InputComp->BindAction(PlayerConfig->Input_LookMouse, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::LookMouse);
 	// Gamepad
-	InputComp->BindAction(Input_LookStick, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::LookStick);
+	InputComp->BindAction(PlayerConfig->Input_LookStick, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::LookStick);
 
 	// Abilities
-	InputComp->BindAction(Input_PrimaryAttack, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::PrimaryAttack);
-	InputComp->BindAction(Input_SecondaryAttack, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::BlackHoleAttack);
-	InputComp->BindAction(Input_Dash, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::Dash);
+	InputComp->BindAction(PlayerConfig->Input_PrimaryAttack, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::StartActionByTag, SharedGameplayTags::Action_PrimaryAttack.GetTag());
+	InputComp->BindAction(PlayerConfig->Input_SecondaryAttack, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::StartActionByTag, SharedGameplayTags::Action_Blackhole.GetTag());
+	InputComp->BindAction(PlayerConfig->Input_Dash, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::StartActionByTag, SharedGameplayTags::Action_Dash.GetTag());
 }
 
 void ARoguePlayerCharacter::Tick(float DeltaSeconds)
@@ -231,8 +235,8 @@ void ARoguePlayerCharacter::LookStick(const FInputActionValue& InputValue)
 	bool YNegative = Value.Y < 0.f;
 
 	// Can further modify with 'sensitivity' settings
-	static const float LookYawRate = 100.0f;
-	static const float LookPitchRate = 50.0f;
+	const float LookYawRate = 100.0f;
+	const float LookPitchRate = 50.0f;
 
 	// non-linear to make aiming a little easier
 	Value = Value * Value;
@@ -259,32 +263,15 @@ void ARoguePlayerCharacter::LookStick(const FInputActionValue& InputValue)
 }
 
 
-void ARoguePlayerCharacter::SprintStart()
+void ARoguePlayerCharacter::StartActionByTag(const FInputActionValue& Instance, const FGameplayTag InActionTag)
 {
-	ActionComp->StartActionByName(this, SharedGameplayTags::Action_Sprint);
+	ActionComp->StartActionByName(this, InActionTag);
 }
 
-void ARoguePlayerCharacter::SprintStop()
+
+void ARoguePlayerCharacter::StopActionByTag(const FInputActionValue& Instance, const FGameplayTag InActionTag)
 {
-	ActionComp->StopActionByName(this, SharedGameplayTags::Action_Sprint);
-}
-
-
-void ARoguePlayerCharacter::PrimaryAttack()
-{	
-	ActionComp->StartActionByName(this, SharedGameplayTags::Action_PrimaryAttack);
-}
-
-
-void ARoguePlayerCharacter::BlackHoleAttack()
-{
-	ActionComp->StartActionByName(this, SharedGameplayTags::Action_Blackhole);
-}
-
-
-void ARoguePlayerCharacter::Dash()
-{	
-	ActionComp->StartActionByName(this, SharedGameplayTags::Action_Dash);
+	ActionComp->StopActionByName(this, InActionTag);
 }
 
 
