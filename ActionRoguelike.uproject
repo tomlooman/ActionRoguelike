@@ -16,6 +16,11 @@
 				"DeveloperSettings",
 				"StructUtils"
 			]
+		},
+		{
+			"Name": "RogueEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [
