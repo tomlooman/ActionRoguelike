@@ -81,6 +81,12 @@ UWorld* URogueAction::GetWorld() const
 }
 
 
+TSoftObjectPtr<UTexture2D> URogueAction::GetIcon() const
+{
+	return Icon;
+}
+
+
 URogueActionComponent* URogueAction::GetOwningComponent() const
 {
 	return ActionComp;

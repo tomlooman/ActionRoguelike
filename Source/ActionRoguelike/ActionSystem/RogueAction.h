@@ -39,16 +39,21 @@ class ACTIONROGUELIKE_API URogueAction : public UObject
 {
 	GENERATED_BODY()
 
-protected:
+public:
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	TSoftObjectPtr<UTexture2D> GetIcon() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	URogueActionComponent* GetOwningComponent() const;
+
+protected:
+	
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSoftObjectPtr<UTexture2D> Icon;
 
 	UPROPERTY(Transient, Replicated)
 	TObjectPtr<URogueActionComponent> ActionComp;
-
-	UFUNCTION(BlueprintCallable, Category = "Action")
-	URogueActionComponent* GetOwningComponent() const;
 
 	/* Tags added to owning actor when activated, removed when action stops */
 	UPROPERTY(EditDefaultsOnly, Category = "Tags")
