@@ -2,7 +2,7 @@
 
 ![Course Header](https://i0.wp.com/www.tomlooman.com/wp-content/uploads/2023/05/coursecpp_banner_widenarrow-3.png)
 
-**Main Branch Engine Version: 5.5** <br>
+**Main Branch Engine Version: 5.6** <br>
 
 > ### Learn Unreal Engine C++ The Epic Way
 > **Want to learn how to build this C++ Game from scratch? Learn more at [Professional Game Development in C++ and Unreal Engine Course](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)**

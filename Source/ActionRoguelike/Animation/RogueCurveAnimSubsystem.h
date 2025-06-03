@@ -83,7 +83,7 @@ struct FActiveEasingFunc
 		Time += (DeltaTime*PlayRate);
 
 		// Clamp
-		FMath::Min(Time, 1.0f);
+		Time = FMath::Min(Time, 1.0f);
 
 		float CurrentValue = FMath::InterpEaseInOut(0.0f, 1.0f, Time, EasingExp);
 
