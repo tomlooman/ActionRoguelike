@@ -6,19 +6,22 @@
 
 bool UEditorValidator_Projectiles::CanValidateAsset_Implementation(const FAssetData& InAssetData, UObject* InObject, FDataValidationContext& InContext) const
 {
-	return InObject && InObject->IsA<UBlueprint>();
+	if (const UBlueprint* BP = CastChecked<UBlueprint>(InObject))
+	{
+		return BP->GeneratedClass.GetDefaultObject()->IsA<ARogueProjectile>();
+	}
+
+	return false;
 }
 
 
 EDataValidationResult UEditorValidator_Projectiles::ValidateLoadedAsset_Implementation(const FAssetData& InAssetData, UObject* InAsset, FDataValidationContext& Context)
 {
-	const UBlueprint* BP = Cast<UBlueprint>(InAsset);
+	const UBlueprint* BP = CastChecked<UBlueprint>(InAsset);
+	check(BP);
 	
 	ARogueProjectile* Projectile = Cast<ARogueProjectile>(BP->GeneratedClass.GetDefaultObject());
-	if (Projectile == nullptr)
-	{
-		return EDataValidationResult::NotValidated;
-	}
+	check(Projectile);
 
 	// Basic example, require this to be set to avoid infinite projectiles
 	if (Projectile->InitialLifeSpan <= 0.0f)
