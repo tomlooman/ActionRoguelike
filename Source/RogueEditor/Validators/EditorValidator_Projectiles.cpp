@@ -6,7 +6,7 @@
 
 bool UEditorValidator_Projectiles::CanValidateAsset_Implementation(const FAssetData& InAssetData, UObject* InObject, FDataValidationContext& InContext) const
 {
-	if (const UBlueprint* BP = CastChecked<UBlueprint>(InObject))
+	if (const UBlueprint* BP = Cast<UBlueprint>(InObject))
 	{
 		return BP->GeneratedClass.GetDefaultObject()->IsA<ARogueProjectile>();
 	}
