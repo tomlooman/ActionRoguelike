@@ -270,8 +270,13 @@ bool URogueActionComponent::StartActionByName(AActor* Instigator, FGameplayTag A
 		{
 			if (!Action->CanStart(Instigator))
 			{
-				FString FailedMsg = FString::Printf(TEXT("Failed to run: %s"), *ActionName.ToString());
-				GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FailedMsg);
+				FString OwnerName = GetOwner()->GetName();
+				FString FailedMsg = FString::Printf(TEXT("%s - Failed to run: %s"), *OwnerName, *ActionName.ToString());
+
+				// Limits display in viewport to one per actor instance
+				uint64 Key = GetTypeHash(OwnerName);
+
+				GEngine->AddOnScreenDebugMessage(Key, 2.0f, FColor::Red, FailedMsg);
 				continue;
 			}
 
