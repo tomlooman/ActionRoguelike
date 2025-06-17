@@ -32,11 +32,14 @@ void ARoguePickupActor_HealthPotion::Interact_Implementation(AController* Instig
 		{
 			if (PS->TryRemoveCredits(CreditCost))
 			{
+				// Heal back to full
+				float MaxHealing = ActionComp->GetAttribute(SharedGameplayTags::Attribute_HealthMax)->GetValue();
+
 				if (ActionComp->ApplyAttributeChange(
 					SharedGameplayTags::Attribute_Health,
-					ActionComp->GetAttribute(SharedGameplayTags::Attribute_HealthMax)->GetValue(),
+					MaxHealing,
 					this,
-					EAttributeModifyType::AddModifier))
+					EAttributeModifyType::AddBase))
 				{
 					// Only activate if healed successfully
 					HideAndCooldown();

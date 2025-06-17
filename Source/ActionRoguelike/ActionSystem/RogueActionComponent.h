@@ -63,12 +63,17 @@ public:
 
 protected:
 
+	void FillAttributeCache();
+
 	UFUNCTION(BlueprintCallable, Category=Attributes, DisplayName="GetAttribute")
 	bool K2_GetAttribute(FGameplayTag InAttributeTag, float& CurrentValue, float& Base, float& Delta);
 
 	/* Marked protected, C++ can use direct access to the OnAttributeChanged inside an Attribute */
 	UFUNCTION(BlueprintCallable, DisplayName="AddAttributeListener", meta = (Keywords = "Bind, Delegate", AdvancedDisplay="bCallImmediately"))
 	void K2_AddAttributeListener(FGameplayTag AttributeTag, FOnAttributeChangedDynamic Event, bool bCallImmediately = false);
+
+	UFUNCTION(BlueprintCallable)
+	void K2_RemoveAttributeListener(FOnAttributeChangedDynamic Event);
 
 	/* Interchangeable set of attributes such as Health, BaseDamage, Strength, Stamina, MoveSpeed, etc. */
 	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category=Attributes, meta = (BaseStruct = "RogueAttributeSet", ExcludeBaseStruct))

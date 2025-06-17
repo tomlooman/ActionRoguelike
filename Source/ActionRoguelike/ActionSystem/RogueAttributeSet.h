@@ -66,7 +66,7 @@ struct FAttributeModification
 // Blueprint accessible delegate (this is how we "bind" indirectly in blueprint)
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnAttributeChangedDynamic, float, NewValue, FAttributeModification, AppliedModification);
 // The C++ delegate that is actually broadcast, and may itself call the above dynamic delegate by wrapping it in a lamdba
-DECLARE_MULTICAST_DELEGATE_TwoParams(FAttributeChangedSignature, float, const FAttributeModification&);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FAttributeChangedSignature, float /*NewValue*/, const FAttributeModification&);
 
 /* Represents a single "float" Attribute which gives us greater flexibility in how its calculated due to buffs, items and permanent upgrades */
 USTRUCT(BlueprintType)
@@ -103,6 +103,9 @@ struct FRogueAttributeSet
 	GENERATED_BODY()
 
 	// Nothing happening here...
+	
+	/* Allow additional work such as clamping Attributes based on another (eg. Health vs. HealthMax) */
+	virtual void PostAttributeChanged() {};
 };
 
 
@@ -125,6 +128,13 @@ struct FRogueHealthAttributeSet : public FRogueAttributeSet
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
 	FRogueAttribute HealthMax;
+
+	virtual void PostAttributeChanged() override
+	{
+		Health.Base = FMath::Clamp(Health.Base, 0.0f, HealthMax.GetValue());
+		
+		// @todo: reduce Health when HealthMax is updated by triggering another attribute change
+	}
 
 };
 

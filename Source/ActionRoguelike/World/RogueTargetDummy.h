@@ -6,8 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "RogueTargetDummy.generated.h"
 
-
-class URogueAttributeComponent;
+class URogueActionComponent;
 
 
 UCLASS()
@@ -24,12 +23,11 @@ public:
 protected:
 
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<URogueAttributeComponent> AttributeComp;
-
+	TObjectPtr<URogueActionComponent> ActionComp;
+	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USkeletalMeshComponent> SkelMeshComp;
 
-	UFUNCTION()
-	void OnHealthChanged(AActor* InstigatorActor, URogueAttributeComponent* OwningComp, float NewHealth, float Delta);
+	void OnHealthChanged(float NewValue,  const FAttributeModification& AttributeMod);
 
 };

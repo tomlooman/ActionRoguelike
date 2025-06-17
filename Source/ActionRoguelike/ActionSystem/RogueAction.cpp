@@ -35,7 +35,7 @@ bool URogueAction::CanStart_Implementation(AActor* Instigator)
 
 void URogueAction::StartAction_Implementation(AActor* Instigator)
 {
-	UE_LOGFMT(LogGame, Log, "Started: {ActionName}", GetName());
+	UE_LOGFMT(LogGame, Log, "Started: {ActionName}", ("ActionName", GetName()));
 
 	URogueActionComponent* Comp = GetOwningComponent();	
 	Comp->ActiveGameplayTags.AppendTags(GrantsTags);
@@ -54,7 +54,7 @@ void URogueAction::StartAction_Implementation(AActor* Instigator)
 
 void URogueAction::StopAction_Implementation(AActor* Instigator)
 {
-	UE_LOGFMT(LogGame, Log, "Stopped: {name}", GetName());
+	UE_LOGFMT(LogGame, Log, "Stopped: {ActionName}", ("ActionName", GetName()));
 
 	//ensureAlways(bIsRunning);
 

@@ -58,7 +58,8 @@ bool URogueGameplayFunctionLibrary::KillActor(AActor* InActor)
 	URogueActionComponent* ActionComp = URogueActionComponent::GetActionComponent(InActor);
 	const FRogueAttribute* HealthMaxAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_HealthMax);
 	
-	return ActionComp->ApplyAttributeChange(SharedGameplayTags::Attribute_Health, HealthMaxAttribute->GetValue(), InActor, EAttributeModifyType::AddModifier);
+	return ActionComp->ApplyAttributeChange(SharedGameplayTags::Attribute_Health, HealthMaxAttribute->GetValue(),
+		InActor, EAttributeModifyType::AddBase);
 }
 
 
@@ -81,7 +82,7 @@ bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* Ta
 	FRogueAttribute* FoundAttribute = InstigatorComp->GetAttribute(SharedGameplayTags::Attribute_AttackDamage);
 
 	// We might not have implemented the new attributes on every actor yet.
-	// Assert for now, later we just log this as we might not want to deal dmg to some things.
+	// @fixme: Assert for now, later we just log this as we might not want to deal dmg to some things.
 	check(FoundAttribute);
 
 	// Coefficient is a %, to scale all out damage off the instigator's base attack damage
@@ -99,7 +100,7 @@ bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* Ta
 		-TotalDamage, // Make sure we apply a negative amount to the Health
 		VictimComp,
 		DamageCauser,
-		EAttributeModifyType::AddModifier);
+		EAttributeModifyType::AddBase);
 
 	// Could pass through dead enemies
 	return VictimComp->ApplyAttributeChange(AttriMod);
