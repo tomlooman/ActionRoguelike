@@ -2,8 +2,10 @@
 
 
 #include "RogueTargetDummy.h"
+
+#include "SharedGameplayTags.h"
+#include "ActionSystem/RogueActionComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "ActionSystem/RogueAttributeComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueTargetDummy)
 
@@ -13,21 +15,23 @@ ARogueTargetDummy::ARogueTargetDummy()
 	SkelMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComp"));
 	RootComponent = SkelMeshComp;
 
-	AttributeComp = CreateDefaultSubobject<URogueAttributeComponent>(TEXT("AttributeComp"));
+	ActionComp = CreateDefaultSubobject<URogueActionComponent>(TEXT("ActionComp"));
+	ActionComp->SetDefaultAttributeSet(FRogueHealthAttributeSet::StaticStruct());
 }
+
 
 void ARogueTargetDummy::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	// Trigger when health is changed (damage/healing)
-	AttributeComp->OnHealthChanged.AddDynamic(this, &ARogueTargetDummy::OnHealthChanged);
+	FRogueAttribute* FoundAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health);
+	FoundAttribute->OnAttributeChanged.AddUObject(this, &ThisClass::OnHealthChanged);
 }
 
 
-void ARogueTargetDummy::OnHealthChanged(AActor* InstigatorActor, URogueAttributeComponent* OwningComp, float NewHealth, float Delta)
+void ARogueTargetDummy::OnHealthChanged(float NewValue, const FAttributeModification& AttributeMod)
 {
-	if (Delta < 0.0f)
+	if (AttributeMod.Magnitude < 0.0f)
 	{
 		SkelMeshComp->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);
 	}

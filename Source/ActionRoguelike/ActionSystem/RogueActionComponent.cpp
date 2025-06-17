@@ -3,7 +3,6 @@
 
 #include "ActionSystem/RogueActionComponent.h"
 #include "ActionSystem/RogueAction.h"
-#include "Core/RogueGameplayInterface.h"
 #include "../ActionRoguelike.h"
 #include "Core/RogueGameplayFunctionLibrary.h"
 #include "Net/UnrealNetwork.h"
@@ -26,24 +25,10 @@ URogueActionComponent::URogueActionComponent()
 
 void URogueActionComponent::InitializeComponent()
 {
+	FillAttributeCache();
+	
 	Super::InitializeComponent();
-
-	{
-		TRACE_CPUPROFILER_EVENT_SCOPE(CacheAllAttributes);
-
-		for (TFieldIterator<FStructProperty> PropertyIt(AttributeSet.GetScriptStruct()); PropertyIt; ++PropertyIt)
-		{
-			const FRogueAttribute* FoundAttribute = PropertyIt->ContainerPtrToValuePtr<FRogueAttribute>(AttributeSet.GetMemory());
-
-			// Build the tag "Attribute.Health" where "Health" is the variable name of the RogueAttribute we just iterated
-			FString TagName = TEXT("Attribute." + PropertyIt->GetName());
-			FGameplayTag AttributeTag = FGameplayTag::RequestGameplayTag(FName(TagName));
-
-			AttributeCache.Add(AttributeTag, const_cast<FRogueAttribute*>(FoundAttribute));
-		}
-	}
 }
-
 
 void URogueActionComponent::BeginPlay()
 {
@@ -125,6 +110,10 @@ bool URogueActionComponent::ApplyAttributeChange(const FAttributeModification& M
 			// Always fail here so we can address it
 			check(false);
 	}
+	
+	// Allow further modification here for the attribute set
+	FRogueAttributeSet* RogueSet = AttributeSet.GetMutablePtr<FRogueAttributeSet>();
+	RogueSet->PostAttributeChanged();
 
 	// With clamping inside the attribute (or a zero delta) no real change might have occured
 	if (!FMath::IsNearlyEqual(OriginalValue, Attribute->GetValue()))
@@ -157,9 +146,15 @@ void URogueActionComponent::K2_AddAttributeListener(FGameplayTag AttributeTag, F
 	
 	FRogueAttribute* FoundAttribute = GetAttribute(AttributeTag);
 
-	// An unusual "Wrapper" to make the binding easier in blueprint (returns handle to unbind from Blueprint if needed)
+	// An "Wrapper" to make the binding easier to use with blueprint (returns handle to unbind from Blueprint instance if needed)
+	// Blueprint graph can manually unbind using K2_RemoveAttributeListener, otherwise the binding will clean up when the attribute change
+	// triggers and we can no longer find a valid binding to the original blueprint delegate (meaning ExecuteIfBound returns false below)
 	FDelegateHandle Handle = FoundAttribute->OnAttributeChanged.AddLambda([Event, FoundAttribute, this](float NewValue, FAttributeModification AttriMod)
 	{
+		SCOPED_NAMED_EVENT(Blueprint_OnAttributeChanged, FColor::Blue);
+		// This lamba is executed anytime we trigger the attribute change.
+
+		// This is the blueprint event - May no longer be bound if the blueprint instance has been destroyed/GC'ed
 		bool bIsBound = Event.ExecuteIfBound(NewValue, AttriMod);
 
 		// We instance was deleted, the event is no longer valid
@@ -170,7 +165,7 @@ void URogueActionComponent::K2_AddAttributeListener(FGameplayTag AttributeTag, F
 		}
 	});
 
-	// Keep track so it can be cleaned up if blueprint owning is deleted
+	// Keep track so it can be cleaned up if blueprint owner is deleted
 	DynamicDelegateHandles.Add(Event, Handle);
 
 	// Calling immediately is convenient for setting up initial states like in UI
@@ -184,11 +179,61 @@ void URogueActionComponent::K2_AddAttributeListener(FGameplayTag AttributeTag, F
 	}
 }
 
+void URogueActionComponent::K2_RemoveAttributeListener(FOnAttributeChangedDynamic Event)
+{
+	FDelegateHandle Handle = *DynamicDelegateHandles.Find(Event);
+
+	// Iterate all attributes to find matching handle (alternatively, just pass in the correct attributetag)
+	for (auto Attribute : AttributeCache)
+	{
+		bool bFound = Attribute.Value->OnAttributeChanged.Remove(Handle);
+
+		// @todo: maybe count to max 1 or we have an issue with multiple bindings coming from a blueprint...
+		if (bFound)
+		{
+			// Temp to verify this is all working
+			UE_LOG(LogTemp, Log, TEXT("Successfully Removed binding from a blueprint"));
+		}
+	}
+}
+
 
 void URogueActionComponent::SetDefaultAttributeSet(UScriptStruct* InDefaultType)
 {
-	// @todo: maybe add safeguards to only allow this during init. We don't want to swap out set during gameplay
+	// Only allow during init
+	check(!HasBeenInitialized());
+
 	AttributeSet = FInstancedStruct(InDefaultType);
+	check(AttributeSet.GetScriptStruct());
+
+	FillAttributeCache();
+}
+
+
+void URogueActionComponent::FillAttributeCache()
+{
+	// Depending on when we set the attributecache, it might still be nullptr when called
+	// Blueprint might directly set the type on the component, where C++ may call SetAttributeSet
+	if (AttributeSet.GetScriptStruct() == nullptr)
+	{
+		return;
+	}
+	
+	TRACE_CPUPROFILER_EVENT_SCOPE(ActionComponent::CacheAttributes);
+
+	// @todo: preallocate to the correct size if we know the nr of properties in the struct
+	AttributeCache.Empty();
+
+	for (TFieldIterator<FStructProperty> PropertyIt(AttributeSet.GetScriptStruct()); PropertyIt; ++PropertyIt)
+	{
+		const FRogueAttribute* FoundAttribute = PropertyIt->ContainerPtrToValuePtr<FRogueAttribute>(AttributeSet.GetMemory());
+
+		// Build the tag "Attribute.Health" where "Health" is the variable name of the RogueAttribute we just iterated
+		FString TagName = TEXT("Attribute." + PropertyIt->GetName());
+		FGameplayTag AttributeTag = FGameplayTag::RequestGameplayTag(FName(TagName));
+
+		AttributeCache.Add(AttributeTag, const_cast<FRogueAttribute*>(FoundAttribute));
+	}
 }
 
 
@@ -200,10 +245,11 @@ URogueActionComponent* URogueActionComponent::GetActionComponent(AActor* FromAct
 
 void URogueActionComponent::AddAction(AActor* Instigator, TSubclassOf<URogueAction> ActionClass)
 {
-	if (!ensure(ActionClass))
+	// @todo: instead warn earlier about a poorly configured array
+	/*if (!ensure(ActionClass))
 	{
 		return;
-	}
+	}*/
 
 	// Skip for clients
 	if (!GetOwner()->HasAuthority())

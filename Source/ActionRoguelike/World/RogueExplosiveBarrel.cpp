@@ -82,11 +82,11 @@ void ARogueExplosiveBarrel::OnHealthAttributeChanged(float NewValue, const FAttr
 		Explode();
 	}
 	
+	UE_LOG(LogGame, Log, TEXT("OnActorHit in Explosive Barrel"));
 	// Structured Logging Example
-	UE_LOGFMT(LogGame, Log, "OnActorHit in Explosive Barrel");
-	// Warnings as structured logs even show up in the "Message Log" window of UnrealEd
 	UE_LOGFMT(LogGame, Warning, "OnActorHit, OtherActor: {name}, at game time: {timeseconds}",
-		GetNameSafe(AttributeModification.Instigator->GetOwner()), GetWorld()->TimeSeconds);
+		("name", GetNameSafe(AttributeModification.Instigator->GetOwner())),
+		("timeseconds", GetWorld()->TimeSeconds));
 }
 
 

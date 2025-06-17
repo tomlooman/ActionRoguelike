@@ -9,15 +9,15 @@
 
 class URogueActionEffect;
 
-// inherit from struct in base class to expand on the Sparse properties
-USTRUCT(BlueprintType)
-struct FMagicProjectileSparseData : public FProjectileSparseData
+
+UCLASS(Abstract)
+class ACTIONROGUELIKE_API ARogueProjectile_Magic : public ARogueProjectile
 {
 	GENERATED_BODY()
 
-	FMagicProjectileSparseData()
-	: DamageCoefficient(100.0f)
-	{}
+public:
+
+	ARogueProjectile_Magic();
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Damage", meta=(Units="Percent"))
 	float DamageCoefficient;
@@ -27,14 +27,7 @@ struct FMagicProjectileSparseData : public FProjectileSparseData
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<URogueActionEffect> BurningActionClass;
-
-};
-
-UCLASS(Abstract, SparseClassDataTypes = MagicProjectileSparseData)
-class ACTIONROGUELIKE_API ARogueProjectile_Magic : public ARogueProjectile
-{
-	GENERATED_BODY()
-
+	
 protected:
 
 	UFUNCTION()
@@ -42,27 +35,4 @@ protected:
 
 	virtual void PostInitializeComponents() override;
 
-public:
-
-	ARogueProjectile_Magic();
-
-#if WITH_EDITORONLY_DATA
-	//~ These properties are moving out to the FMySparseClassData struct:
-	
-private:
-	UPROPERTY()
-	float DamageCoefficient_DEPRECATED;
-
-	UPROPERTY()
-	FGameplayTag ParryTag_DEPRECATED;
-
-	UPROPERTY()
-	TSubclassOf<URogueActionEffect> BurningActionClass_DEPRECATED;
-#endif
-	
-#if WITH_EDITOR
-public:
-	// ~ This function transfers existing data into FMySparseClassData.
-	virtual void MoveDataToSparseClassDataStruct() const override;
-#endif
 };

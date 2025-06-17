@@ -295,8 +295,8 @@ void ARoguePlayerCharacter::OnHealthAttributeChanged(float NewValue, const FAttr
 
 		// Rage added equal to damage received (Abs to turn into positive rage number)
 		// @TODO: change behavior of RAGE mechanic
-		//const float RageDelta = FMath::Abs(AttributeModification.Magnitude);
-		//AttributeComp->ApplyRage(AttributeModification.Instigator, RageDelta);
+		const float RageDelta = FMath::Abs(AttributeModification.Magnitude);
+		ActionComp->ApplyAttributeChange(SharedGameplayTags::Attribute_Rage, RageDelta, this, EAttributeModifyType::AddModifier);
 
 		UGameplayStatics::PlaySoundAtLocation(this, TakeDamageVOSound, GetActorLocation(), FRotator::ZeroRotator);
 	}

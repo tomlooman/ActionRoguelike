@@ -10,13 +10,12 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueProjectile_Magic)
 
-// NOTE: With SparseDataClass feature in use, some properties are replaced with "GetXXX()" which is generated automatically by UHT.
-// Example: DamageAmount becomes GetDamageAmount() without this function visible in our own header.
 
 ARogueProjectile_Magic::ARogueProjectile_Magic()
 {
 	SphereComp->SetSphereRadius(20.0f);
 	InitialLifeSpan = 10.0f;
+	DamageCoefficient = 100.0f;
 }
 
 
@@ -37,7 +36,7 @@ void ARogueProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedCompo
 	{
 		// Parry Ability (GameplayTag Example)
 		URogueActionComponent* OtherActionComp = URogueGameplayFunctionLibrary::GetActionComponentFromActor(OtherActor);
-		if (OtherActionComp && OtherActionComp->ActiveGameplayTags.HasTag(GetParryTag()))
+		if (OtherActionComp && OtherActionComp->ActiveGameplayTags.HasTag(ParryTag))
 		{
 			MoveComp->Velocity = -MoveComp->Velocity;
 
@@ -45,47 +44,17 @@ void ARogueProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedCompo
 			SetInstigator(Cast<APawn>(OtherActor));
 			return;
 		}
-
-		// re-use the dmg amount as a 'coefficient', a percentage based off the base damage from player.
-		// (this function is generated from a "SparseData" optimization code example)
-		float DmgCoefficient = GetDamageCoefficient();
-
+		
 		// Apply Damage & Impulse
-		if (URogueGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DmgCoefficient, SweepResult))
+		if (URogueGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageCoefficient, SweepResult))
 		{
 			// We only explode if the target can be damaged, it ignores anything it Overlaps that it cannot Damage
 			Explode();
 
-			if (OtherActionComp && GetBurningActionClass() && HasAuthority())
+			if (OtherActionComp && BurningActionClass && HasAuthority())
 			{
-				OtherActionComp->AddAction(GetInstigator(), GetBurningActionClass());
+				OtherActionComp->AddAction(GetInstigator(), BurningActionClass);
 			}
 		}
 	}
 }
-
-
-#if WITH_EDITOR
-// Only required to convert existing properties already stored in Blueprints into the 'new' system
-void ARogueProjectile_Magic::MoveDataToSparseClassDataStruct() const
-{
-	// make sure we don't overwrite the sparse data if it has been saved already
-	const UBlueprintGeneratedClass* BPClass = Cast<UBlueprintGeneratedClass>(GetClass());
-	if (BPClass == nullptr || BPClass->bIsSparseClassDataSerializable == true)
-	{
-		return;
-	}
-	
-	Super::MoveDataToSparseClassDataStruct();
-
-#if WITH_EDITORONLY_DATA
-	// Unreal Header Tool (UHT) will create GetMySparseClassData automatically.
-	FMagicProjectileSparseData* SparseClassData = GetMagicProjectileSparseData();
-
-	// Modify these lines to include all Sparse Class Data properties.
-	SparseClassData->DamageCoefficient = DamageCoefficient_DEPRECATED;
-	SparseClassData->ParryTag = ParryTag_DEPRECATED;
-	SparseClassData->BurningActionClass = BurningActionClass_DEPRECATED;
-#endif // WITH_EDITORONLY_DATA
-}
-#endif

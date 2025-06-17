@@ -272,7 +272,7 @@ void ARogueAICharacter::SignificanceLODChanged(int32 NewLOD)
 
 void ARogueAICharacter::OnReduceAnimationWork(class USkeletalMeshComponentBudgeted* InComponent, bool bReduce)
 {
-	UE_LOG(LogGame, Warning, TEXT("OnReduceAnimWork for bot %s, reducing = %s"), *GetName(), (bReduce ? TEXT("true") : TEXT("false")));
+	UE_LOG(LogGame, Log, TEXT("OnReduceAnimWork for bot %s, reducing = %s"), *GetName(), (bReduce ? TEXT("true") : TEXT("false")));
 
 	// @todo: Actually throttle some work, for example, detach certain components on the skeletal mesh IF we had any in the first place
 }

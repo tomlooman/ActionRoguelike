@@ -13,9 +13,6 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueProjectile)
 
-// NOTE: With SparseDataClass feature in use, some properties are replaced with "GetXXX()" which is generated automatically by UHT.
-// Example: DamageAmount becomes GetDamageAmount() without this function visible in our own header.
-
 TRACE_DECLARE_INT_COUNTER(COUNTER_GAME_ActiveProjectiles, TEXT("Game/ActiveProjectiles"));
 
 ARogueProjectile::ARogueProjectile()
@@ -118,36 +115,11 @@ void ARogueProjectile::Explode_Implementation()
 
 	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 
-	UGameplayStatics::PlayWorldCameraShake(this, ImpactShake, GetActorLocation(), GetImpactShakeInnerRadius(), GetImpactShakeOuterRadius());
+	UGameplayStatics::PlayWorldCameraShake(this, ImpactShake, GetActorLocation(), ImpactShakeInnerRadius, ImpactShakeOuterRadius);
 
 	//Destroy();
 	// Release back to pool instead of destroying
 	URogueActorPoolingSubsystem* PoolingSubsystem = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
 	PoolingSubsystem->ReleaseToPool(this);
 }
-
-
-#if WITH_EDITOR
-// Only required to convert existing properties already stored in Blueprints into the 'new' system
-void ARogueProjectile::MoveDataToSparseClassDataStruct() const
-{
-	// make sure we don't overwrite the sparse data if it has been saved already
-	const UBlueprintGeneratedClass* BPClass = Cast<UBlueprintGeneratedClass>(GetClass());
-	if (BPClass == nullptr || BPClass->bIsSparseClassDataSerializable == true)
-	{
-		return;
-	}
-	
-	Super::MoveDataToSparseClassDataStruct();
-
-#if WITH_EDITORONLY_DATA
-	// Unreal Header Tool (UHT) will create GetMySparseClassData automatically.
-	FProjectileSparseData* SparseClassData = GetProjectileSparseData();
-
-	// Modify these lines to include all Sparse Class Data properties.
-	SparseClassData->ImpactShakeInnerRadius = ImpactShakeInnerRadius_DEPRECATED;
-	SparseClassData->ImpactShakeOuterRadius = ImpactShakeOuterRadius_DEPRECATED;
-#endif // WITH_EDITORONLY_DATA
-}
-#endif
 

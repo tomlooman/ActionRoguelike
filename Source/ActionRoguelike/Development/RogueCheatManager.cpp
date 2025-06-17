@@ -19,7 +19,7 @@ void URogueCheatManager::HealSelf(float Amount /* = 100 */)
 	if (APawn* MyPawn = MyPC->GetPawn())
 	{
 		URogueActionComponent* ActionComp = URogueActionComponent::GetActionComponent(MyPawn);
-		ActionComp->ApplyAttributeChange(SharedGameplayTags::Attribute_Health, Amount, MyPawn, EAttributeModifyType::AddModifier);
+		ActionComp->ApplyAttributeChange(SharedGameplayTags::Attribute_Health, Amount, MyPawn, EAttributeModifyType::AddBase);
 	}
 }
 

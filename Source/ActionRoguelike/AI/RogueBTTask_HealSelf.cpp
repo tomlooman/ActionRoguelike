@@ -19,8 +19,7 @@ EBTNodeResult::Type URogueBTTask_HealSelf::ExecuteTask(UBehaviorTreeComponent& O
 	const FRogueAttribute* HealthMaxAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_HealthMax);
 
 	ActionComp->ApplyAttributeChange(SharedGameplayTags::Attribute_Health, HealthMaxAttribute->GetValue(),
-		// @todo: support CLAMPING in the attribute system, now it overheals the BOT beyond original max HP
-		MyPawn, EAttributeModifyType::AddModifier);
+		MyPawn, EAttributeModifyType::AddBase);
 
 	return EBTNodeResult::Succeeded;
 }
