@@ -102,6 +102,9 @@ struct FRogueAttributeSet
 {
 	GENERATED_BODY()
 
+	/* Required destructor when dealing with virtual functions inside the struct */
+	virtual ~FRogueAttributeSet() = default;
+	
 	// Nothing happening here...
 	
 	/* Allow additional work such as clamping Attributes based on another (eg. Health vs. HealthMax) */
