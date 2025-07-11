@@ -210,11 +210,11 @@ void ARoguePlayerCharacter::Move(const FInputActionInstance& Instance)
 	const FVector2D AxisValue = Instance.GetValue().Get<FVector2D>();
 
 	// Move forward/back
-	AddMovementInput(ControlRot.Vector(), AxisValue.Y);
+	AddMovementInput(ControlRot.Vector(), AxisValue.X);
 
 	// Move Right/Left strafe
 	const FVector RightVector = ControlRot.RotateVector(FVector::RightVector);
-	AddMovementInput(RightVector, AxisValue.X);
+	AddMovementInput(RightVector, AxisValue.Y);
 }
 
 void ARoguePlayerCharacter::LookMouse(const FInputActionValue& InputValue)

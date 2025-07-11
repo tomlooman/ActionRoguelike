@@ -11,6 +11,7 @@
 #include "InputAction.h"
 #include "RoguePlayerCharacter.generated.h"
 
+struct FAttributeModification;
 class URoguePlayerData;
 class ARogueAIController;
 class UAIPerceptionStimuliSourceComponent;
