@@ -32,7 +32,8 @@ namespace Collision
 
 namespace MeshSockets
 {
-	static FName Muzzle = FName(TEXT("Muzzle_01"));
+	static FName RightHandMuzzle = FName(TEXT("Muzzle_01"));
+	static FName LeftHandMuzzle = FName(TEXT("Muzzle_02"));
 }
 
 

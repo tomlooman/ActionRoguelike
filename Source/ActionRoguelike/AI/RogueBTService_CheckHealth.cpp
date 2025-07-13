@@ -11,12 +11,6 @@
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueBTService_CheckHealth)
 
 
-URogueBTService_CheckHealth::URogueBTService_CheckHealth()
-{
-	LowHealthFraction = 0.3f;
-}
-
-
 void URogueBTService_CheckHealth::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);

@@ -19,16 +19,16 @@ class ACTIONROGUELIKE_API ARogueExplosiveBarrel : public AActor
 {
 	GENERATED_BODY()
 
+protected:
+	
 	int32 HitCounter = 0;
 
 	FTimerHandle DelayedExplosionHandle;
 
-	float ExplosionDelayTime;
+	float ExplosionDelayTime = 2.0f;
 
 	bool bExploded = false;
-
-protected:
-
+	
 	UPROPERTY(VisibleAnywhere, Category = Components)
 	TObjectPtr<URogueActionComponent> ActionComp;
 

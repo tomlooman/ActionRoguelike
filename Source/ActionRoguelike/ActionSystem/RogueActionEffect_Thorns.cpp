@@ -10,16 +10,6 @@
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueActionEffect_Thorns)
 
 
-URogueActionEffect_Thorns::URogueActionEffect_Thorns()
-{
-	ReflectFraction = 0.2f;
-
-	Duration = 0.0f;
-	Period = 0.0f;
-}
-
-
-
 void URogueActionEffect_Thorns::StartAction_Implementation(AActor* Instigator)
 {
 	Super::StartAction_Implementation(Instigator);

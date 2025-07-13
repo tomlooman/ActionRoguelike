@@ -24,7 +24,7 @@ protected:
 
 	/* Max desired attack range of AI pawn */
 	UPROPERTY(EditAnywhere, Category = "AI")
-	float MaxAttackRange;
+	float MaxAttackRange = 2000.f;
 
 //#if WITH_EDITORONLY_DATA
 	UPROPERTY(EditAnywhere, Category = Debug)

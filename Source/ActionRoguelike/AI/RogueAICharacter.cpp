@@ -38,9 +38,6 @@ ARogueAICharacter::ARogueAICharacter(const FObjectInitializer& ObjectInitializer
 	AttackSoundComp->bAutoManageAttachment = true;
 	AttackSoundComp->SetAutoActivate(false);
 
-	// Default set up for the MinionRanged
-	AttackFX_Socket = "Muzzle_Front";
-
 	AttackParticleComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("AttackParticleComp"));
 	AttackParticleComp->SetupAttachment(GetMesh(), AttackFX_Socket);
 	AttackParticleComp->bAutoManageAttachment = true;
@@ -54,14 +51,8 @@ ARogueAICharacter::ARogueAICharacter(const FObjectInitializer& ObjectInitializer
 	SkelMesh->SetGenerateOverlapEvents(true);
 	// Skip performing overlap queries on the Physics Asset after animation (17 queries in case of our MinionRangedBP)
 	SkelMesh->bUpdateOverlapsOnAnimationFinalize = false;
-
 	// Skip bones when not visible, may miss anim notifies etc. if animation is skipped so these options must be tested per use case
-	SkelMesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
-
-	//TimeToHitParamName = "TimeToHit";
-	HitFlash_CustomPrimitiveIndex = 0;
-
-	SignificanceTag = "AICharacter";
+	SkelMesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickMontagesWhenNotRendered;
 }
 
 void ARogueAICharacter::BeginPlay()

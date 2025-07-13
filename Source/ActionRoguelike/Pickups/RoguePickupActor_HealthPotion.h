@@ -21,12 +21,10 @@ class ACTIONROGUELIKE_API ARoguePickupActor_HealthPotion : public ARoguePickupAc
 protected:
 
 	UPROPERTY(EditAnywhere, Category = "HealthPotion")
-	int32 CreditCost;
+	int32 CreditCost = 50.0f;
 
 public:
 	virtual void Interact_Implementation(AController* InstigatorController) override;
 
 	virtual FText GetInteractText_Implementation(AController* InstigatorController) override;
-
-	ARoguePickupActor_HealthPotion();
 };

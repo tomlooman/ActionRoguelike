@@ -22,7 +22,6 @@ namespace DevelopmentOnly
 
 URogueBTService_CheckAttackRange::URogueBTService_CheckAttackRange()
 {
-	MaxAttackRange = 2000.f;
 	TargetActorKey.SelectedKeyName = "TargetActor";
 }
 

@@ -14,11 +14,6 @@
 #define LOCTEXT_NAMESPACE "InteractableActors"
 
 
-ARoguePickupActor_HealthPotion::ARoguePickupActor_HealthPotion()
-{
-	CreditCost = 50;
-}
-
 
 void ARoguePickupActor_HealthPotion::Interact_Implementation(AController* InstigatorController)
 {

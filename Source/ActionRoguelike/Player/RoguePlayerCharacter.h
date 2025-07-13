@@ -38,7 +38,7 @@ protected:
 
 	/* Index must match the CustomPrimitiveData index used in the Overlay material */
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
-	int32 HitFlash_CustomPrimitiveIndex;
+	int32 HitFlash_CustomPrimitiveIndex = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category= Effects)
 	TObjectPtr<USoundBase> TakeDamageVOSound;

@@ -68,9 +68,6 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 	// Disable on capsule collision to avoid double-dipping and receiving 2 overlaps when entering trigger zones etc.
 	// Once from the mesh, and 2nd time from capsule
 	GetCapsuleComponent()->SetGenerateOverlapEvents(false);
-
-	//TimeToHitParamName = "TimeToHit";
-	HitFlash_CustomPrimitiveIndex = 0;
 }
 
 

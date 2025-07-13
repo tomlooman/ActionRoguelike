@@ -28,14 +28,6 @@
 
 ARogueGameModeBase::ARogueGameModeBase()
 {
-	SpawnTimerInterval = 2.0f;
-	CreditsPerKill = 20;
-	CooldownTimeBetweenFailures = 8.0f;
-
-	DesiredPowerupCount = 10;
-	RequiredPowerupDistance = 2000;
-	InitialSpawnCredit = 50;
-
 	PlayerStateClass = ARoguePlayerState::StaticClass();
 	HUDClass = ARogueHUD::StaticClass();
 }

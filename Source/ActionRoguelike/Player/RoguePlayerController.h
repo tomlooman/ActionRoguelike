@@ -60,7 +60,7 @@ protected:
 private:
 
 	/* Was any input recently using GamePad */
-	bool bIsUsingGamepad;
+	bool bIsUsingGamepad = false;
 
 public:
 

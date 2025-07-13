@@ -69,20 +69,20 @@ protected:
 	
 	/* Time to wait between failed attempts to spawn/buy monster to give some time to build up credits. */
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	float CooldownTimeBetweenFailures;
+	float CooldownTimeBetweenFailures = 8.0f;
 
 	FTimerHandle TimerHandle_SpawnBots;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	float SpawnTimerInterval;
+	float SpawnTimerInterval = 2.0f;
 
 	// Read/write access as we could change this as our difficulty increases via Blueprint
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
-	int32 CreditsPerKill;
+	int32 CreditsPerKill = 20.0f;
 
 	/* Amount available to start spawning some bots immediately */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
-	int32 InitialSpawnCredit;
+	int32 InitialSpawnCredit = 50.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ruleset")
 	bool bAutoRespawnPlayer = false;
@@ -96,11 +96,11 @@ protected:
 
 	/* Distance required between power-up spawn locations */
 	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
-	float RequiredPowerupDistance;
+	float RequiredPowerupDistance = 2000.f;
 
 	/* Amount of powerups to spawn during match start */
 	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
-	int32 DesiredPowerupCount;
+	int32 DesiredPowerupCount = 10.0f;
 
 	void StartSpawningBots();
 	

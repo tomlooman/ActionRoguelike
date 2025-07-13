@@ -12,14 +12,6 @@
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueAction_ProjectileAttack)
 
 
-URogueAction_ProjectileAttack::URogueAction_ProjectileAttack()
-{
-	HandSocketName = "Muzzle_01";
-	AttackAnimDelay = 0.2f;
-
-	SweepRadius = 20.0f;
-	SweepDistanceFallback = 5000;
-}
 
 
 void URogueAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
