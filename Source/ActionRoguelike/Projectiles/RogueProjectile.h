@@ -77,4 +77,8 @@ public:
 
 	virtual void PoolEndPlay_Implementation() override;
 
+	float GetDefaultSpeed() const;
+
+	float GetGravityScale() const;
+
 };

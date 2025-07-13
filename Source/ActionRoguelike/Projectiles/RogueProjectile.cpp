@@ -93,6 +93,16 @@ void ARogueProjectile::PoolEndPlay_Implementation()
 	AudioComp->SetPaused(true);
 }
 
+float ARogueProjectile::GetDefaultSpeed() const
+{
+	return MoveComp->InitialSpeed;
+}
+
+float ARogueProjectile::GetGravityScale() const
+{
+	return MoveComp->ProjectileGravityScale;
+}
+
 
 void ARogueProjectile::LifeSpanExpired()
 {

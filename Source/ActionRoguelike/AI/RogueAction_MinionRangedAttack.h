@@ -22,4 +22,6 @@ class ACTIONROGUELIKE_API URogueAction_MinionRangedAttack : public URogueAction
 	TSubclassOf<AActor> ProjectileClass;
 
 	virtual void StartAction_Implementation(AActor* Instigator) override;
+
+	virtual bool CanStart_Implementation(AActor* Instigator) override;
 };
