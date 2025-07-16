@@ -17,6 +17,9 @@ class ACTIONROGUELIKE_API URogueAction_MinionMeleeAttack : public URogueAction
 	UPROPERTY(EditAnywhere, Category=Animation)
 	TObjectPtr<UAnimMontage> MeleeMontage;
 
+	UPROPERTY(EditDefaultsOnly, Category="Damage")
+	float DamageCoefficient = 80;
+
 public:
 
 	virtual void StartAction_Implementation(AActor* Instigator) override;
