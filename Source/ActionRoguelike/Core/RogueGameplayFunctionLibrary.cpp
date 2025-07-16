@@ -76,6 +76,12 @@ bool URogueGameplayFunctionLibrary::IsFullHealth(AActor* InActor)
 
 bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient)
 {
+	if (!TargetActor->CanBeDamaged())
+	{
+		// Support things like godmode for player
+		return false;
+	}
+	
 	URogueActionComponent* InstigatorComp = GetActionComponentFromActor(DamageCauser);
 	check(InstigatorComp);
 
