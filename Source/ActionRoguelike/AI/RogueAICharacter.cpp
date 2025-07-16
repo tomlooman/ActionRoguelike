@@ -211,10 +211,16 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 			// set lifespan
 			SetLifeSpan(10.0f);
 		}
+		// Damaged, but not dead yet
 		else
 		{
-			UAISense_Damage::ReportDamageEvent(this, this, InstigatorActor, FMath::Abs(Delta),
-				InstigatorActor->GetActorLocation(), GetActorLocation());
+			// Skip reporting damage event for "Friendly" units. (We could also catch this earlier and prevent friendly-fire between AI units)
+			ETeamAttitude::Type Attitude = GetTeamAttitudeTowards(*InstigatorActor);
+			if (Attitude != ETeamAttitude::Friendly)
+			{
+				UAISense_Damage::ReportDamageEvent(this, this, InstigatorActor, FMath::Abs(Delta),
+					InstigatorActor->GetActorLocation(), GetActorLocation());
+			}
 		}
 	}
 }
@@ -271,6 +277,7 @@ void ARogueAICharacter::OnReduceAnimationWork(class USkeletalMeshComponentBudget
 
 FGenericTeamId ARogueAICharacter::GetGenericTeamId() const
 {
+	check(GetController());
 	// Fetch from the AI Controller who has built-in TeamId
 	return FGenericTeamId::GetTeamIdentifier(GetController());
 }
