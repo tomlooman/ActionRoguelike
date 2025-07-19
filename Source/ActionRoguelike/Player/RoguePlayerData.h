@@ -31,9 +31,6 @@ public:
 	// -- Input Actions -- //
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	TObjectPtr<UInputMappingContext> DefaultInputMapping;
-
-	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UInputAction> Input_Move;
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")

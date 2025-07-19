@@ -91,17 +91,6 @@ void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 	// Must be configured in the Blueprint
 	check(PlayerConfig);
 
-	const APlayerController* PC = GetController<APlayerController>();
-	const ULocalPlayer* LP = PC->GetLocalPlayer();
-	
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	check(Subsystem);
-
-	Subsystem->ClearAllMappings();
-
-	// Add mappings for our game, more complex games may have multiple Contexts that are added/removed at runtime
-	Subsystem->AddMappingContext(PlayerConfig->DefaultInputMapping, 0);
-
 	// Enhanced Input
 	UEnhancedInputComponent* InputComp = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
