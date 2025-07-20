@@ -56,6 +56,8 @@ protected:
 	void BlueprintBeginPlayingState();
 
 	virtual void OnRep_PlayerState() override;
+
+	virtual void BeginPlay() override;
 	
 private:
 

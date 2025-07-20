@@ -54,13 +54,26 @@ void ARoguePlayerController::AnyKeyInput(FKey PressedKey)
 
 void ARoguePlayerController::BeginPlayingState()
 {
+	Super::BeginPlayingState();
+	
 	BlueprintBeginPlayingState();
 }
-
 
 void ARoguePlayerController::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 
 	OnPlayerStateReceived.Broadcast(PlayerState);
+}
+
+void ARoguePlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (HasAuthority())
+	{
+		check(PlayerState);
+		// Broadcast locally, the host/standalone won't trigger the OnRep_PlayerState, only clients
+		OnPlayerStateReceived.Broadcast(PlayerState);
+	}
 }

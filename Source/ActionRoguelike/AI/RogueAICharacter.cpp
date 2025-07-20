@@ -210,9 +210,13 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 
 			// set lifespan
 			SetLifeSpan(10.0f);
+			return;
 		}
+
 		// Damaged, but not dead yet
-		else
+
+		// AI logic only runs on server
+		if (HasAuthority())
 		{
 			// Skip reporting damage event for "Friendly" units. (We could also catch this earlier and prevent friendly-fire between AI units)
 			ETeamAttitude::Type Attitude = GetTeamAttitudeTowards(*InstigatorActor);
