@@ -127,10 +127,15 @@ bool URogueActionComponent::ApplyAttributeChange(const FAttributeModification& M
 }
 
 
-bool URogueActionComponent::ApplyAttributeChange(FGameplayTag InAttributeTag, float InMagnitude, AActor* Instigator, EAttributeModifyType ModType)
+bool URogueActionComponent::ApplyAttributeChange(FGameplayTag InAttributeTag, float InMagnitude, AActor* Instigator, EAttributeModifyType ModType, FGameplayTagContainer InContextTags)
 {
 	FAttributeModification AttriMod = FAttributeModification(
-		InAttributeTag, InMagnitude, this, Instigator, ModType);
+		InAttributeTag,
+		InMagnitude,
+		this,
+		Instigator,
+		ModType,
+		InContextTags);
 
 	return ApplyAttributeChange(AttriMod);
 }
@@ -173,7 +178,7 @@ void URogueActionComponent::K2_AddAttributeListener(FGameplayTag AttributeTag, F
 	{
 		// @todo: maybe change EAttributeModifyType?
 		FAttributeModification AttriMod = FAttributeModification(AttributeTag,
-			0.0f, this, GetOwner(), EAttributeModifyType::Invalid);
+			0.0f, this, GetOwner(), EAttributeModifyType::Invalid, FGameplayTagContainer());
 		
 		Event.Execute(FoundAttribute->GetValue(), AttriMod);
 	}

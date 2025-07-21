@@ -56,7 +56,7 @@ public:
 	bool ApplyAttributeChange(const FAttributeModification& Modification);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Attributes, meta = (Keywords = "Add, Set"))
-	bool ApplyAttributeChange(FGameplayTag InAttributeTag, float InMagnitude, AActor* Instigator, EAttributeModifyType ModType);
+	bool ApplyAttributeChange(FGameplayTag InAttributeTag, float InMagnitude, AActor* Instigator, EAttributeModifyType ModType, FGameplayTagContainer InContextTags = FGameplayTagContainer());
 
 	/* Provide a default attribute set type for (base) classes, blueprint can set this via the details panel instead */
 	void SetDefaultAttributeSet(UScriptStruct* InDefaultType);

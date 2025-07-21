@@ -40,10 +40,10 @@ public:
 	static bool IsFullHealth(AActor* InActor);
 
 	UFUNCTION(BlueprintCallable, Category=Gameplay)
-	static bool ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient);
+	static bool ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient, FGameplayTagContainer InContextTags = FGameplayTagContainer());
 
 	UFUNCTION(BlueprintCallable, Category=Gameplay)
-	static bool ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient, const FHitResult& HitResult);
+	static bool ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient, const FHitResult& HitResult, FGameplayTagContainer InContextTags = FGameplayTagContainer());
 /*
 	static bool ApplyRadialDamage(AActor* DamageCauser, FVector Origin, float DamageRadius, float DamageCoefficient);
 */

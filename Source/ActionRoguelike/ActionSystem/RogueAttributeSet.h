@@ -36,12 +36,14 @@ struct FAttributeModification
 		float InMagnitude,
 		URogueActionComponent* InTargetComp,
 		AActor* InInstigator,
-		EAttributeModifyType InModificationType) :
+		EAttributeModifyType InModificationType,
+		const FGameplayTagContainer& InContextTags) :
 			AttributeTag(InAttribute),
 			TargetComp(InTargetComp),
 			Instigator(InInstigator),
 			Magnitude(InMagnitude),
-			ModifyType(InModificationType) {}
+			ModifyType(InModificationType),
+			ContextTags(InContextTags) {}
 
 	UPROPERTY(BlueprintReadOnly)
 	FGameplayTag AttributeTag;
@@ -60,6 +62,9 @@ struct FAttributeModification
 
 	UPROPERTY(BlueprintReadOnly)
 	EAttributeModifyType ModifyType = EAttributeModifyType::AddModifier;
+
+	UPROPERTY(BlueprintReadOnly)
+	FGameplayTagContainer ContextTags;
 };
 
 

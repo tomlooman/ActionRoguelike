@@ -74,7 +74,7 @@ bool URogueGameplayFunctionLibrary::IsFullHealth(AActor* InActor)
 }
 
 
-bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient)
+bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient, FGameplayTagContainer InContextTags)
 {
 	if (!TargetActor->CanBeDamaged())
 	{
@@ -106,16 +106,17 @@ bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* Ta
 		-TotalDamage, // Make sure we apply a negative amount to the Health
 		VictimComp,
 		DamageCauser,
-		EAttributeModifyType::AddBase);
+		EAttributeModifyType::AddBase,
+		InContextTags);
 
 	// Could pass through dead enemies
 	return VictimComp->ApplyAttributeChange(AttriMod);
 }
 
 
-bool URogueGameplayFunctionLibrary::ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient, const FHitResult& HitResult)
+bool URogueGameplayFunctionLibrary::ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient, const FHitResult& HitResult, FGameplayTagContainer InContextTags)
 {
-	if (ApplyDamage(DamageCauser, TargetActor, DamageCoefficient))
+	if (ApplyDamage(DamageCauser, TargetActor, DamageCoefficient, InContextTags))
 	{
 		UPrimitiveComponent* HitComp = HitResult.GetComponent();
 		if (HitComp->bApplyImpulseOnDamage && HitComp->IsSimulatingPhysics(HitResult.BoneName))
