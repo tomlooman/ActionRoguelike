@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "BehaviorTree/BehaviorTreeTypes.h"
 #include "BehaviorTree/Blackboard/BlackboardKey.h"
 #include "RogueAIController.generated.h"
 
@@ -30,6 +31,8 @@ protected:
 	EBlackboardNotificationResult OnTargetActorChanged(const UBlackboardComponent& Comp, FBlackboard::FKey KeyID);
 
 	virtual void BeginPlay() override;
+
+	virtual void PreRegisterAllComponents() override;
 
 public:
 

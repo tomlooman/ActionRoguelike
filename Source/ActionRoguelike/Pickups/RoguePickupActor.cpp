@@ -24,9 +24,6 @@ ARoguePickupActor::ARoguePickupActor()
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	MeshComp->SetupAttachment(RootComponent);
 
-	RespawnTime = 10.0f;
-	bIsActive = true;
-
 	// Directly set bool instead of going through SetReplicates(true) within constructor,
 	// Only use SetReplicates() outside constructor
 	bReplicates = true;

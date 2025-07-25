@@ -35,10 +35,10 @@ protected:
 
 	/* Index must match the CustomPrimitiveData index used in the Overlay material */
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
-	int32 HitFlash_CustomPrimitiveIndex;
+	int32 HitFlash_CustomPrimitiveIndex = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category="Effects")
-	FName AttackFX_Socket;
+	FName AttackFX_Socket = FName("Muzzle_Front");
 
 	UPROPERTY(EditDefaultsOnly, Category="Effects")
 	TObjectPtr<UAnimMontage> AttackMontage;
@@ -77,7 +77,7 @@ protected:
 
 	/* Specifies a category for Significance Manager. Each unique Tag will have its own set of "Buckets" to sort and assign LODs based on distance etc. */
 	UPROPERTY(EditDefaultsOnly, Category="Performance")
-	FName SignificanceTag;
+	FName SignificanceTag = "AICharacter";
 
 	float CachedOverlayMaxDistance;
 

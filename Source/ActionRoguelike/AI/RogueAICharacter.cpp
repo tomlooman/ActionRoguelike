@@ -38,9 +38,6 @@ ARogueAICharacter::ARogueAICharacter(const FObjectInitializer& ObjectInitializer
 	AttackSoundComp->bAutoManageAttachment = true;
 	AttackSoundComp->SetAutoActivate(false);
 
-	// Default set up for the MinionRanged
-	AttackFX_Socket = "Muzzle_Front";
-
 	AttackParticleComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("AttackParticleComp"));
 	AttackParticleComp->SetupAttachment(GetMesh(), AttackFX_Socket);
 	AttackParticleComp->bAutoManageAttachment = true;
@@ -54,14 +51,8 @@ ARogueAICharacter::ARogueAICharacter(const FObjectInitializer& ObjectInitializer
 	SkelMesh->SetGenerateOverlapEvents(true);
 	// Skip performing overlap queries on the Physics Asset after animation (17 queries in case of our MinionRangedBP)
 	SkelMesh->bUpdateOverlapsOnAnimationFinalize = false;
-
 	// Skip bones when not visible, may miss anim notifies etc. if animation is skipped so these options must be tested per use case
-	SkelMesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
-
-	//TimeToHitParamName = "TimeToHit";
-	HitFlash_CustomPrimitiveIndex = 0;
-
-	SignificanceTag = "AICharacter";
+	SkelMesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickMontagesWhenNotRendered;
 }
 
 void ARogueAICharacter::BeginPlay()
@@ -219,11 +210,21 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 
 			// set lifespan
 			SetLifeSpan(10.0f);
+			return;
 		}
-		else
+
+		// Damaged, but not dead yet
+
+		// AI logic only runs on server
+		if (HasAuthority())
 		{
-			UAISense_Damage::ReportDamageEvent(this, this, InstigatorActor, FMath::Abs(Delta),
-				InstigatorActor->GetActorLocation(), GetActorLocation());
+			// Skip reporting damage event for "Friendly" units. (We could also catch this earlier and prevent friendly-fire between AI units)
+			ETeamAttitude::Type Attitude = GetTeamAttitudeTowards(*InstigatorActor);
+			if (Attitude != ETeamAttitude::Friendly)
+			{
+				UAISense_Damage::ReportDamageEvent(this, this, InstigatorActor, FMath::Abs(Delta),
+					InstigatorActor->GetActorLocation(), GetActorLocation());
+			}
 		}
 	}
 }
@@ -274,6 +275,7 @@ void ARogueAICharacter::OnReduceAnimationWork(class USkeletalMeshComponentBudget
 
 FGenericTeamId ARogueAICharacter::GetGenericTeamId() const
 {
+	check(GetController());
 	// Fetch from the AI Controller who has built-in TeamId
 	return FGenericTeamId::GetTeamIdentifier(GetController());
 }

@@ -62,7 +62,7 @@ void URogueAction_MinionMeleeAttack::OnMeleeOverlaps(const TArray<FOverlapResult
 	AActor* BestOverlap = nullptr;
 	for (const FOverlapResult& Overlap : Overlaps)
 	{
-		// todo: check if damagable, if enemy, etc.
+		// todo: check, if enemy, etc.
 		if (Overlap.GetActor()->CanBeDamaged())
 		{
 			BestOverlap = Overlap.GetActor();
@@ -70,11 +70,11 @@ void URogueAction_MinionMeleeAttack::OnMeleeOverlaps(const TArray<FOverlapResult
 		}
 	}
 
-	// @todo: use minion attackDamageAttribute * meleeDmgCoefficient
-	float DamageAmount = 20.f;
+	if (BestOverlap)
+	{
+		URogueGameplayFunctionLibrary::ApplyDamage(GetOwningComponent()->GetOwner(), BestOverlap, DamageCoefficient);
 
-	URogueGameplayFunctionLibrary::ApplyDamage(GetOwningComponent()->GetOwner(), BestOverlap, DamageAmount);
-
-	// Only allow damage once
-	bDamageApplied = true;
+		// Only allow damage once
+		bDamageApplied = true;
+	}
 }

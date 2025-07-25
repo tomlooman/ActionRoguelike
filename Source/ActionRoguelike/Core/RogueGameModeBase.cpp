@@ -28,14 +28,6 @@
 
 ARogueGameModeBase::ARogueGameModeBase()
 {
-	SpawnTimerInterval = 2.0f;
-	CreditsPerKill = 20;
-	CooldownTimeBetweenFailures = 8.0f;
-
-	DesiredPowerupCount = 10;
-	RequiredPowerupDistance = 2000;
-	InitialSpawnCredit = 50;
-
 	PlayerStateClass = ARoguePlayerState::StaticClass();
 	HUDClass = ARogueHUD::StaticClass();
 }
@@ -273,7 +265,7 @@ void ARogueGameModeBase::OnPowerupSpawnQueryCompleted(TSharedPtr<FEnvQueryResult
 	}
 	
 
-	uint32 CyclesStart = FWindowsPlatformTime::Cycles();
+	uint64 CyclesStart = FPlatformTime::Cycles64();
 
 	// Retrieve all possible locations that passed the query
 	TArray<FVector> Locations;
@@ -327,9 +319,9 @@ void ARogueGameModeBase::OnPowerupSpawnQueryCompleted(TSharedPtr<FEnvQueryResult
 		SpawnCounter++;
 	}
 
-	uint32 CyclesEnd = FWindowsPlatformTime::Cycles();
+	uint64 CyclesEnd = FPlatformTime::Cycles64();
 
-	UE_LOG(LogGame, Log, TEXT("OnPowerupSpawnQueryCompleted: %i Cycles"), (CyclesEnd - CyclesStart));
+	UE_LOG(LogGame, Log, TEXT("OnPowerupSpawnQueryCompleted: %llu Cycles"), (CyclesEnd - CyclesStart));
 }
 
 

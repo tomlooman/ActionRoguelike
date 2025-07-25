@@ -17,19 +17,17 @@ class ACTIONROGUELIKE_API URogueAnimNotifyState_Melee : public UAnimNotifyState
 protected:
 
 	UPROPERTY(EditAnywhere)
-	TEnumAsByte<ECollisionChannel> TraceChannel;
+	TEnumAsByte<ECollisionChannel> TraceChannel = ECC_Pawn;
 
 	/* Bone to center the (Sphere) Overlap around */
 	UPROPERTY(EditAnywhere)
 	FName SocketName;
 
 	UPROPERTY(EditAnywhere)
-	float Radius;
+	float Radius = 128.0f;
 
 public:
 	
 	virtual void NotifyTick(USkeletalMeshComponent * MeshComp, UAnimSequenceBase * Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference) override;
-	
-	URogueAnimNotifyState_Melee();
-	
+
 };

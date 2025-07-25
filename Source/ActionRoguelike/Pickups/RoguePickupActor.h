@@ -20,7 +20,7 @@ class ACTIONROGUELIKE_API ARoguePickupActor : public AActor, public IRogueGamepl
 protected:
 
 	UPROPERTY(Transient, ReplicatedUsing=OnRep_IsActive)
-	bool bIsActive;
+	bool bIsActive = true;
 
 	/* Overlap sphere to automatically pickup on walkover */
 	UPROPERTY(EditDefaultsOnly, Category=Powerup)
@@ -30,7 +30,7 @@ protected:
 	void OnRep_IsActive();
 
 	UPROPERTY(EditAnywhere, Category = Powerup)
-	float RespawnTime;
+	float RespawnTime = 10.0f;
 
 	void ShowPickup();
 

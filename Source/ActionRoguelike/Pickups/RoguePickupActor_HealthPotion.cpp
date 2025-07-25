@@ -14,11 +14,6 @@
 #define LOCTEXT_NAMESPACE "InteractableActors"
 
 
-ARoguePickupActor_HealthPotion::ARoguePickupActor_HealthPotion()
-{
-	CreditCost = 50;
-}
-
 
 void ARoguePickupActor_HealthPotion::Interact_Implementation(AController* InstigatorController)
 {
@@ -52,7 +47,10 @@ void ARoguePickupActor_HealthPotion::Interact_Implementation(AController* Instig
 
 FText ARoguePickupActor_HealthPotion::GetInteractText_Implementation(AController* InstigatorController)
 {
-	if (URogueGameplayFunctionLibrary::IsFullHealth(InstigatorController->GetPawn()))
+	// May be nullptr when dead
+	APawn* MyPawn = InstigatorController->GetPawn();
+	
+	if (MyPawn && URogueGameplayFunctionLibrary::IsFullHealth(MyPawn))
 	{
 		return LOCTEXT("HealthPotion_FullHealthWarning", "Already at full health.");
 	}

@@ -15,6 +15,9 @@ namespace SharedGameplayTags
 	// Status
 	UE_DEFINE_GAMEPLAY_TAG(Status_Stunned, "Status.Stunned");
 
+	// Damage Context
+	UE_DEFINE_GAMEPLAY_TAG(Context_Reflected, "Context.Reflected");
+
 	// Attributes
 	UE_DEFINE_GAMEPLAY_TAG(Attribute_Health, "Attribute.Health");
 	UE_DEFINE_GAMEPLAY_TAG(Attribute_HealthMax, "Attribute.HealthMax");

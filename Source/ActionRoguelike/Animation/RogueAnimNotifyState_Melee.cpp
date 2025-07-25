@@ -20,13 +20,6 @@ namespace DevelopmentOnly
 #endif
 
 
-URogueAnimNotifyState_Melee::URogueAnimNotifyState_Melee()
-{
-	Radius = 128.0f;
-	TraceChannel = ECC_Pawn;
-}
-
-
 void URogueAnimNotifyState_Melee::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
 {
 	// We could run async requests here continuously any time we have new results to fetch, could stop request after the first successful 'hit'

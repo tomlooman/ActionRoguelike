@@ -6,8 +6,6 @@
 // Added here to more easily include whenever we also use LogGame (structuredlog is new in 5.2)
 #include "Logging/StructuredLog.h"
 
-#include "RogueTypes.h"
-
 // Define category "LogGame"
 ACTIONROGUELIKE_API DECLARE_LOG_CATEGORY_EXTERN(LogGame, Log, All);
 
@@ -34,7 +32,8 @@ namespace Collision
 
 namespace MeshSockets
 {
-	static FName Muzzle = FName(TEXT("Muzzle_01"));
+	static FName RightHandMuzzle = FName(TEXT("Muzzle_01"));
+	static FName LeftHandMuzzle = FName(TEXT("Muzzle_02"));
 }
 
 

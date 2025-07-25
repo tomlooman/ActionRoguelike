@@ -22,11 +22,11 @@ public:
 protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect")
-	float Duration;
+	float Duration = 0.0f;
 
 	/* Time between 'ticks' to apply effect */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect")
-	float Period;
+	float Period = 0.0f;
 
 	FTimerHandle PeriodHandle;
 	FTimerHandle DurationHandle;

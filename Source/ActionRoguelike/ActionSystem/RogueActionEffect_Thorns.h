@@ -17,7 +17,7 @@ class ACTIONROGUELIKE_API URogueActionEffect_Thorns : public URogueActionEffect
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Thorns")
-	float ReflectFraction;
+	float ReflectFraction = 0.2f;
 
 	void OnHealthChanged(float NewValue, const FAttributeModification& AttributeModification);
 
@@ -27,6 +27,4 @@ public:
 	virtual void StartAction_Implementation(AActor* Instigator) override;
 
 	virtual void StopAction_Implementation(AActor* Instigator) override;
-
-	URogueActionEffect_Thorns();
 };

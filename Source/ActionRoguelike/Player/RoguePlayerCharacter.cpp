@@ -68,9 +68,6 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 	// Disable on capsule collision to avoid double-dipping and receiving 2 overlaps when entering trigger zones etc.
 	// Once from the mesh, and 2nd time from capsule
 	GetCapsuleComponent()->SetGenerateOverlapEvents(false);
-
-	//TimeToHitParamName = "TimeToHit";
-	HitFlash_CustomPrimitiveIndex = 0;
 }
 
 
@@ -93,17 +90,6 @@ void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 	// Must be configured in the Blueprint
 	check(PlayerConfig);
-
-	const APlayerController* PC = GetController<APlayerController>();
-	const ULocalPlayer* LP = PC->GetLocalPlayer();
-	
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	check(Subsystem);
-
-	Subsystem->ClearAllMappings();
-
-	// Add mappings for our game, more complex games may have multiple Contexts that are added/removed at runtime
-	Subsystem->AddMappingContext(PlayerConfig->DefaultInputMapping, 0);
 
 	// Enhanced Input
 	UEnhancedInputComponent* InputComp = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
@@ -210,11 +196,11 @@ void ARoguePlayerCharacter::Move(const FInputActionInstance& Instance)
 	const FVector2D AxisValue = Instance.GetValue().Get<FVector2D>();
 
 	// Move forward/back
-	AddMovementInput(ControlRot.Vector(), AxisValue.Y);
+	AddMovementInput(ControlRot.Vector(), AxisValue.X);
 
 	// Move Right/Left strafe
 	const FVector RightVector = ControlRot.RotateVector(FVector::RightVector);
-	AddMovementInput(RightVector, AxisValue.X);
+	AddMovementInput(RightVector, AxisValue.Y);
 }
 
 void ARoguePlayerCharacter::LookMouse(const FInputActionValue& InputValue)

@@ -10,16 +10,6 @@
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueActionEffect_Thorns)
 
 
-URogueActionEffect_Thorns::URogueActionEffect_Thorns()
-{
-	ReflectFraction = 0.2f;
-
-	Duration = 0.0f;
-	Period = 0.0f;
-}
-
-
-
 void URogueActionEffect_Thorns::StartAction_Implementation(AActor* Instigator)
 {
 	Super::StartAction_Implementation(Instigator);
@@ -45,6 +35,12 @@ void URogueActionEffect_Thorns::OnHealthChanged(float NewValue, const FAttribute
 	// Damage Only
 	if (AttributeModification.Magnitude < 0.0f && OwningActor != AttributeModification.Instigator)
 	{
+		if (AttributeModification.ContextTags.HasTag(SharedGameplayTags::Context_Reflected))
+		{
+			// Skip reflected damage to avoid ping-ponging reflected damage between two actors until someone dies
+			return;
+		}
+		
 		/*
 		// Round to nearest to avoid 'ugly' damage numbers and tiny reflections
 		int32 ReflectedAmount = FMath::RoundToInt(AttributeModification.Magnitude * ReflectFraction);
@@ -59,7 +55,10 @@ void URogueActionEffect_Thorns::OnHealthChanged(float NewValue, const FAttribute
 		// @todo: maybe thorns can still base DMG on base dmg from hit rather than using player baseDmg attribute as with all normal damage
 		float DmgCoefficient = 5.0f;
 
+		FGameplayTagContainer Tags;
+		Tags.AddTag(SharedGameplayTags::Context_Reflected);
+
 		// Return damage to sender...
-		URogueGameplayFunctionLibrary::ApplyDamage(OwningActor, AttributeModification.Instigator.Get(), DmgCoefficient);
+		URogueGameplayFunctionLibrary::ApplyDamage(OwningActor, AttributeModification.Instigator.Get(), DmgCoefficient, Tags);
 	}
 }

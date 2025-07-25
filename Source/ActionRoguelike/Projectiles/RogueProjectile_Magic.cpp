@@ -44,9 +44,11 @@ void ARogueProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedCompo
 			SetInstigator(Cast<APawn>(OtherActor));
 			return;
 		}
+
+		FGameplayTagContainer ContextTags;
 		
 		// Apply Damage & Impulse
-		if (URogueGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageCoefficient, SweepResult))
+		if (URogueGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageCoefficient, SweepResult, ContextTags))
 		{
 			// We only explode if the target can be damaged, it ignores anything it Overlaps that it cannot Damage
 			Explode();

@@ -21,9 +21,6 @@ ARogueAIController::ARogueAIController()
 void ARogueAIController::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	// Set default for all AI
-	SetGenericTeamId(FGenericTeamId(TEAM_ID_BOTS));
 
 	if (ensureMsgf(BehaviorTree, TEXT("Behavior Tree is nullptr! Please assign BehaviorTree in your AI Controller.")))
 	{
@@ -34,6 +31,14 @@ void ARogueAIController::BeginPlay()
 	UBlackboardComponent* BBComp = GetBlackboardComponent();
 	BBComp->RegisterObserver(BBComp->GetKeyID(TEXT("TargetActor")), this,
 		FOnBlackboardChangeNotification::CreateUObject(this, &ThisClass::OnTargetActorChanged));
+}
+
+void ARogueAIController::PreRegisterAllComponents()
+{
+	Super::PreRegisterAllComponents();
+	
+	// Set default for all AI - must be set before the Pawn is registered as a sense, otherwise we register the wrong team ID with perception system
+	SetGenericTeamId(FGenericTeamId(TEAM_ID_BOTS));
 }
 
 

@@ -21,11 +21,7 @@ protected:
 
 	/* Threshold that is considered 'low health' (eg. 0.3 is 30% of maximum hitpoints) */
 	UPROPERTY(EditAnywhere, Category = "AI", meta = (ClampMin="0.0", ClampMax="1.0"))
-	float LowHealthFraction;
+	float LowHealthFraction = 0.3f;
 
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
-
-public:
-
-	URogueBTService_CheckHealth();
 };

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ActionRoguelike.h"
 #include "BehaviorTree/BTTaskNode.h"
 #include "RogueBTTask_RangedAttack.generated.h"
 
@@ -23,13 +24,13 @@ protected:
 
 	/* Max Random Bullet Spread (in Degrees) in positive and negative angle (shared between Yaw and Pitch) */
 	UPROPERTY(EditAnywhere, Category = "AI")
-	float MaxBulletSpread;
+	float MaxBulletSpread = 2.0f;
 
 	UPROPERTY(EditAnywhere, Category = "AI")
 	TSubclassOf<AActor> ProjectileClass;
 
 	UPROPERTY(EditAnywhere, Category= "AI")
-	FName MuzzleSocket;
+	FName MuzzleSocket = MeshSockets::RightHandMuzzle;
 
 public:
 

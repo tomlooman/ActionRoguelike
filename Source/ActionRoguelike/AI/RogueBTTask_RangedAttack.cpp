@@ -12,9 +12,6 @@
 
 UDEPRECATED_URogueBTTask_RangedAttack::UDEPRECATED_URogueBTTask_RangedAttack()
 {
-	MuzzleSocket = "Muzzle_01";
-	MaxBulletSpread = 2.0f;
-	
 	TargetActorKey.SelectedKeyName = "TargetActor";
 }
 

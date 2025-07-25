@@ -20,11 +20,9 @@ class ACTIONROGUELIKE_API URogueSaveGameSettings : public UDeveloperSettings
 public:
 	/* Default slot name if UI doesn't specify any */ 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "General")
-	FString SaveSlotName;
+	FString SaveSlotName = "SaveGame_01";
 	
 	/* Soft path must be converted to asset before use */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "General", AdvancedDisplay)
 	TSoftObjectPtr<UDataTable> DummyTablePath;
-
-	URogueSaveGameSettings();
 };
