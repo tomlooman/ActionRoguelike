@@ -255,15 +255,9 @@ void ARogueAICharacter::SignificanceLODChanged(int32 NewLOD)
 {
 	UE_LOG(LogGame, Log, TEXT("Actor: %s, NewLOD: %i (Bucket)"), *GetName(), NewLOD);
 
-	if (NewLOD == 0)
-	{
-		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	}
-	// Anything beside best LOD
-	else
-	{
-		GetCharacterMovement()->SetMovementMode(MOVE_NavWalking);
-	}
+	EMovementMode MoveMode = NewLOD > 0 ? MOVE_NavWalking : MOVE_Walking;
+	// GroundMovementMode won't mess with Flying/Falling modes
+	GetCharacterMovement()->SetGroundMovementMode(MoveMode);
 
 	// Example with straight 1:1 mapping, will force the min LOD to be lowered even when they are close to the camera
 	GetMesh()->OverrideMinLOD(NewLOD);
