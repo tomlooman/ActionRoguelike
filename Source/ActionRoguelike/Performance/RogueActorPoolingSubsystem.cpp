@@ -68,7 +68,9 @@ void URogueActorPoolingSubsystem::PrimeActorPool(TSubclassOf<AActor> ActorClass,
 	{
 		FActorSpawnParameters Params;
 		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		
+
+		// @fixme: this can trigger an overlap when spawned, for example in empty level it may overlap SpectatorPawn in world zero
+		// ideally we can prevent the projectile from fully activating to avoid this overlap
 		AActor* NewActor = GetWorld()->SpawnActor<AActor>(ActorClass, FTransform::Identity, Params);
 
 		ReleaseToPool(NewActor);

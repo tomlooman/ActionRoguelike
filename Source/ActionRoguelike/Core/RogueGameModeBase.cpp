@@ -78,9 +78,12 @@ void ARogueGameModeBase::StartPlay()
 void ARogueGameModeBase::RequestPrimedActors()
 {
 	URogueActorPoolingSubsystem* PoolingSystem = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
-	for (auto& Entry : ActorPoolClasses)
+	if (PoolingSystem->IsPoolingEnabled(this))
 	{
-		PoolingSystem->PrimeActorPool(Entry.Key, Entry.Value);
+		for (auto& Entry : ActorPoolClasses)
+		{
+			PoolingSystem->PrimeActorPool(Entry.Key, Entry.Value);
+		}
 	}
 }
 
