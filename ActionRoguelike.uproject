@@ -13,8 +13,7 @@
 				"AIModule",
 				"UMG",
 				"CoreUObject",
-				"DeveloperSettings",
-				"StructUtils"
+				"DeveloperSettings"
 			]
 		},
 		{
@@ -26,10 +25,6 @@
 	"Plugins": [
 		{
 			"Name": "SignificanceManager",
-			"Enabled": true
-		},
-		{
-			"Name": "StructUtils",
 			"Enabled": true
 		},
 		{
