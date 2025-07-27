@@ -83,13 +83,24 @@ bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* Ta
 	}
 	
 	URogueActionComponent* InstigatorComp = GetActionComponentFromActor(DamageCauser);
-	check(InstigatorComp);
+
+	// Blueprint might be missing the component for now
+	if (InstigatorComp == nullptr)
+	{
+		UE_LOG(LogGame, Warning, TEXT("Actor (%s) has no ActionComponent."), *DamageCauser->GetName());
+		return false;
+	}
 
 	FRogueAttribute* FoundAttribute = InstigatorComp->GetAttribute(SharedGameplayTags::Attribute_AttackDamage);
 
 	// We might not have implemented the new attributes on every actor yet.
-	// @fixme: Assert for now, later we just log this as we might not want to deal dmg to some things.
-	check(FoundAttribute);
+	if (FoundAttribute == nullptr)
+	{
+		// "LOGFMT" example
+		UE_LOGFMT(LogGame, Warning, "Actor ({DamageCauser}) has no AttackDamage attribute.",
+			("DamageCauser", DamageCauser->GetName()));
+		return false;
+	}
 
 	// Coefficient is a %, to scale all out damage off the instigator's base attack damage
 	float TotalDamage = FoundAttribute->GetValue() * (DamageCoefficient*0.01f);
