@@ -553,6 +553,10 @@
 		{
 			"Name": "RenderGraphInsights",
 			"Enabled": false
+		},
+		{
+			"Name": "Iris",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
