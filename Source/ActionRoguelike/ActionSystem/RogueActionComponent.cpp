@@ -277,6 +277,10 @@ void URogueActionComponent::AddAction(AActor* Instigator, TSubclassOf<URogueActi
 	{
 		NewAction->StartAction(Instigator);
 	}
+
+	// For this mechanism to work, we cant have multiple actions with the same activation tag
+	check(!CachedActions.Contains(NewAction->GetActivationTag()));
+	CachedActions.Add(NewAction->GetActivationTag(), NewAction);
 }
 
 
@@ -290,6 +294,8 @@ void URogueActionComponent::RemoveAction(URogueAction* ActionToRemove)
 	RemoveReplicatedSubObject(ActionToRemove);
 
 	Actions.Remove(ActionToRemove);
+
+	CachedActions.Remove(ActionToRemove->GetActivationTag());
 }
 
 
@@ -314,41 +320,42 @@ bool URogueActionComponent::StartActionByName(AActor* Instigator, FGameplayTag A
 	// Alternative, available when cpu channel is specified
 	//TRACE_CPUPROFILER_EVENT_SCOPE(StartActionByName);
 
+	// Not yet implemented for clients which needs to fill the array using repnotify array
+	check(CachedActions.Num() > 0);
 
-	for (URogueAction* Action : Actions)
+	URogueAction* Action = *CachedActions.Find(ActionName);
+	if (Action)
 	{
-		if (Action->GetActivationTag() == ActionName)
+		if (!Action->CanStart(Instigator))
 		{
-			if (!Action->CanStart(Instigator))
-			{
-				FString OwnerName = GetOwner()->GetName();
-				FString FailedMsg = FString::Printf(TEXT("%s - Failed to run: %s"), *OwnerName, *ActionName.ToString());
+			FString OwnerName = GetOwner()->GetName();
+			FString FailedMsg = FString::Printf(TEXT("%s - Failed to run: %s"), *OwnerName, *ActionName.ToString());
 
-				// Limits display in viewport to one per actor instance
-				uint64 Key = GetTypeHash(OwnerName);
+			// Limits display in viewport to one per actor instance
+			uint64 Key = GetTypeHash(OwnerName);
 
-				GEngine->AddOnScreenDebugMessage(Key, 2.0f, FColor::Red, FailedMsg);
-				continue;
-			}
-
-			// Is Client?
-			if (!GetOwner()->HasAuthority())
-			{
-				ServerStartAction(Instigator, ActionName);
-			}
-
-			// Bookmark for Unreal Insights
-			//TRACE_BOOKMARK(TEXT("StartAction::%s"), *GetNameSafe(Action));
-			
-			{
-				// Scoped within the curly braces. the _FSTRING variant adds additional tracing overhead due to grabbing the class name every time
-				SCOPED_NAMED_EVENT_FSTRING(Action->GetClass()->GetName(), FColor::White);
-
-				Action->StartAction(Instigator);
-			}
-			
-			return true;
+			GEngine->AddOnScreenDebugMessage(Key, 2.0f, FColor::Red, FailedMsg);
 		}
+
+		// Is Client?
+		if (!GetOwner()->HasAuthority())
+		{
+			// Request on the server
+			ServerStartAction(Instigator, ActionName);
+			// let it continue to start locally too, reduces latency but needs special consideration on this "prediction"
+		}
+
+		// Bookmark for Unreal Insights
+		//TRACE_BOOKMARK(TEXT("StartAction::%s"), *GetNameSafe(Action));
+		
+		{
+			// Scoped within the curly braces. the _FSTRING variant adds additional tracing overhead due to grabbing the class name every time
+			SCOPED_NAMED_EVENT_FSTRING(Action->GetClass()->GetName(), FColor::White);
+
+			Action->StartAction(Instigator);
+		}
+		
+		return true;
 	}
 
 	return false;
@@ -410,4 +417,19 @@ void URogueActionComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 
 	DOREPLIFETIME(URogueActionComponent, Actions);
 	DOREPLIFETIME(URogueActionComponent, AttributeSet);
+}
+
+
+void URogueActionComponent::OnRep_Actions()
+{
+	// Expect this only for clients, host does it during add/remove action
+	check(IsNetMode(NM_Client));
+	
+	// Reset
+	CachedActions.Empty(Actions.Num());
+
+	for (URogueAction* Action : Actions)
+	{
+		CachedActions.Add(Action->GetActivationTag(), Action);
+	}
 }

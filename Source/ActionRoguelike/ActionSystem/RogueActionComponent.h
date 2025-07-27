@@ -95,14 +95,21 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Actions")
 	TArray<TSubclassOf<URogueAction>> DefaultActions;
 
-	UPROPERTY(Transient, BlueprintReadOnly, Replicated)
+	UPROPERTY(Transient, BlueprintReadOnly, ReplicatedUsing=OnRep_Actions)
 	TArray<TObjectPtr<URogueAction>> Actions;
+
+	/* Non-replicated map for quick lookups to Actions. */
+	UPROPERTY(Transient)
+	TMap<FGameplayTag, TObjectPtr<URogueAction>> CachedActions;
 
 	virtual void InitializeComponent() override;
 
 	virtual void BeginPlay() override;
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	UFUNCTION()
+	void OnRep_Actions();
 
 public:	
 
