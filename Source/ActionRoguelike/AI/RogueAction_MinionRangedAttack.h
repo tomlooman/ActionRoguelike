@@ -6,6 +6,8 @@
 #include "ActionSystem/RogueAction.h"
 #include "RogueAction_MinionRangedAttack.generated.h"
 
+class URogueProjectileData;
+
 /**
  * 
  */
@@ -20,6 +22,9 @@ class ACTIONROGUELIKE_API URogueAction_MinionRangedAttack : public URogueAction
 
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	TSubclassOf<AActor> ProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	URogueProjectileData* ProjectileConfig;
 
 	virtual void StartAction_Implementation(AActor* Instigator) override;
 

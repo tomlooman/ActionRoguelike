@@ -10,6 +10,7 @@
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Projectiles/RogueProjectile.h"
+#include "Projectiles/RogueProjectilesSubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueAction_MinionRangedAttack)
 
@@ -60,7 +61,12 @@ void URogueAction_MinionRangedAttack::StartAction_Implementation(AActor* Instiga
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	Params.Instigator = MyPawn;
 
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, Params);
+	// Disabled for testing data oriented projectiles below
+	//GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, Params);
+
+	// WIP for data oriented projectiles
+	URogueProjectilesSubsystem* Subsystem = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>();
+	Subsystem->CreateProjectile(MuzzleLocation, MuzzleRotation.Vector(), ProjectileConfig, MyPawn);
 
 	StopAction(Instigator);
 }
