@@ -80,6 +80,12 @@ bool URogueActionComponent::K2_GetAttribute(FGameplayTag InAttributeTag, float& 
 
 bool URogueActionComponent::ApplyAttributeChange(const FAttributeModification& Modification)
 {
+	if (!GetOwner()->HasAuthority())
+	{
+		// Skip on clients.
+		return false;
+	}
+	
 	FRogueAttribute* Attribute = GetAttribute(Modification.AttributeTag);
 	if (Attribute == nullptr)
 	{
@@ -279,8 +285,12 @@ void URogueActionComponent::AddAction(AActor* Instigator, TSubclassOf<URogueActi
 	}
 
 	// For this mechanism to work, we cant have multiple actions with the same activation tag
-	check(!CachedActions.Contains(NewAction->GetActivationTag()));
-	CachedActions.Add(NewAction->GetActivationTag(), NewAction);
+	// Only for actions with activation tag, buffs wont have those set
+	if (NewAction->GetActivationTag().IsValid())
+	{
+		check(!CachedActions.Contains(NewAction->GetActivationTag()));
+		CachedActions.Add(NewAction->GetActivationTag(), NewAction);
+	}
 }
 
 
