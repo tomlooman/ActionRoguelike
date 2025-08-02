@@ -121,7 +121,9 @@ bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* Ta
 		InContextTags);
 
 	// Could pass through dead enemies
-	return VictimComp->ApplyAttributeChange(AttriMod);
+	// @todo: "pass through" enemies is not a great handling as clients will never apply attribute change
+	VictimComp->ApplyAttributeChange(AttriMod);
+	return true;
 }
 
 

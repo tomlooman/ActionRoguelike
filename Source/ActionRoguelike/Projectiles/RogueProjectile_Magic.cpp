@@ -46,6 +46,9 @@ void ARogueProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedCompo
 		}
 
 		FGameplayTagContainer ContextTags;
+
+		// @todo: check CanApplyDamage() so we know on the clients to explode rather than passthrough the Overlap.
+		// this keeps them in sync even if the server will notify the client a bit later from latency
 		
 		// Apply Damage & Impulse
 		if (URogueGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageCoefficient, SweepResult, ContextTags))
