@@ -63,6 +63,8 @@ public:
 
 protected:
 
+	void SpawnImpactFX(const UWorld* World, const FProjectileFullData& BulkData, FVector ImpactPosition, FRotator ImpactRotation);
+
 	// @todo: this will be replicated via GameState or similar location
 	TArray<FProjectileInfo> ProjectileData;
 
@@ -71,4 +73,7 @@ protected:
 
 	/* World time of each projectile. To kill off old particles that missed all world geo */
 	TArray<float> Lifetimes;
+
+	// Temporary list of projectiles to be de-activated
+	TArray<FProjectileFullData> RemovedProjectiles;
 };

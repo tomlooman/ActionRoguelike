@@ -6,6 +6,8 @@
 #include "ActionRoguelike.h"
 #include "GenericTeamAgentInterface.h"
 #include "NiagaraComponent.h"
+#include "NiagaraDataChannel.h"
+#include "NiagaraDataChannelAccessor.h"
 #include "NiagaraFunctionLibrary.h"
 #include "RogueProjectileData.h"
 #include "Core/RogueGameplayFunctionLibrary.h"
@@ -49,10 +51,14 @@ void URogueProjectilesSubsystem::CreateProjectile(FVector InPosition, FVector In
 void URogueProjectilesSubsystem::RemoveProjectile(int32 Index)
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE(RemoveProjectiles);
-	
-	ProjectileData.RemoveAt(Index, EAllowShrinking::No);
-	ProjectileMetaData.RemoveAt(Index, EAllowShrinking::No);
-	Lifetimes.RemoveAt(Index, EAllowShrinking::No);
+
+	RemovedProjectiles.Add(ProjectileMetaData[Index]);
+		
+	// RemoveAtSwap works while we immediately remove the projectile rather than wait till the end of frame
+	// We must use reverse for-loops to avoid running anything twice on the projectile that was swapped from the end of the array
+	ProjectileData.RemoveAtSwap(Index, EAllowShrinking::No);
+	ProjectileMetaData.RemoveAtSwap(Index, EAllowShrinking::No);
+	Lifetimes.RemoveAtSwap(Index, EAllowShrinking::No);
 }
 
 
@@ -70,7 +76,6 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 
 	// Track projectiles to end this frame for batched update
 	TArray<int32> ProjectileHits;
-	TArray<int32> ExpiredIndices;
 
 	// @TODO & Notes
 	// We could cache a collision params to ignore instigator during the sweep, now I dont want to fetch instigator from the metadata every time
@@ -95,106 +100,121 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 			
 				//DrawDebugSphere(World, Proj.Position, Shape.GetSphereRadius(), 20, FColor::Green, false, 2.0f);
 			
-				// Hit!
+				// (Blocking) Hit!
 				ProjectileMetaData[ProjIndex].Hit = HitResults[0];
 				ProjectileHits.Add(ProjIndex);
 				continue;
 			}
 			// Any overlaps?
-			if (HitResults.Num() > 0)
+			for (int32 HitIndex = 0; HitIndex < HitResults.Num(); HitIndex++)
 			{
-				for (int32 HitIndex = 0; HitIndex < HitResults.Num(); HitIndex++)
-				{
-					FHitResult& Hit = HitResults[HitIndex];
+				FHitResult& Hit = HitResults[HitIndex];
+				AActor* HitActor = Hit.GetActor();
 				
-					if (Hit.GetActor()->CanBeDamaged())
+				if (HitActor->CanBeDamaged())
+				{
+					FProjectileFullData& MetaData = ProjectileMetaData[ProjIndex];
+					if (MetaData.InstigatorActor == HitActor)
 					{
-						FProjectileFullData& MetaData = ProjectileMetaData[ProjIndex];
-						if (MetaData.InstigatorActor == Hit.GetActor())
+						// Skip the owner of the bullet
+						continue;
+					}
+
+					// Check for friendly fire, eg. skip hitting other AI agents
+					if (IGenericTeamAgentInterface* TeamInterface = Cast<IGenericTeamAgentInterface>(MetaData.InstigatorActor))
+					{
+						ETeamAttitude::Type Attitude = TeamInterface->GetTeamAttitudeTowards(*HitActor);
+						if (Attitude == ETeamAttitude::Friendly)
 						{
-							// Skip the owner of the bullet
+							// Show we ignored a friendly unit
+							//DrawDebugBox(World, Hit.Location, FVector(40.0f), FColor::Red, false, 2.0f);
 							continue;
 						}
-
-						// Check for friendly fire, eg. skip hitting other AI agents
-						if (IGenericTeamAgentInterface* TeamInterface = Cast<IGenericTeamAgentInterface>(MetaData.InstigatorActor))
-						{
-							ETeamAttitude::Type Attitude = TeamInterface->GetTeamAttitudeTowards(*Hit.GetActor());
-							if (Attitude == ETeamAttitude::Friendly)
-							{
-								// Show we ignored a friendly unit
-								//DrawDebugBox(World, Hit.Location, FVector(40.0f), FColor::Red, false, 2.0f);
-								continue;
-							}
-						}
-
-						// We only use the first non-friendly overlap as our expected hit
-						// at this point we know it can be damaged and if it has TeamInterface, it will not be "friendly" to projectile instigator)
-						ProjectileHits.AddUnique(ProjIndex);
-						ProjectileMetaData[ProjIndex].Hit = Hit;
-						break;
 					}
+
+					// We only use the first non-friendly overlap as our expected hit
+					// at this point we know it can be damaged and if it has TeamInterface, it will not be "friendly" to projectile instigator)
+					ProjectileHits.AddUnique(ProjIndex);
+					ProjectileMetaData[ProjIndex].Hit = Hit;
+					break;
 				}
 			}
 
 			// no hit found, Move forward
+			// for overlaps, the impactPosition should be used for things like VFX playback instead of the projectile location
 			Proj.Position = NextPosition;
 		}
 	}
 	
-	// Debug only
-	/*for (FProjectileInfo& Proj : ProjectileData)
-	{
-		DrawDebugPoint(World, Proj.Position, 10.0f, FColor::Orange, false, 1.0f);
-	}*/
-
 	{
 		TRACE_CPUPROFILER_EVENT_SCOPE(ProcessProjectileHits);
-		
-		for (int32 Index : ProjectileHits)
-		{
-			FProjectileFullData& BulkData = ProjectileMetaData[Index];
 
-			// Disable Projectile Visuals
-			BulkData.FXComp->Deactivate();
+		for (int i = ProjectileHits.Num() - 1; i >= 0; --i)
+		{
+			int32 HitIndex = ProjectileHits[i];
+			FProjectileFullData& BulkData = ProjectileMetaData[HitIndex];
 
 			// Apply Damage
 			FGameplayTagContainer ContextTags;
 			URogueGameplayFunctionLibrary::ApplyDirectionalDamage(BulkData.InstigatorActor, BulkData.Hit.GetActor(),
 				BulkData.ConfigData->DamageCoefficient, BulkData.Hit, ContextTags);
 
-			FVector Position = ProjectileData[Index].Position;
+			FVector Position = ProjectileData[HitIndex].Position;
 			// Inverted normalized velocity should be a good orientation for any directional impact vfx
-			FRotator ImpactRotation = ProjectileData[Index].Velocity.GetSafeNormal().Rotation().GetInverse();
+			FRotator ImpactRotation = ProjectileData[HitIndex].Velocity.GetSafeNormal().Rotation().GetInverse();
 
-			// Impact VFX
-			// @todo: setup pre-culling in the particle systems to prevent spawning when not rendered
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, BulkData.ConfigData->ImpactEffect, Position, ImpactRotation,
-				FVector(1), true, true, ENCPoolMethod::AutoRelease, true);
+			SpawnImpactFX(World, BulkData, Position, ImpactRotation);
 
-			// Mark for cleanup
-			ExpiredIndices.Add(Index);
+			RemoveProjectile(HitIndex);
 		}
 	}
 
+	// Cleanup of old projectiles
 	const float MaxLifespan = 20.0f;
 	float ExpirationGameTime = GetWorld()->TimeSeconds - MaxLifespan;
-	// Cleanup of old projectiles
-	for (int32 i = 0; i < Lifetimes.Num(); i++)
+	for (int Index = Lifetimes.Num() - 1; Index >= 0; --Index)
 	{
 		// Is the projectile older than MaxLifespan seconds into the past
-		if (Lifetimes[i] < (ExpirationGameTime))
+		if (Lifetimes[Index] < (ExpirationGameTime))
 		{
-			ExpiredIndices.AddUnique(i);
+			RemoveProjectile(Index);
 		}
 	}
 
-	// Cleanup all projectiles marked for deletion
-	for (int32 i = 0; i < ExpiredIndices.Num(); i++)
+	// Batch "deactivate" all the removed projectiles
+	// This might just be rolled into the RemoveProjectile
+	for (int i = 0; i < RemovedProjectiles.Num(); ++i)
 	{
-		RemoveProjectile(ExpiredIndices[i]);
+		FProjectileFullData& Data = RemovedProjectiles[i];
+		if (UNiagaraComponent* FXComp = Data.FXComp)
+		{
+			FXComp->Deactivate();
+		}
+		// handle any other deactivation such as looped sound fx.
+		// ...
 	}
+	RemovedProjectiles.Reset();
 }
+
+
+void URogueProjectilesSubsystem::SpawnImpactFX(const UWorld* World, const FProjectileFullData& BulkData, FVector ImpactPosition, FRotator ImpactRotation)
+{
+	// Impact Explosion
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, BulkData.ConfigData->ImpactEffect, ImpactPosition, ImpactRotation,
+		FVector(1), true, true, ENCPoolMethod::AutoRelease, true);
+
+	// Helps find the correct island to inject this particle into
+	FNiagaraDataChannelSearchParameters Params;
+	Params.Location = ImpactPosition;
+
+	// Intended for DECALs, using the Data Channels rather than relying on individual particle systems
+	UNiagaraDataChannelWriter* Writer = UNiagaraDataChannelLibrary::WriteToNiagaraDataChannel(World, BulkData.ConfigData->ImpactDecal_DataChannel,
+		Params, 1, false, true, true, "ImpactDecals");
+
+	Writer->WriteVector("ImpactLocation", 0, ImpactPosition);
+	Writer->WriteVector("ImpactNormal", 0, ImpactRotation.Vector());
+}
+
 
 TStatId URogueProjectilesSubsystem::GetStatId() const
 {

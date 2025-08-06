@@ -6,6 +6,7 @@
 #include "Engine/DataAsset.h"
 #include "RogueProjectileData.generated.h"
 
+class UNiagaraDataChannelAsset;
 class UNiagaraSystem;
 
 /**
@@ -20,20 +21,23 @@ class ACTIONROGUELIKE_API URogueProjectileData : public UDataAsset
 public:
 	
 	UPROPERTY(EditDefaultsOnly, Category= "Projectile")
-	UNiagaraSystem* ProjectileEffect;
+	TObjectPtr<UNiagaraSystem> ProjectileEffect;
 
 	/* Note: Usually this would have multiple options based on hit PhysicsMaterial such as blood impact for hitting enemies */
 	UPROPERTY(EditDefaultsOnly, Category= "Projectile")
-	UNiagaraSystem* ImpactEffect;
+	TObjectPtr<UNiagaraSystem> ImpactEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category= "Projectile")
+	TObjectPtr<UNiagaraDataChannelAsset> ImpactDecal_DataChannel;
 
 	UPROPERTY(EditDefaultsOnly, Category= "Projectile")
 	float InitialSpeed = 2000.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category= "Projectile")
-	float GravityScale = 0.0f;
+	//UPROPERTY(EditDefaultsOnly, Category= "Projectile")
+	//float GravityScale = 0.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category= "Projectile")
-	float Lifespan = 20.0f;
+	//UPROPERTY(EditDefaultsOnly, Category= "Projectile")
+	//float Lifespan = 10.0f;
 
 	/* Use Instigator's AttackDamage attribute multiplied by this coefficient as a percentage */
 	UPROPERTY(EditDefaultsOnly, Category= "Projectile", meta=(Units="Percent"))
