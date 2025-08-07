@@ -14,6 +14,7 @@
 #include "RogueMonsterData.h"
 #include "ActionRoguelike.h"
 #include "RogueGameplayFunctionLibrary.h"
+#include "RogueGameState.h"
 #include "ActionSystem/RogueActionComponent.h"
 #include "SaveSystem/RogueSaveGameSubsystem.h"
 #include "Development/RogueDeveloperSettings.h"
@@ -30,6 +31,7 @@ ARogueGameModeBase::ARogueGameModeBase()
 {
 	PlayerStateClass = ARoguePlayerState::StaticClass();
 	HUDClass = ARogueHUD::StaticClass();
+	GameStateClass = ARogueGameState::StaticClass();
 }
 
 

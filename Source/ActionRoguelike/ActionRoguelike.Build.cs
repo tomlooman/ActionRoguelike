@@ -30,7 +30,8 @@ public class ActionRoguelike : ModuleRules
 			"SignificanceManager",
 			"EnhancedInput",
 			"Niagara",
-			"CoreOnline"
+			"CoreOnline",
+			"NetCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

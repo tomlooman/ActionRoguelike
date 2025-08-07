@@ -10,38 +10,44 @@
 class URogueProjectileData;
 class UNiagaraComponent;
 class UNiagaraSystem;
-
-//USTRUCT()
-struct FProjectileInfo
-{
-	FVector Position;
-
-	FVector Velocity;
-
-	bool operator==(const FProjectileInfo& OtherInfo) const
-	{
-		return OtherInfo.Position == Position && OtherInfo.Velocity == Velocity;
-	}
-};
+struct FProjectileConfig;
 
 USTRUCT()
-struct FProjectileFullData
+struct FProjectileInstance
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
-	URogueProjectileData* ConfigData;
+	FProjectileInstance(FVector InPos, FVector InVelocity, uint32 InstanceID)
+		: Position(InPos), Velocity(InVelocity), ID(InstanceID)
+	{
+	}
+
+	FProjectileInstance(uint32 InID)
+		: Position(FVector::ZeroVector), Velocity(FVector::ZeroVector), ID(InID)
+	{
+	}
+
+	FProjectileInstance()
+		: Position(FVector::ZeroVector), Velocity(FVector::ZeroVector), ID(0)
+	{
+	}
 
 	UPROPERTY()
-	AActor* InstigatorActor;
+	FVector Position;
 
 	UPROPERTY()
-	UNiagaraComponent* FXComp = nullptr;
+	FVector Velocity;
 
+	/* ID for tracking with the Config data */
 	UPROPERTY()
-	FHitResult Hit;
+	uint32 ID;
+
+	bool operator==(const FProjectileInstance& OtherInfo) const
+	{
+		return OtherInfo.ID == ID;
+	}
+
 };
-
 
 /**
  * 
@@ -55,25 +61,27 @@ public:
 
 	void CreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor);
 
-	void RemoveProjectile(int32 Index);
+	void InternalCreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor, uint32 NewID);
 
+	//void RemoveProjectile(int32 Index);
+
+	void RemoveProjectileID(uint32 IdToRemove);
+	
 	virtual void Tick(float DeltaTime) override;
 
 	virtual TStatId GetStatId() const override;
 
 protected:
 
-	void SpawnImpactFX(const UWorld* World, const FProjectileFullData& BulkData, FVector ImpactPosition, FRotator ImpactRotation);
+	void SpawnLoopedVFX();
 
-	// @todo: this will be replicated via GameState or similar location
-	TArray<FProjectileInfo> ProjectileData;
-
-	// @todo: this will be mainly locally (client / non-replicated) filled with stuff like configdata and active particle refs
-	TArray<FProjectileFullData> ProjectileMetaData;
+	void SpawnImpactFX(const UWorld* World, const FProjectileConfig& ProjConfig, FVector ImpactPosition, FRotator ImpactRotation);
+	
+	TArray<FProjectileInstance> ProjectileInstances;
 
 	/* World time of each projectile. To kill off old particles that missed all world geo */
 	TArray<float> Lifetimes;
 
-	// Temporary list of projectiles to be de-activated
-	TArray<FProjectileFullData> RemovedProjectiles;
+	/* Incrementing ID to track instances */
+	uint32 CurrInstanceID = 0;
 };
