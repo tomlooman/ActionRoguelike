@@ -153,6 +153,9 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 				// @todo: is auth check required?
 				if (HasAuthority())
 				{
+					// Give a bit of time before deletion for clients to rep the Hit
+					ProjConfig.ExpirationGameTime = (World->TimeSeconds + 1.0);
+					
 					ProjectileConfigs.MarkItemDirty(ProjConfig);
 				}
 				continue;
@@ -163,7 +166,7 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 				FHitResult& Hit = HitResults[HitIndex];
 				AActor* HitActor = Hit.GetActor();
 			
-				if (HitActor->CanBeDamaged() && HasAuthority()) // @todo: allow overlap for prediction on client-side, but that requires TeamInterface to work on clients
+				if (HitActor->CanBeDamaged())
 				{
 					if (ProjConfig.InstigatorActor == HitActor)
 					{
@@ -193,6 +196,9 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 					// @todo: is auth check required?
 					if (HasAuthority())
 					{
+						// Give a bit of time before deletion for clients to rep the Hit
+						ProjConfig.ExpirationGameTime = (World->TimeSeconds + 1.0);
+						
 						ProjectileConfigs.MarkItemDirty(ProjConfig);
 					}
 					break;
@@ -237,7 +243,7 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 			{
 				RemoveProjectileID(Item.ID);
 
-				// @todo-fixme We only delete expired projectiles, this is somewhat ODD, we can change the expiration time to be slighly into the future once we HIT something
+				// The only place we actually delete the data, we expire projectiles slightly after a hit/overlap to give replication some time to finish
 				ProjectileConfigs.Items.RemoveSingle(Item);
 				ProjectileConfigs.MarkArrayDirty();
 			}

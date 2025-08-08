@@ -8,6 +8,8 @@ public class ActionRoguelike : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		
+		SetupIrisSupport(Target);
+		
 		// Simplify the include paths in our source files
 		PublicIncludePaths.AddRange(
 			new string[] {

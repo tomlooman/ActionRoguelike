@@ -275,7 +275,6 @@ void ARogueAICharacter::OnReduceAnimationWork(class USkeletalMeshComponentBudget
 
 FGenericTeamId ARogueAICharacter::GetGenericTeamId() const
 {
-	check(GetController());
-	// Fetch from the AI Controller who has built-in TeamId
-	return FGenericTeamId::GetTeamIdentifier(GetController());
+	// Matches the AIController team ID
+	return FGenericTeamId(TEAM_ID_BOTS);
 }
