@@ -12,6 +12,11 @@ class ACTIONROGUELIKE_API URogueInteractionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
+protected:
+
+	UPROPERTY(EditDefaultsOnly, Category="Interaction")
+	float InteractionRadius = 800;
+
 public:
 
 	URogueInteractionComponent();
