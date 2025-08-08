@@ -6,14 +6,32 @@
 #include "Projectiles/RogueProjectilesSubsystem.h"
 
 
-void FProjectileConfig::PostReplicatedAdd(const struct FProjectileConfigArray& InArraySerializer)
+void FProjectileConfig::PostReplicatedAdd(const FProjectileConfigArray& InArraySerializer)
 {
 	InArraySerializer.OwningSubsystem->InternalCreateProjectile(this->InitialPosition, InitialDirection, ConfigDataAsset, InstigatorActor, ID);
 }
 
-void FProjectileConfig::PreReplicatedRemove(const struct FProjectileConfigArray& InArraySerializer)
+void FProjectileConfig::PreReplicatedRemove(const FProjectileConfigArray& InArraySerializer)
 {
+	// It can happen that clients already removed the projectile ID locally from its local collision checks
 	InArraySerializer.OwningSubsystem->RemoveProjectileID(ID);
+}
+
+void FProjectileConfig::PostReplicatedChange(const FProjectileConfigArray& InArraySerializer)
+{
+	// Check if hit was set
+	if (Hit.GetActor() && !bHasPlayedImpact)
+	{
+		bHasPlayedImpact = true;
+		
+		FRotator ImpactRotation = (Hit.TraceEnd - Hit.TraceStart).GetSafeNormal().Rotation();
+		UWorld* World = InArraySerializer.OwningSubsystem->GetWorld();
+
+		InArraySerializer.OwningSubsystem->SpawnImpactFX(World, *this, Hit.Location, ImpactRotation);
+	}
+		
+	//DrawDebugDirectionalArrow(World, Hit.Location, (Hit.Location + (ImpactRotation.Vector() * 50.0f)), 20.0f, FColor::Green, false, 5.0f);
+	//DrawDebugSphere(World, Hit.Location, 32.0f, 32, FColor::Orange, false, 5.f);
 }
 
 // ------- END STRUCT ------ //

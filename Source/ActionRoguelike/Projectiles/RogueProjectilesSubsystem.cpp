@@ -19,27 +19,24 @@ TRACE_DECLARE_INT_COUNTER(LightweightProjectilesCount, TEXT("Game/DataOnlyProjec
 
 void URogueProjectilesSubsystem::CreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor)
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE(CreateProjectile);
-	
-	UWorld* World = GetWorld();
-	
 	CurrInstanceID++;
-
 	InternalCreateProjectile(InPosition, InDirection, ProjectileConfig, InstigatorActor, CurrInstanceID);
-
-	// @todo: lifetime tracking can be server-only
-	Lifetimes.Add(GetWorld()->TimeSeconds);
 }
 
 // @todo: rename as this is used 'outside' this class too
 void URogueProjectilesSubsystem::InternalCreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor, uint32 NewID)
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE(CreateProjectile);
+
 	// Active data that represents the moving projectile
-	FProjectileInstance ProjInfo = FProjectileInstance(InPosition, InDirection * ProjectileConfig->InitialSpeed, CurrInstanceID);
+	FProjectileInstance ProjInfo = FProjectileInstance(InPosition, InDirection * ProjectileConfig->InitialSpeed, NewID);
 	ProjectileInstances.Add(ProjInfo);
+
+	UWorld* World = GetWorld();
 		
-	UNiagaraComponent* EffectComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ProjectileConfig->ProjectileEffect, InPosition,
+	UNiagaraComponent* EffectComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, ProjectileConfig->ProjectileEffect, InPosition,
 		InDirection.Rotation(), FVector(1), true, true, ENCPoolMethod::AutoRelease);
+	
 	// The component stays in world space, the emitters themselves move along the axis of the projectile to match
 	// the collision query locations
 	const FName UserParamName = "ProjectileVelocity";
@@ -47,13 +44,13 @@ void URogueProjectilesSubsystem::InternalCreateProjectile(FVector InPosition, FV
 	EffectComp->SetVariablePosition(UserParamName, LocalVelocity);
 
 	// Now assign the FX Comp to the ProjectileConfig already in the local array
-	UWorld* World = GetWorld();
 	FProjectileConfigArray& DataArray = World->GetGameState<ARogueGameState>()->ProjectileData;
 
-	if (InstigatorActor->HasAuthority())
+	if (HasAuthority())
 	{
+		float ExpirationGameTime = World->TimeSeconds + ProjectileConfig->Lifespan;
 		// Full data of the projectile instance, used for bookkeeping and replication, not constantly updated
-		FProjectileConfig Info = FProjectileConfig(InPosition, InDirection, ProjectileConfig, InstigatorActor, CurrInstanceID);
+		FProjectileConfig Info = FProjectileConfig(InPosition, InDirection, ProjectileConfig, InstigatorActor, NewID, ExpirationGameTime);
 	
 		World->GetGameState<ARogueGameState>()->ProjectileData.Items.Add(Info);
 		World->GetGameState<ARogueGameState>()->ProjectileData.MarkItemDirty(Info);
@@ -67,59 +64,34 @@ void URogueProjectilesSubsystem::InternalCreateProjectile(FVector InPosition, FV
 }
 
 
-/*void URogueProjectilesSubsystem::RemoveProjectile(int32 Index)
-{
-	TRACE_CPUPROFILER_EVENT_SCOPE(RemoveProjectiles);
-
-	UWorld* World = GetWorld();
-
-	FProjectileConfigArray& DataArray = World->GetGameState<ARogueGameState>()->ProjectileData;
-
-	FProjectileConfig& Data = DataArray.Items[Index];
-	if (UNiagaraComponent* FXComp = Data.TracerEffectComp)
-	{
-		FXComp->Deactivate();
-	}
-
-	DataArray.Items.RemoveAt(Index, EAllowShrinking::No);
-	DataArray.MarkArrayDirty();
-	
-	ProjectileInstances.RemoveAt(Index, EAllowShrinking::No);
-	
-	Lifetimes.RemoveAt(Index, EAllowShrinking::No);
-}*/
-
-
 void URogueProjectilesSubsystem::RemoveProjectileID(uint32 IdToRemove)
 {
-	// @todo: replace all uses of RemoveProjectile() variant above.
 	UWorld* World = GetWorld();
 
 	FProjectileConfigArray& DataArray = World->GetGameState<ARogueGameState>()->ProjectileData;
 
-	FProjectileConfig& Data = *DataArray.Items.FindByPredicate([IdToRemove](FProjectileConfig& Item){ return IdToRemove == Item.ID;  });
-
-	//FProjectileConfig& Data = DataArray.Items[Index];
-	if (UNiagaraComponent* FXComp = Data.TracerEffectComp)
+	// @todo: faster lookup available like a local TMap cache
+	FProjectileConfig& ProjConfig = *DataArray.Items.FindByPredicate([IdToRemove](FProjectileConfig& Item){ return IdToRemove == Item.ID;  });
+	
+	if (UNiagaraComponent* FXComp = ProjConfig.TracerEffectComp)
 	{
 		FXComp->Deactivate();
+		FXComp = nullptr;
 	}
 
-	if (Data.InstigatorActor->HasAuthority())
+	if (ProjConfig.Hit.GetActor() && !ProjConfig.bHasPlayedImpact)
 	{
-		DataArray.Items.RemoveSingle(Data);
-		DataArray.MarkArrayDirty();
+		ProjConfig.bHasPlayedImpact = true;
+			
+		FRotator ImpactRotation = (ProjConfig.Hit.TraceEnd - ProjConfig.Hit.TraceStart).GetSafeNormal().Rotation();
+		SpawnImpactFX(World, ProjConfig, ProjConfig.Hit.Location, ImpactRotation);
 	}
-
-	// Hit/Overlap Pos(?) @todo: 0,0,0 on clients, its NOT filled because clients SKIP collision checks,
-	// @todo: CHANGE CLIENTS TO ALSO RUN HIT TESTS AND ONLY SKIP DMG APPLY
-	DrawDebugBox(World, Data.Hit.Location, FVector(40.0f), FColor::Red, false, 2.0f);
 	
-	// Perhaps hacky to use a temp struct to 'find' it by ID in the array
-	ProjectileInstances.Remove(FProjectileInstance(IdToRemove));
+	//DrawDebugBox(World, ProjConfig.Hit.Location, FVector(40.0f), FColor::Red, false, 2.0f);
 
-	// @todo: fix the lifetime stuff too
-	//Lifetimes.RemoveAt(Index, EAllowShrinking::No);
+	FProjectileInstance TempInst = FProjectileInstance(IdToRemove);
+	// Perhaps hacky to use a temp struct to 'find' it by ID in the array
+	ProjectileInstances.Remove(TempInst);
 }
 
 
@@ -135,7 +107,7 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 	Shape.SetSphere(20.0f);
 
 	// Track projectiles to end this frame for batched update
-	TArray<int32> ProjectileHits;
+	TArray<int32> ProjectileHitIDs;
 
 	ARogueGameState* GS = World->GetGameState<ARogueGameState>();
 	if (GS == nullptr)
@@ -158,62 +130,75 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 		for (int32 ProjIndex = 0; ProjIndex < ProjectileInstances.Num(); ProjIndex++)
 		{
 			FProjectileInstance& Proj = ProjectileInstances[ProjIndex];
+			FProjectileConfig& ProjConfig = *ProjectileConfigs.Items.FindByPredicate([Proj](const FProjectileConfig& OtherProj){ return Proj.ID == OtherProj.ID;  });
 
 			// Where we want to end up "next frame" (once we move to async queries)
 			FVector NextPosition = Proj.Position + (Proj.Velocity * DeltaTime);
-
-			if (GS->HasAuthority())
+			
+			TArray<FHitResult> HitResults;		
+			// True only blocking hit
+			if (World->SweepMultiByChannel(HitResults, Proj.Position, NextPosition, FQuat::Identity, CollisionChannel, Shape))
 			{
-				TArray<FHitResult> HitResults;		
-				// True only blocking hit
-				if (World->SweepMultiByChannel(HitResults, Proj.Position, NextPosition, FQuat::Identity, CollisionChannel, Shape))
-				{
-					// As far as we can move till hit
-					Proj.Position = HitResults.Last().Location;
-			
-					//DrawDebugSphere(World, Proj.Position, Shape.GetSphereRadius(), 20, FColor::Green, false, 2.0f);
-			
-					// (Blocking) Hit!
-					ProjectileConfigs.Items[ProjIndex].Hit = HitResults[0];
-					ProjectileHits.Add(ProjIndex);
-					continue;
-				}
-				// Any overlaps?
-				for (int32 HitIndex = 0; HitIndex < HitResults.Num(); HitIndex++)
-				{
-					FHitResult& Hit = HitResults[HitIndex];
-					AActor* HitActor = Hit.GetActor();
+				// As far as we can move till hit
+				Proj.Position = HitResults.Last().Location;
+		
+				//DrawDebugSphere(World, Proj.Position, Shape.GetSphereRadius(), 20, FColor::Green, false, 2.0f);
+		
+				// (Blocking) Hit!
+				ProjConfig.Hit = HitResults[0];
 				
-					if (HitActor->CanBeDamaged())
+				ProjectileHitIDs.Add(Proj.ID);
+
+				// Push hit to clients
+				// @todo: is auth check required?
+				if (HasAuthority())
+				{
+					ProjectileConfigs.MarkItemDirty(ProjConfig);
+				}
+				continue;
+			}
+			// Any overlaps?
+			for (int32 HitIndex = 0; HitIndex < HitResults.Num(); HitIndex++)
+			{
+				FHitResult& Hit = HitResults[HitIndex];
+				AActor* HitActor = Hit.GetActor();
+			
+				if (HitActor->CanBeDamaged() && HasAuthority()) // @todo: allow overlap for prediction on client-side, but that requires TeamInterface to work on clients
+				{
+					if (ProjConfig.InstigatorActor == HitActor)
 					{
-						FProjectileConfig& MetaData = ProjectileConfigs.Items[ProjIndex];
-						if (MetaData.InstigatorActor == HitActor)
+						// Skip the owner of the bullet
+						continue;
+					}
+
+					// Check for friendly fire, eg. skip hitting other AI agents
+					if (IGenericTeamAgentInterface* TeamInterface = Cast<IGenericTeamAgentInterface>(ProjConfig.InstigatorActor))
+					{
+						ETeamAttitude::Type Attitude = TeamInterface->GetTeamAttitudeTowards(*HitActor);
+						if (Attitude == ETeamAttitude::Friendly)
 						{
-							// Skip the owner of the bullet
+							// Show we ignored a friendly unit
+							//DrawDebugBox(World, Hit.Location, FVector(40.0f), FColor::Red, false, 2.0f);
 							continue;
 						}
-
-						// Check for friendly fire, eg. skip hitting other AI agents
-						if (IGenericTeamAgentInterface* TeamInterface = Cast<IGenericTeamAgentInterface>(MetaData.InstigatorActor))
-						{
-							ETeamAttitude::Type Attitude = TeamInterface->GetTeamAttitudeTowards(*HitActor);
-							if (Attitude == ETeamAttitude::Friendly)
-							{
-								// Show we ignored a friendly unit
-								//DrawDebugBox(World, Hit.Location, FVector(40.0f), FColor::Red, false, 2.0f);
-								continue;
-							}
-						}
-
-						// We only use the first non-friendly overlap as our expected hit
-						// at this point we know it can be damaged and if it has TeamInterface, it will not be "friendly" to projectile instigator)
-						ProjectileHits.AddUnique(ProjIndex);
-						ProjectileConfigs.Items[ProjIndex].Hit = Hit;
-						break;
 					}
+
+					// We only use the first non-friendly overlap as our expected hit
+					// at this point we know it can be damaged and if it has TeamInterface, it will not be "friendly" to projectile instigator
+					ProjConfig.Hit = Hit;
+					
+					ProjectileHitIDs.AddUnique(Proj.ID);
+
+					// Push hit to clients
+					// @todo: is auth check required?
+					if (HasAuthority())
+					{
+						ProjectileConfigs.MarkItemDirty(ProjConfig);
+					}
+					break;
 				}
 			}
-
+			
 			// no hit found, Move forward
 			// for overlaps, the impactPosition should be used for things like VFX playback instead of the projectile location
 			Proj.Position = NextPosition;
@@ -223,54 +208,41 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 	{
 		TRACE_CPUPROFILER_EVENT_SCOPE(ProcessProjectileHits);
 
-		for (int i = ProjectileHits.Num() - 1; i >= 0; --i)
+		for (int i = ProjectileHitIDs.Num() - 1; i >= 0; --i)
 		{
-			int32 HitIndex = ProjectileHits[i];
-			FProjectileConfig& BulkData = ProjectileConfigs.Items[HitIndex];
+			int32 HitID = ProjectileHitIDs[i];
+			
+			FProjectileConfig& ProjConfig = *ProjectileConfigs.Items.FindByPredicate([HitID](const FProjectileConfig& OtherProj){ return HitID == OtherProj.ID;  });
 
-			// Apply Damage
-			FGameplayTagContainer ContextTags;
-			URogueGameplayFunctionLibrary::ApplyDirectionalDamage(BulkData.InstigatorActor, BulkData.Hit.GetActor(),
-				BulkData.ConfigDataAsset->DamageCoefficient, BulkData.Hit, ContextTags);
+			// Apply Damage (server-only, misc. stuff like impulses still runs on clients too)
+			// @todo-fixme: disabled damage to make things much easier to test
+			/*FGameplayTagContainer ContextTags;
+			URogueGameplayFunctionLibrary::ApplyDirectionalDamage(ProjConfig.InstigatorActor, ProjConfig.Hit.GetActor(),
+				ProjConfig.ConfigDataAsset->DamageCoefficient, ProjConfig.Hit, ContextTags);*/
 
-			FVector Position = ProjectileInstances[HitIndex].Position;
-			// Inverted normalized velocity should be a good orientation for any directional impact vfx
-			FRotator ImpactRotation = ProjectileInstances[HitIndex].Velocity.GetSafeNormal().Rotation().GetInverse();
-
-			SpawnImpactFX(World, BulkData, Position, ImpactRotation);
-
-			//RemoveProjectile(HitIndex);
-			RemoveProjectileID(ProjectileInstances[HitIndex].ID);
+			// Will play any impact vfx during removal
+			RemoveProjectileID(HitID);
 		}
 	}
 
-	// Cleanup of old projectiles
-	const float MaxLifespan = 20.0f;
-	float ExpirationGameTime = GetWorld()->TimeSeconds - MaxLifespan;
-	for (int Index = Lifetimes.Num() - 1; Index >= 0; --Index)
+	if (HasAuthority())
 	{
-		// Is the projectile older than MaxLifespan seconds into the past
-		if (Lifetimes[Index] < (ExpirationGameTime))
+		// Cleanup of old projectiles
+		float CurrGameTime = GetWorld()->TimeSeconds;
+		for (int Index = ProjectileConfigs.Items.Num() - 1; Index >= 0; --Index)
 		{
-			//RemoveProjectile(Index);
-			RemoveProjectileID(ProjectileInstances[Index].ID);
-		}
-	}
+			FProjectileConfig& Item = ProjectileConfigs.Items[Index];
+			// Is the projectile older than MaxLifespan seconds into the past
+			if (Item.ExpirationGameTime < CurrGameTime)
+			{
+				RemoveProjectileID(Item.ID);
 
-	// Batch "deactivate" all the removed projectiles
-	// This might just be rolled into the RemoveProjectile
-	// @todo: make server-only
-	/*for (int i = 0; i < RemovedProjectiles.Num(); ++i)
-	{
-		FProjectileFullData& Data = RemovedProjectiles[i];
-		if (UNiagaraComponent* FXComp = Data.FXComp)
-		{
-			FXComp->Deactivate();
+				// @todo-fixme We only delete expired projectiles, this is somewhat ODD, we can change the expiration time to be slighly into the future once we HIT something
+				ProjectileConfigs.Items.RemoveSingle(Item);
+				ProjectileConfigs.MarkArrayDirty();
+			}
 		}
-		// handle any other deactivation such as looped sound fx.
-		// ...
 	}
-	RemovedProjectiles.Reset();*/
 }
 
 
@@ -296,4 +268,10 @@ void URogueProjectilesSubsystem::SpawnImpactFX(const UWorld* World, const FProje
 TStatId URogueProjectilesSubsystem::GetStatId() const
 {
 	RETURN_QUICK_DECLARE_CYCLE_STAT(URogueProjectilesSubsystem, STATGROUP_Tickables);
+}
+
+bool URogueProjectilesSubsystem::HasAuthority() const
+{
+	const UWorld* World = GetWorld();
+	return World->GetNetMode() != (NM_Client);
 }

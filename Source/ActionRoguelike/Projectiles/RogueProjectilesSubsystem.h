@@ -62,25 +62,20 @@ public:
 	void CreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor);
 
 	void InternalCreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor, uint32 NewID);
-
-	//void RemoveProjectile(int32 Index);
-
+	
 	void RemoveProjectileID(uint32 IdToRemove);
 	
 	virtual void Tick(float DeltaTime) override;
 
 	virtual TStatId GetStatId() const override;
 
-protected:
-
-	void SpawnLoopedVFX();
-
 	void SpawnImpactFX(const UWorld* World, const FProjectileConfig& ProjConfig, FVector ImpactPosition, FRotator ImpactRotation);
 	
-	TArray<FProjectileInstance> ProjectileInstances;
+protected:
 
-	/* World time of each projectile. To kill off old particles that missed all world geo */
-	TArray<float> Lifetimes;
+	bool HasAuthority() const;
+
+	TArray<FProjectileInstance> ProjectileInstances;
 
 	/* Incrementing ID to track instances */
 	uint32 CurrInstanceID = 0;

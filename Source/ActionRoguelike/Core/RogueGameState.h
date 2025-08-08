@@ -9,6 +9,8 @@
 #include "RogueGameState.generated.h"
 
 
+struct FProjectileConfigArray;
+
 /*
  * Data oriented projectile data to replicate and bookkeeping for all data which we dont need every frame
  * The other array handles the per-frame data such as current position and velocity
@@ -18,12 +20,13 @@ struct FProjectileConfig : public FFastArraySerializerItem
 {
 	GENERATED_BODY()
 
-	FProjectileConfig(FVector InPosition, FVector InDirection, URogueProjectileData* InDataAsset, AActor* InActor, uint32 InstanceID):
+	FProjectileConfig(FVector InPosition, FVector InDirection, URogueProjectileData* InDataAsset, AActor* InActor, uint32 InstanceID, float InExpirationTime):
 		InitialPosition(InPosition),
 		InitialDirection(InDirection),
 		ConfigDataAsset(InDataAsset),
 		InstigatorActor(InActor),
-		ID(InstanceID)
+		ID(InstanceID),
+		ExpirationGameTime(InExpirationTime)
 	{
 	}
 
@@ -36,8 +39,12 @@ struct FProjectileConfig : public FFastArraySerializerItem
 	{
 	}
 
-	FProjectileConfig(uint32 InID): InitialPosition(FVector::ZeroVector), ConfigDataAsset(nullptr), InstigatorActor(nullptr),
-	                                TracerEffectComp(nullptr), ID(InID)
+	FProjectileConfig(uint32 InID) :
+		InitialPosition(FVector::ZeroVector),
+		InitialDirection(FVector::ZeroVector),
+		ConfigDataAsset(nullptr),
+		InstigatorActor(nullptr),
+		ID(InID)
 	{
 	}
 
@@ -52,20 +59,29 @@ struct FProjectileConfig : public FFastArraySerializerItem
 
 	UPROPERTY()
 	AActor* InstigatorActor;
-
-	UPROPERTY(NotReplicated)
-	UNiagaraComponent* TracerEffectComp = nullptr;
-
-	UPROPERTY(NotReplicated)
-	FHitResult Hit;
-	
+		
 	/* ID for tracking with the instance data */
 	UPROPERTY()
 	uint32 ID;
+
+	/* Replicated once we have hit something @todo: does this happen in time as we also remove the item directly upon hit, maybe first we disable the projectile and delete it slightly later?? */
+	UPROPERTY()
+	FHitResult Hit;
+
+	/* Check to avoid double playback of impact VFX as we can locally predict impacts and also later receive HitResult from server via replication. if we already played VFX we can skip */
+	UPROPERTY(NotReplicated)
+	bool bHasPlayedImpact = false;
+
+	/* Server-side lifespan check, built from current game time + initial lifespan = expiration time */
+	UPROPERTY(NotReplicated)
+	float ExpirationGameTime = 0;
+
+	UPROPERTY(NotReplicated)
+	UNiagaraComponent* TracerEffectComp = nullptr;
 	
-	void PostReplicatedAdd(const struct FProjectileConfigArray& InArraySerializer);
-	void PreReplicatedRemove(const struct FProjectileConfigArray& InArraySerializer);
-	//void PostReplicatedChange(const struct FProjectileDataArray& InArraySerializer);
+	void PostReplicatedAdd(const FProjectileConfigArray& InArraySerializer);
+	void PreReplicatedRemove(const FProjectileConfigArray& InArraySerializer);
+	void PostReplicatedChange(const FProjectileConfigArray& InArraySerializer);
 	
 	bool operator==(const FProjectileConfig& OtherConfig) const
 	{
@@ -82,7 +98,7 @@ struct FProjectileConfigArray: public FFastArraySerializer
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(NotReplicated)
-	URogueProjectilesSubsystem* OwningSubsystem;
+	URogueProjectilesSubsystem* OwningSubsystem = nullptr;
 
 	UPROPERTY()
 	TArray<FProjectileConfig> Items;

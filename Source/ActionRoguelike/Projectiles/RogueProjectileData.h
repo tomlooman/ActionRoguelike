@@ -36,8 +36,8 @@ public:
 	//UPROPERTY(EditDefaultsOnly, Category= "Projectile")
 	//float GravityScale = 0.0f;
 
-	//UPROPERTY(EditDefaultsOnly, Category= "Projectile")
-	//float Lifespan = 10.0f;
+	UPROPERTY(EditDefaultsOnly, Category= "Projectile")
+	float Lifespan = 10.0f;
 
 	/* Use Instigator's AttackDamage attribute multiplied by this coefficient as a percentage */
 	UPROPERTY(EditDefaultsOnly, Category= "Projectile", meta=(Units="Percent"))
