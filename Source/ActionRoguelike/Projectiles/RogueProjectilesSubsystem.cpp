@@ -82,8 +82,10 @@ void URogueProjectilesSubsystem::RemoveProjectileID(uint32 IdToRemove)
 	if (ProjConfig.Hit.GetActor() && !ProjConfig.bHasPlayedImpact)
 	{
 		ProjConfig.bHasPlayedImpact = true;
-			
+
+		// Projectile direction, good for orienting the VFX, decal will use surface normal instead
 		FRotator ImpactRotation = (ProjConfig.Hit.TraceEnd - ProjConfig.Hit.TraceStart).GetSafeNormal().Rotation();
+		
 		SpawnImpactFX(World, ProjConfig, ProjConfig.Hit.Location, ImpactRotation);
 	}
 	
@@ -257,17 +259,21 @@ void URogueProjectilesSubsystem::SpawnImpactFX(const UWorld* World, const FProje
 	// Impact Explosion
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, ProjConfig.ConfigDataAsset->ImpactEffect, ImpactPosition, ImpactRotation,
 		FVector(1), true, true, ENCPoolMethod::AutoRelease, true);
+	
+	// Skip on movables and non-receivers
+	UPrimitiveComponent* HitComp = ProjConfig.Hit.GetComponent();
+	if (HitComp->bReceivesDecals && HitComp->GetMobility() != EComponentMobility::Type::Movable)
+	{
+		// Helps find the correct island to inject this particle into
+		FNiagaraDataChannelSearchParameters Params = FNiagaraDataChannelSearchParameters(ImpactPosition);
 
-	// Helps find the correct island to inject this particle into
-	FNiagaraDataChannelSearchParameters Params;
-	Params.Location = ImpactPosition;
+		// DECAL, using the Data Channels rather than relying on individual particle systems
+		UNiagaraDataChannelWriter* Writer = UNiagaraDataChannelLibrary::WriteToNiagaraDataChannel(World, ProjConfig.ConfigDataAsset->ImpactDecal_DataChannel,
+			Params, 1, false, true, true, "ImpactDecals");
 
-	// Intended for DECALs, using the Data Channels rather than relying on individual particle systems
-	UNiagaraDataChannelWriter* Writer = UNiagaraDataChannelLibrary::WriteToNiagaraDataChannel(World, ProjConfig.ConfigDataAsset->ImpactDecal_DataChannel,
-		Params, 1, false, true, true, "ImpactDecals");
-
-	Writer->WriteVector("ImpactLocation", 0, ImpactPosition);
-	Writer->WriteVector("ImpactNormal", 0, ImpactRotation.Vector());
+		Writer->WriteVector("ImpactLocation", 0, ImpactPosition);
+		Writer->WriteVector("ImpactNormal", 0, ProjConfig.Hit.ImpactNormal);
+	}
 }
 
 
