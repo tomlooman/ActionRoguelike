@@ -71,6 +71,8 @@ public:
 
 	void SpawnImpactFX(const UWorld* World, const FProjectileConfig& ProjConfig, FVector ImpactPosition, FRotator ImpactRotation);
 	
+	uint32 GetUniqueProjID(FVector InPos, float InGameTime);
+	
 protected:
 
 	bool HasAuthority() const;

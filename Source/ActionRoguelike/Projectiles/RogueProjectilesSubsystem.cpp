@@ -10,7 +10,6 @@
 #include "NiagaraDataChannelAccessor.h"
 #include "NiagaraFunctionLibrary.h"
 #include "RogueProjectileData.h"
-#include "Core/RogueGameplayFunctionLibrary.h"
 #include "Core/RogueGameState.h"
 #include "ProfilingDebugging/CountersTrace.h"
 
@@ -19,7 +18,10 @@ TRACE_DECLARE_INT_COUNTER(LightweightProjectilesCount, TEXT("Game/DataOnlyProjec
 
 void URogueProjectilesSubsystem::CreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor)
 {
-	CurrInstanceID++;
+	//CurrInstanceID++;
+	CurrInstanceID = GetUniqueProjID(InPosition, GetWorld()->TimeSeconds);
+	//UE_LOG(LogGame, Log, TEXT("Created ID: %u"), CurrInstanceID);
+	
 	InternalCreateProjectile(InPosition, InDirection, ProjectileConfig, InstigatorActor, CurrInstanceID);
 }
 
@@ -30,6 +32,7 @@ void URogueProjectilesSubsystem::InternalCreateProjectile(FVector InPosition, FV
 
 	// Active data that represents the moving projectile
 	FProjectileInstance ProjInfo = FProjectileInstance(InPosition, InDirection * ProjectileConfig->InitialSpeed, NewID);
+	// @todo: check we have no hash (ProjInfo.ID) collision before adding it for debug builds
 	ProjectileInstances.Add(ProjInfo);
 
 	UWorld* World = GetWorld();
@@ -60,7 +63,7 @@ void URogueProjectilesSubsystem::InternalCreateProjectile(FVector InPosition, FV
 	Data->TracerEffectComp = EffectComp;
 
 	// Start Pos
-	DrawDebugBox(World, InPosition, FVector(15.0f), FColor::Green, false, 2.0f);
+	//DrawDebugBox(World, InPosition, FVector(15.0f), FColor::Green, false, 2.0f);
 }
 
 
@@ -276,11 +279,23 @@ void URogueProjectilesSubsystem::SpawnImpactFX(const UWorld* World, const FProje
 	}
 }
 
+/* Get unique ID so that client and servers can both generate an ID that will be unique when using this in replication
+ * Clients may spawn a projectile locally and send it to the server along with the ID. 
+ */
+uint32 URogueProjectilesSubsystem::GetUniqueProjID(FVector InPos, float InGameTime)
+{
+	uint32 HashA = GetTypeHash(InPos);
+	uint32 HashC = GetTypeHash(InGameTime);
+
+	return HashCombine(HashA, HashC);
+}
+
 
 TStatId URogueProjectilesSubsystem::GetStatId() const
 {
 	RETURN_QUICK_DECLARE_CYCLE_STAT(URogueProjectilesSubsystem, STATGROUP_Tickables);
 }
+
 
 bool URogueProjectilesSubsystem::HasAuthority() const
 {

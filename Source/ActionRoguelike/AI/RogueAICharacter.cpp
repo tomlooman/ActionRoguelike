@@ -254,7 +254,7 @@ void ARogueAICharacter::MulticastPlayAttackFX_Implementation()
 
 void ARogueAICharacter::SignificanceLODChanged(int32 NewLOD)
 {
-	UE_LOG(LogGame, Log, TEXT("Actor: %s, NewLOD: %i (Bucket)"), *GetName(), NewLOD);
+	UE_LOG(LogGame, Verbose, TEXT("Actor: %s, NewLOD: %i (Bucket)"), *GetName(), NewLOD);
 
 	EMovementMode MoveMode = NewLOD > 0 ? MOVE_NavWalking : MOVE_Walking;
 	// GroundMovementMode won't mess with Flying/Falling modes
