@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "Performance/RogueActorPoolingSubsystem.h"
 #include "Player/RoguePlayerCharacter.h"
+#include "Projectiles/RogueProjectilesSubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueAction_ProjectileAttack)
 
@@ -30,7 +31,9 @@ void URogueAction_ProjectileAttack::StartAction_Implementation(AActor* Instigato
 	// we use a single audio component on the player, which uses AutoManageAttachment to detach itself when not active
 	Character->PlayAttackSound(CastingSound);
 
-	if (Character->HasAuthority())
+	// For projectile spawn only run locally
+	if (Character->IsLocallyControlled())
+	//if (Character->HasAuthority())
 	{
 		FTimerHandle TimerHandle_AttackDelay;
 		FTimerDelegate Delegate;
@@ -102,7 +105,13 @@ void URogueAction_ProjectileAttack::AttackDelay_Elapsed(ARoguePlayerCharacter* I
 		//GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 
 		// re-use a pooled actor instead of always spawning new Actors
-		URogueActorPoolingSubsystem::AcquireFromPool(this, ProjectileClass, SpawnTM, SpawnParams);
+		//URogueActorPoolingSubsystem::AcquireFromPool(this, ProjectileClass, SpawnTM, SpawnParams);
+
+		
+		// WIP for data oriented projectiles
+		URogueProjectilesSubsystem* Subsystem = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>();
+		Subsystem->CreateProjectile(HandLocation, ProjRotation.Vector(), ProjectileConfig, InstigatorCharacter);
+
 	}
 
 	StopAction(InstigatorCharacter);

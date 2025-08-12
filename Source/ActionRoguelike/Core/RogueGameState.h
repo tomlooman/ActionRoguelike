@@ -129,6 +129,13 @@ class ACTIONROGUELIKE_API ARogueGameState : public AGameStateBase
 
 public:
 
+	/* Client requests a new projectile, client will already spawn this locally and it will be kept in sync
+	 * rather than waiting for the server to tell them to spawn it
+	 */
+	UFUNCTION(Server, reliable)
+	void ServerCreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig,
+		AActor* InstigatorActor, uint32 NewID);
+
 	virtual void BeginPlay() override;
 	
 	UPROPERTY(Replicated)

@@ -59,9 +59,11 @@ class ACTIONROGUELIKE_API URogueProjectilesSubsystem : public UTickableWorldSubs
 
 public:
 
+	UFUNCTION(BlueprintCallable)
 	void CreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor);
 
-	void InternalCreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor, uint32 NewID);
+	void InternalCreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig,
+		AActor* InstigatorActor, uint32 NewID);
 	
 	void RemoveProjectileID(uint32 IdToRemove);
 	
@@ -77,8 +79,6 @@ protected:
 
 	bool HasAuthority() const;
 
+	//UPROPERTY()
 	TArray<FProjectileInstance> ProjectileInstances;
-
-	/* Incrementing ID to track instances */
-	uint32 CurrInstanceID = 0;
 };

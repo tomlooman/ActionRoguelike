@@ -24,6 +24,9 @@ public:
 	virtual void StartAction_Implementation(AActor* Instigator) override;
 	
 protected:
+	
+	UPROPERTY(EditDefaultsOnly)
+	URogueProjectileData* ProjectileConfig;
 
 	/* Sphere radius of the sweep to find desired target under crosshair. Adjusts final projectile direction */
 	UPROPERTY(EditAnywhere, Category="Targeting")

@@ -37,6 +37,13 @@ void FProjectileConfig::PostReplicatedChange(const FProjectileConfigArray& InArr
 // ------- END STRUCT ------ //
 
 
+void ARogueGameState::ServerCreateProjectile_Implementation(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor, uint32 NewID)
+{
+	URogueProjectilesSubsystem* Subsystem = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>();
+	Subsystem->InternalCreateProjectile(InPosition, InDirection, ProjectileConfig, InstigatorActor, NewID);
+}
+
+
 void ARogueGameState::BeginPlay()
 {
 	Super::BeginPlay();

@@ -18,11 +18,23 @@ TRACE_DECLARE_INT_COUNTER(LightweightProjectilesCount, TEXT("Game/DataOnlyProjec
 
 void URogueProjectilesSubsystem::CreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor)
 {
-	//CurrInstanceID++;
-	CurrInstanceID = GetUniqueProjID(InPosition, GetWorld()->TimeSeconds);
+	UWorld* World = GetWorld();
+		
+	uint32 InstanceID = GetUniqueProjID(InPosition, World->TimeSeconds);
 	//UE_LOG(LogGame, Log, TEXT("Created ID: %u"), CurrInstanceID);
 	
-	InternalCreateProjectile(InPosition, InDirection, ProjectileConfig, InstigatorActor, CurrInstanceID);
+	if (HasAuthority())
+	{
+		InternalCreateProjectile(InPosition, InDirection, ProjectileConfig, InstigatorActor, InstanceID);
+	}
+	else // Client
+	{
+		// Push to server, locally we also create the pojectile immediately to avoid any latency
+		ARogueGameState* GS = World->GetGameState<ARogueGameState>();
+		GS->ServerCreateProjectile(InPosition, InDirection, ProjectileConfig, InstigatorActor, InstanceID);
+		
+		InternalCreateProjectile(InPosition, InDirection, ProjectileConfig, InstigatorActor, InstanceID);
+	}
 }
 
 // @todo: rename as this is used 'outside' this class too
@@ -30,40 +42,58 @@ void URogueProjectilesSubsystem::InternalCreateProjectile(FVector InPosition, FV
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE(CreateProjectile);
 
+	check(ProjectileConfig);
+
+	// for clients, we first locate an existing projectile inst as we might have spawned it ourselves
+	FProjectileInstance* ExistingInst = ProjectileInstances.FindByPredicate([NewID](FProjectileInstance& Item){ return NewID == Item.ID;  });
+	if (ExistingInst)
+	{
+		// Everything is setup if we already created the projectile earlier als client.
+		// @todo-test: what happens if we hit immediately after spawning, even before the server received and send back the info...
+		return;	
+	}
+		
+	UWorld* World = GetWorld();
+	// Now assign the FX Comp to the ProjectileConfig already in the local array
+	FProjectileConfigArray& ProjectileConfigs = World->GetGameState<ARogueGameState>()->ProjectileData;
+	
 	// Active data that represents the moving projectile
 	FProjectileInstance ProjInfo = FProjectileInstance(InPosition, InDirection * ProjectileConfig->InitialSpeed, NewID);
-	// @todo: check we have no hash (ProjInfo.ID) collision before adding it for debug builds
 	ProjectileInstances.Add(ProjInfo);
 
-	UWorld* World = GetWorld();
-		
-	UNiagaraComponent* EffectComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, ProjectileConfig->ProjectileEffect, InPosition,
+	UNiagaraComponent* EffectComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		World, ProjectileConfig->ProjectileEffect, InPosition,
 		InDirection.Rotation(), FVector(1), true, true, ENCPoolMethod::AutoRelease);
-	
+
 	// The component stays in world space, the emitters themselves move along the axis of the projectile to match
 	// the collision query locations
 	const FName UserParamName = "ProjectileVelocity";
 	FVector LocalVelocity = FVector::ForwardVector * ProjectileConfig->InitialSpeed;
 	EffectComp->SetVariablePosition(UserParamName, LocalVelocity);
 
-	// Now assign the FX Comp to the ProjectileConfig already in the local array
-	FProjectileConfigArray& DataArray = World->GetGameState<ARogueGameState>()->ProjectileData;
+	// May exist on the client that spawned this through "prediction"
+	FProjectileConfig* Data = ProjectileConfigs.Items.FindByPredicate(
+	[NewID](FProjectileConfig& Item){ return NewID == Item.ID;  });
 
-	if (HasAuthority())
+	// Expected on server or when a client spawns his own projectile before calling the server (RPC)
+	if (Data)
+	{
+		Data->TracerEffectComp = EffectComp;
+	}
+	else 
 	{
 		float ExpirationGameTime = World->TimeSeconds + ProjectileConfig->Lifespan;
 		// Full data of the projectile instance, used for bookkeeping and replication, not constantly updated
 		FProjectileConfig Info = FProjectileConfig(InPosition, InDirection, ProjectileConfig, InstigatorActor, NewID, ExpirationGameTime);
-	
-		World->GetGameState<ARogueGameState>()->ProjectileData.Items.Add(Info);
-		World->GetGameState<ARogueGameState>()->ProjectileData.MarkItemDirty(Info);
-	}
-	
-	FProjectileConfig* Data = DataArray.Items.FindByPredicate([NewID](FProjectileConfig& Item){ return NewID == Item.ID;  });
-	Data->TracerEffectComp = EffectComp;
+		
+		Info.TracerEffectComp = EffectComp;
 
-	// Start Pos
-	//DrawDebugBox(World, InPosition, FVector(15.0f), FColor::Green, false, 2.0f);
+		// @todo: unclear if this is OK to add to array on clients, as we may desync the array between server/client
+		// if not, I may need to keep a local array as temp lookup until the server updates his array.
+		ProjectileConfigs.Items.Add(Info);
+		ProjectileConfigs.MarkItemDirty(Info);
+
+	}
 }
 
 
@@ -76,10 +106,11 @@ void URogueProjectilesSubsystem::RemoveProjectileID(uint32 IdToRemove)
 	// @todo: faster lookup available like a local TMap cache
 	FProjectileConfig& ProjConfig = *DataArray.Items.FindByPredicate([IdToRemove](FProjectileConfig& Item){ return IdToRemove == Item.ID;  });
 	
-	if (UNiagaraComponent* FXComp = ProjConfig.TracerEffectComp)
+	if (ProjConfig.TracerEffectComp)
 	{
-		FXComp->Deactivate();
-		FXComp = nullptr;
+		ProjConfig.TracerEffectComp->Deactivate();
+		//FXComp->ReleaseToPool();
+		ProjConfig.TracerEffectComp = nullptr;
 	}
 
 	if (ProjConfig.Hit.GetActor() && !ProjConfig.bHasPlayedImpact)
@@ -135,10 +166,19 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 		for (int32 ProjIndex = 0; ProjIndex < ProjectileInstances.Num(); ProjIndex++)
 		{
 			FProjectileInstance& Proj = ProjectileInstances[ProjIndex];
-			FProjectileConfig& ProjConfig = *ProjectileConfigs.Items.FindByPredicate([Proj](const FProjectileConfig& OtherProj){ return Proj.ID == OtherProj.ID;  });
 
 			// Where we want to end up "next frame" (once we move to async queries)
 			FVector NextPosition = Proj.Position + (Proj.Velocity * DeltaTime);
+
+			{
+				// Debug Only
+				//FProjectileConfig& ProjConfig = *ProjectileConfigs.Items.FindByPredicate([Proj](const FProjectileConfig& OtherProj){ return Proj.ID == OtherProj.ID;  });
+
+				// We are somehow not seeing consistent tracer lifetimes
+				//check(ProjConfig.TracerEffectComp && ProjConfig.TracerEffectComp->IsActive());
+
+				//DrawDebugPoint(World, Proj.Position, 10.0f, FColor::Green, false, 2.0f);
+			}
 			
 			TArray<FHitResult> HitResults;		
 			// True only blocking hit
@@ -146,6 +186,8 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 			{
 				// As far as we can move till hit
 				Proj.Position = HitResults.Last().Location;
+				
+				FProjectileConfig& ProjConfig = *ProjectileConfigs.Items.FindByPredicate([Proj](const FProjectileConfig& OtherProj){ return Proj.ID == OtherProj.ID;  });
 		
 				//DrawDebugSphere(World, Proj.Position, Shape.GetSphereRadius(), 20, FColor::Green, false, 2.0f);
 		
@@ -154,13 +196,13 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 				
 				ProjectileHitIDs.Add(Proj.ID);
 
-				// Push hit to clients
+
 				// @todo: is auth check required?
-				if (HasAuthority())
+				//if (HasAuthority())
 				{
 					// Give a bit of time before deletion for clients to rep the Hit
 					ProjConfig.ExpirationGameTime = (World->TimeSeconds + 1.0);
-					
+					// Push hit to clients
 					ProjectileConfigs.MarkItemDirty(ProjConfig);
 				}
 				continue;
@@ -170,6 +212,8 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 			{
 				FHitResult& Hit = HitResults[HitIndex];
 				AActor* HitActor = Hit.GetActor();
+
+				FProjectileConfig& ProjConfig = *ProjectileConfigs.Items.FindByPredicate([Proj](const FProjectileConfig& OtherProj){ return Proj.ID == OtherProj.ID;  });
 			
 				if (HitActor->CanBeDamaged())
 				{
@@ -196,14 +240,13 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 					ProjConfig.Hit = Hit;
 					
 					ProjectileHitIDs.AddUnique(Proj.ID);
-
-					// Push hit to clients
+					
 					// @todo: is auth check required?
-					if (HasAuthority())
+					//if (HasAuthority())
 					{
 						// Give a bit of time before deletion for clients to rep the Hit
 						ProjConfig.ExpirationGameTime = (World->TimeSeconds + 1.0);
-						
+						// Push hit to clients
 						ProjectileConfigs.MarkItemDirty(ProjConfig);
 					}
 					break;
@@ -230,7 +273,9 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 			/*FGameplayTagContainer ContextTags;
 			URogueGameplayFunctionLibrary::ApplyDirectionalDamage(ProjConfig.InstigatorActor, ProjConfig.Hit.GetActor(),
 				ProjConfig.ConfigDataAsset->DamageCoefficient, ProjConfig.Hit, ContextTags);*/
-
+			// @todo: should clients be allowed to tell server we hit something IF that client spawned it? For co-op this could help with gamefeel as projectiles you "see" hitting
+			// might not register as hits on server if the latency is big enough and objects are moving.
+			
 			// Will play any impact vfx during removal
 			RemoveProjectileID(HitID);
 		}
@@ -265,7 +310,17 @@ void URogueProjectilesSubsystem::SpawnImpactFX(const UWorld* World, const FProje
 	
 	// Skip on movables and non-receivers
 	UPrimitiveComponent* HitComp = ProjConfig.Hit.GetComponent();
-	if (HitComp->bReceivesDecals && HitComp->GetMobility() != EComponentMobility::Type::Movable)
+
+#if !UE_BUILD_SHIPPING
+	if (HitComp == nullptr)
+	{
+		UE_LOG(LogGame, Warning, TEXT("Hit something without component, reconsider the collision profiles to skip this Actor (%s)."), *GetNameSafe(ProjConfig.Hit.GetActor()));
+	}
+#endif
+
+	TRACE_CPUPROFILER_EVENT_SCOPE(InitImpactDecalParticle);
+	
+	if (HitComp && HitComp->bReceivesDecals && HitComp->GetMobility() != EComponentMobility::Type::Movable)
 	{
 		// Helps find the correct island to inject this particle into
 		FNiagaraDataChannelSearchParameters Params = FNiagaraDataChannelSearchParameters(ImpactPosition);
