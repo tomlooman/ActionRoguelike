@@ -40,6 +40,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<URadialForceComponent> RadialForceComponent;
 
+	UFUNCTION(BlueprintCallable)
 	void Explode();
 
 	bool bExploded = false;
