@@ -7,26 +7,16 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 
 ARogueProjectileMagic::ARogueProjectileMagic()
 {
-	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	RootComponent = SphereComponent;
-	SphereComponent->SetSphereRadius(16.0f);
-	SphereComponent->SetCollisionProfileName("Projectile");
-
 	LoopedNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("LoopedNiagaraComp"));
 	LoopedNiagaraComponent->SetupAttachment(SphereComponent);
 
 	LoopedAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("LoopedAudioComp"));
 	LoopedAudioComponent->SetupAttachment(SphereComponent);
-
-	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMoveComp"));
-	ProjectileMovementComponent->InitialSpeed = 2000.f;
-	ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
 }
 
 void ARogueProjectileMagic::PostInitializeComponents()
