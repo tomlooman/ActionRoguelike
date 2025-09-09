@@ -234,10 +234,6 @@
 			"Enabled": false
 		},
 		{
-			"Name": "IKRig",
-			"Enabled": false
-		},
-		{
 			"Name": "MeshPainting",
 			"Enabled": false
 		},
