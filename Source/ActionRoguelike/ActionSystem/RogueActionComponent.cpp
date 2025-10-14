@@ -333,9 +333,10 @@ bool URogueActionComponent::StartActionByName(AActor* Instigator, FGameplayTag A
 	// Not yet implemented for clients which needs to fill the array using repnotify array
 	check(CachedActions.Num() > 0);
 
-	URogueAction* Action = *CachedActions.Find(ActionName);
-	if (Action)
+	if (TObjectPtr<URogueAction>* ActionPtr = CachedActions.Find(ActionName))
 	{
+		URogueAction* Action = ActionPtr->Get();
+		
 		if (!Action->CanStart(Instigator))
 		{
 			FString OwnerName = GetOwner()->GetName();
