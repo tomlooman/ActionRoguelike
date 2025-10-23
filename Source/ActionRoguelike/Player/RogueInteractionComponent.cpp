@@ -12,14 +12,11 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueInteractionComponent)
 
-namespace DebugDrawing
-{
-	static bool bDrawInteractionVisualize = false;
-	static FAutoConsoleVariableRef CVarDebugDrawInteraction(TEXT("game.InteractionDebugDraw"),
-		bDrawInteractionVisualize,
-		TEXT("Enable Debug Lines for Interaction Component."),
-		ECVF_Cheat);
-}
+
+static TAutoConsoleVariable CVarInteractionDebugDrawing(TEXT("game.Interaction.DebugDraw"),
+	false,
+	TEXT("Enable Debug Helper Rendering for Interaction Component. (0 = Disabled, 1 = Enabled)"),
+	ECVF_Cheat);
 
 
 URogueInteractionComponent::URogueInteractionComponent()
@@ -72,12 +69,8 @@ void URogueInteractionComponent::FindBestInteractable()
 		FQuat::Identity,
 		TraceChannel,
 		FCollisionShape::MakeSphere(TraceRadius));
-	
 
-	if (DebugDrawing::bDrawInteractionVisualize)
-	{
-		DrawDebugSphere(World, TraceOrigin, TraceRadius, 32, DebugLineColor, false, 0.0f);
-	}
+	const bool bEnableDebugDrawing = CVarInteractionDebugDrawing.GetValueOnGameThread(); 
 
 	// Reset
 	FocusedActor = nullptr;
@@ -88,10 +81,10 @@ void URogueInteractionComponent::FindBestInteractable()
 	{
 		if (AActor* HitActor = Overlap.GetActor())
 		{
-			if (DebugDrawing::bDrawInteractionVisualize)
+			if (bEnableDebugDrawing)
 			{
 				DrawDebugSphere(World, HitActor->GetActorLocation(),
-					32, 16, DebugLineColor, false, 0.0f);
+					64.0f, 16, DebugLineColor, false, 0.0f);
 			}
 			
 			if (HitActor->Implements<URogueGameplayInterface>())
@@ -146,9 +139,11 @@ void URogueInteractionComponent::FindBestInteractable()
 		}
 	}
 
-
-	if (DebugDrawing::bDrawInteractionVisualize)
+	if (bEnableDebugDrawing)
 	{
+		// Outer radius of interaction
+		DrawDebugSphere(World, TraceOrigin, TraceRadius, 32, DebugLineColor, false, 0.0f);
+		
 		if (FocusedActor)
 		{
 			DrawDebugBox(World, FocusedActor->GetActorLocation(), FVector(20.f),

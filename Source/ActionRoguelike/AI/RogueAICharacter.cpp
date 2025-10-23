@@ -254,7 +254,7 @@ void ARogueAICharacter::MulticastPlayAttackFX_Implementation()
 
 void ARogueAICharacter::SignificanceLODChanged(int32 NewLOD)
 {
-	UE_LOG(LogGame, Log, TEXT("Actor: %s, NewLOD: %i (Bucket)"), *GetName(), NewLOD);
+	UE_LOG(LogGame, Verbose, TEXT("Actor: %s, NewLOD: %i (Bucket)"), *GetName(), NewLOD);
 
 	EMovementMode MoveMode = NewLOD > 0 ? MOVE_NavWalking : MOVE_Walking;
 	// GroundMovementMode won't mess with Flying/Falling modes
@@ -275,7 +275,6 @@ void ARogueAICharacter::OnReduceAnimationWork(class USkeletalMeshComponentBudget
 
 FGenericTeamId ARogueAICharacter::GetGenericTeamId() const
 {
-	check(GetController());
-	// Fetch from the AI Controller who has built-in TeamId
-	return FGenericTeamId::GetTeamIdentifier(GetController());
+	// Matches the AIController team ID
+	return FGenericTeamId(TEAM_ID_BOTS);
 }

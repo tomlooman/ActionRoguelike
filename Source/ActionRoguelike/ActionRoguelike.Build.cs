@@ -8,6 +8,8 @@ public class ActionRoguelike : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		
+		SetupIrisSupport(Target);
+		
 		// Simplify the include paths in our source files
 		PublicIncludePaths.AddRange(
 			new string[] {
@@ -30,7 +32,8 @@ public class ActionRoguelike : ModuleRules
 			"SignificanceManager",
 			"EnhancedInput",
 			"Niagara",
-			"CoreOnline"
+			"CoreOnline",
+			"NetCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

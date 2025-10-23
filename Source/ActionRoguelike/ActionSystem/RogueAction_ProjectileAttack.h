@@ -10,6 +10,7 @@
 class UNiagaraSystem;
 class UAnimMontage;
 class USoundBase;
+class URogueProjectileData;
 
 /**
  * 
@@ -24,6 +25,13 @@ public:
 	virtual void StartAction_Implementation(AActor* Instigator) override;
 	
 protected:
+
+	/* Not every projectile will support DoD (yet). While WIP we only support the Magic Projectile class */
+	UPROPERTY(EditDefaultsOnly, Category="Performance")
+	bool bSupportsDataOrientedProjectiles = false;
+	
+	UPROPERTY(EditDefaultsOnly)
+	URogueProjectileData* ProjectileConfig;
 
 	/* Sphere radius of the sweep to find desired target under crosshair. Adjusts final projectile direction */
 	UPROPERTY(EditAnywhere, Category="Targeting")
