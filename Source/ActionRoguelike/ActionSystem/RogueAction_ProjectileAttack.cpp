@@ -104,7 +104,8 @@ void URogueAction_ProjectileAttack::AttackDelay_Elapsed(ARoguePlayerCharacter* I
 		{
 			// WIP for data oriented projectiles
 			URogueProjectilesSubsystem* Subsystem = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>();
-			Subsystem->CreateProjectile(HandLocation, ProjRotation.Vector(), ProjectileConfig, InstigatorCharacter);
+			// @todo: move this spawn request to StartAction, in HIDDEN mode, until we reach here, ready to unhide.
+			int32 NewProjectileID = Subsystem->CreateProjectile(HandLocation, ProjRotation.Vector(), ProjectileConfig, InstigatorCharacter);
 		}
 		else // Actor-based projectiles
 		{
