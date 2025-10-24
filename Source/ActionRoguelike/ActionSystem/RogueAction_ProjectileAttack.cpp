@@ -99,20 +99,24 @@ void URogueAction_ProjectileAttack::AttackDelay_Elapsed(ARoguePlayerCharacter* I
 		// find new direction/rotation from Hand pointing to impact point in world.
 		FRotator ProjRotation = (AdjustedTraceEnd - HandLocation).Rotation();
 
-		FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
 
-		// Standard spawning, replaced by pooling system below
-		//GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+		if (bSupportsDataOrientedProjectiles)
+		{
+			// WIP for data oriented projectiles
+			URogueProjectilesSubsystem* Subsystem = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>();
+			// @todo: move this spawn request to StartAction, in HIDDEN mode, until we reach here, ready to unhide.
+			int32 NewProjectileID = Subsystem->CreateProjectile(HandLocation, ProjRotation.Vector(), ProjectileConfig, InstigatorCharacter);
+		}
+		else // Actor-based projectiles
+		{
+			FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
 
-		// re-use a pooled actor instead of always spawning new Actors
-		//URogueActorPoolingSubsystem::AcquireFromPool(this, ProjectileClass, SpawnTM, SpawnParams);
+			// Standard spawning, replaced by pooling system below
+			//GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 
-		
-		// WIP for data oriented projectiles
-		// @todo: move this spawn request to StartAction, in HIDDEN mode, until we reach here, ready to unhide.
-		URogueProjectilesSubsystem* Subsystem = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>();
-		int32 NewProjectileID = Subsystem->CreateProjectile(HandLocation, ProjRotation.Vector(), ProjectileConfig, InstigatorCharacter);
-
+			// re-use a pooled actor instead of always spawning new Actors
+			URogueActorPoolingSubsystem::AcquireFromPool(this, ProjectileClass, SpawnTM, SpawnParams);
+		}
 	}
 
 	StopAction(InstigatorCharacter);
