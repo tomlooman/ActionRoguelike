@@ -16,12 +16,11 @@
 TRACE_DECLARE_INT_COUNTER(LightweightProjectilesCount, TEXT("Game/DataOnlyProjectileCount"));
 
 
-void URogueProjectilesSubsystem::CreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor)
+int32 URogueProjectilesSubsystem::CreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor)
 {
 	UWorld* World = GetWorld();
 		
 	uint32 InstanceID = GetUniqueProjID(InPosition, World->TimeSeconds);
-	//UE_LOG(LogGame, Log, TEXT("Created ID: %u"), CurrInstanceID);
 	
 	if (HasAuthority())
 	{
@@ -35,6 +34,8 @@ void URogueProjectilesSubsystem::CreateProjectile(FVector InPosition, FVector In
 		
 		InternalCreateProjectile(InPosition, InDirection, ProjectileConfig, InstigatorActor, InstanceID);
 	}
+
+	return InstanceID;
 }
 
 // @todo: rename as this is used 'outside' this class too

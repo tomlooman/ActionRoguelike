@@ -59,8 +59,12 @@ class ACTIONROGUELIKE_API URogueProjectilesSubsystem : public UTickableWorldSubs
 
 public:
 
+	/*
+	 * Spawn a new projectile immediately, on clients we send RPC to server to also spawn projectile
+	 * Returns ID for client side prediction
+	 */
 	UFUNCTION(BlueprintCallable)
-	void CreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor);
+	int32 CreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor);
 
 	void InternalCreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig,
 		AActor* InstigatorActor, uint32 NewID);
