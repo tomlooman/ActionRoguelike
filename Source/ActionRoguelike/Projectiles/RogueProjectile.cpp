@@ -17,6 +17,9 @@ TRACE_DECLARE_INT_COUNTER(COUNTER_GAME_ActiveProjectiles, TEXT("Game/ActiveProje
 
 ARogueProjectile::ARogueProjectile()
 {
+	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bCanEverTick = true;
+	
 	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	SphereComp->SetCollisionProfileName("Projectile");
 	// Dont bother telling the nav system whenever we move
@@ -52,13 +55,16 @@ void ARogueProjectile::PostInitializeComponents()
 	SphereComp->OnComponentHit.AddDynamic(this, &ARogueProjectile::OnActorHit);
 }
 
-
 void ARogueProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
 	// Can use to fine-tune the pre allocated actor pool by checking how many projectiles are alive during gameplay
 	TRACE_COUNTER_INCREMENT(COUNTER_GAME_ActiveProjectiles);
+
+	// Should be false so that we manually manage the lifetime, better for priming actors
+	check(!AudioComp->bAutoActivate);
+	check(!NiagaraLoopComp->bAutoActivate);
 }
 
 void ARogueProjectile::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -67,13 +73,37 @@ void ARogueProjectile::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	TRACE_COUNTER_DECREMENT(COUNTER_GAME_ActiveProjectiles);
 }
 
+void ARogueProjectile::PostNetInit()
+{
+	Super::PostNetInit();
+
+	// Client just spawned this poolable Actor, now either park it or just keep it active...
+	// @todo-fixme: this works on primed actors, but later spawned actors will also get parked here...
+	PoolEndPlay_Implementation();
+}
+
+void ARogueProjectile::PostNetReceive()
+{
+	Super::PostNetReceive();
+
+	//if (NiagaraLoopComp->IsPaused())
+	{
+		// instead use a replicated variable that handles the pooling state
+		check(false);
+		// @todo: only run once, when woken up through replication/dormancy
+		PoolBeginPlay_Implementation();
+	}
+}
+
 
 void ARogueProjectile::PoolBeginPlay_Implementation()
 {
-	MoveComp->Reset();
+	if (HasAuthority())
+	{
+		MoveComp->Reset();
+	}
 	
-	//NiagaraLoopComp->Activate();
-	//AudioComp->Play();
+	StartVFX();
 	
 	// Unpausing is significantly faster than re-creating renderstates due to Deactivate()
 	// Does keep its state around which is OK for our loopable VFX that will mostly be active/in-use
@@ -81,7 +111,6 @@ void ARogueProjectile::PoolBeginPlay_Implementation()
 	// Reset to fix ribbon positions
 	//NiagaraLoopComp->ResetSystem();
 	AudioComp->SetPaused(false);
-
 }
 
 
@@ -93,14 +122,41 @@ void ARogueProjectile::PoolEndPlay_Implementation()
 	AudioComp->SetPaused(true);
 }
 
-float ARogueProjectile::GetDefaultSpeed() const
+
+void ARogueProjectile::StartVFX()
 {
-	return MoveComp->InitialSpeed;
+	// May both be inactive on first run, coming from a primed pool
+	if (!NiagaraLoopComp->IsActive())
+	{
+		NiagaraLoopComp->Activate();
+	}
+	if (!AudioComp->IsPlaying())
+	{
+		AudioComp->Play();
+	}
 }
 
-float ARogueProjectile::GetGravityScale() const
+void ARogueProjectile::Tick(float DeltaSeconds)
 {
-	return MoveComp->ProjectileGravityScale;
+	Super::Tick(DeltaSeconds);
+	
+	DrawDebugBox(GetWorld(), GetActorLocation(), FVector(25.0f), FColor::Red, false, 0.0f, SDPG_Foreground);
+}
+
+
+void ARogueProjectile::OnRep_OnPooledStateChanged()
+{
+	// Client side updates back into the pooling system
+	URogueActorPoolingSubsystem* PoolingSubsystem = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
+	
+	if (bIsUsedInPool)
+	{
+		PoolingSubsystem->AcquireFromPool_Internal()
+	}
+	else
+	{
+		PoolingSubsystem->ReleaseToPool_Internal(this);
+	}
 }
 
 
@@ -132,4 +188,15 @@ void ARogueProjectile::Explode_Implementation()
 	URogueActorPoolingSubsystem* PoolingSubsystem = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
 	PoolingSubsystem->ReleaseToPool(this);
 }
+
+float ARogueProjectile::GetDefaultSpeed() const
+{
+	return MoveComp->InitialSpeed;
+}
+
+float ARogueProjectile::GetGravityScale() const
+{
+	return MoveComp->ProjectileGravityScale;
+}
+
 

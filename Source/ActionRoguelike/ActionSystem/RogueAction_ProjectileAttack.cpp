@@ -112,10 +112,13 @@ void URogueAction_ProjectileAttack::AttackDelay_Elapsed(ARoguePlayerCharacter* I
 			FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
 
 			// Standard spawning, replaced by pooling system below
-			//GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+			GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 
 			// re-use a pooled actor instead of always spawning new Actors
-			URogueActorPoolingSubsystem::AcquireFromPool(this, ProjectileClass, SpawnTM, SpawnParams);
+			// @todo: disabled here to focus on the simpler system of using it for enemy projectiles only,
+			// so that we can test and support multiplayer without having to deal with client-side prediction
+			// see minionrangedattack for implementation
+			//URogueActorPoolingSubsystem::AcquireFromPool(this, ProjectileClass, SpawnTM, SpawnParams);
 		}
 	}
 

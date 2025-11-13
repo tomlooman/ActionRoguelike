@@ -10,7 +10,7 @@
 
 static TAutoConsoleVariable CVarAggregateTicks(
 	TEXT("game.AggregateTicks"),
-	true,
+	false,
 	TEXT("Enable aggregate ticking for selected objects. Takes effect on next level load."),
 	ECVF_Default);
 

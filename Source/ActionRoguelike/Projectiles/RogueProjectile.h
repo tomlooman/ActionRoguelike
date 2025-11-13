@@ -52,6 +52,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UAudioComponent> AudioComp;
 
+	UPROPERTY(ReplicatedUsing=OnRep_OnPooledStateChanged)
+	bool bIsUsedInPool;
+
 	// 'virtual' so we can override this in child-classes
 	UFUNCTION()
 	virtual void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -63,6 +66,13 @@ protected:
 	void Explode();
 
 	virtual void PostInitializeComponents() override;
+
+	void StartVFX();
+
+	virtual void Tick(float DeltaSeconds) override;
+
+	UFUNCTION()
+	void OnRep_OnPooledStateChanged();
 
 public:	
 	ARogueProjectile();
@@ -76,6 +86,13 @@ public:
 	virtual void PoolBeginPlay_Implementation() override;
 
 	virtual void PoolEndPlay_Implementation() override;
+
+	/*
+	 * Override to properly set local pooling state
+	 */
+	virtual void PostNetInit() override;
+
+	virtual void PostNetReceive() override;
 
 	float GetDefaultSpeed() const;
 

@@ -9,6 +9,7 @@
 #include "Core/RogueGameplayFunctionLibrary.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
+#include "Performance/RogueActorPoolingSubsystem.h"
 #include "Projectiles/RogueProjectile.h"
 #include "Projectiles/RogueProjectilesSubsystem.h"
 
@@ -65,8 +66,12 @@ void URogueAction_MinionRangedAttack::StartAction_Implementation(AActor* Instiga
 	//GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, Params);
 
 	// WIP for data oriented projectiles
-	URogueProjectilesSubsystem* Subsystem = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>();
-	Subsystem->CreateProjectile(MuzzleLocation, MuzzleRotation.Vector(), ProjectileConfig, MyPawn);
+	//URogueProjectilesSubsystem* Subsystem = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>();
+	//Subsystem->CreateProjectile(MuzzleLocation, MuzzleRotation.Vector(), ProjectileConfig, MyPawn);
+
+	// Pooled Projectile Actors (with multiplayer support)
+	FTransform SpawnTM = FTransform(MuzzleRotation, MuzzleLocation);
+	URogueActorPoolingSubsystem::AcquireFromPool(this, ProjectileClass, SpawnTM, Params);
 
 	StopAction(Instigator);
 }
