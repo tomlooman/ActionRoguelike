@@ -37,37 +37,51 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	APlayerController* PC = CastChecked<APlayerController>(GetOwner());
 
 	FVector Center = PC->GetPawn()->GetActorLocation();
+	FVector CameraLocation = PC->PlayerCameraManager->GetCameraLocation();
 
 	ECollisionChannel CollisionChannel = COLLISION_INTERACTION;
 
 	FCollisionShape Shape;
 	Shape.SetSphere(InteractionRadius);
 
+	float InteractionRadiusSqrd = InteractionRadius * InteractionRadius;
+
 	TArray<FOverlapResult> Overlaps;
 	GetWorld()->OverlapMultiByChannel(Overlaps, Center, FQuat::Identity, CollisionChannel, Shape);
 
 	AActor* BestActor = nullptr;
-	float HighestDotResult = -1.0;
+	float HighestWeight = 0.0;
 
 	bool bEnabledDebugDraw = CVarInteractionDebugDrawing.GetValueOnGameThread();
 
 	for (FOverlapResult& Overlap : Overlaps)
 	{
-		FVector OverlapLocation = Overlap.GetActor()->GetActorLocation();
-		FVector OverlapDirection = (OverlapLocation - Center).GetSafeNormal();
+		FVector Origin;
+		FVector BoxExtends;
+		Overlap.GetActor()->GetActorBounds(true, Origin, BoxExtends);
+
+		FVector OverlapDirection = (Origin - CameraLocation).GetSafeNormal();
+
+		float DistanceToSqrd = (Origin - Center).SizeSquared();
+		// Normalize and invert, smaller dist is higher weight
+		float NormalizedDistanceTo = 1.0f - (DistanceToSqrd / InteractionRadiusSqrd);
 
 		float DotResult = FVector::DotProduct(OverlapDirection, PC->GetControlRotation().Vector());
-		if (DotResult > HighestDotResult)
+		// Normalize 0.0f - 1.0f
+		float NormalizedDotResult = DotResult * 0.5f + 0.5f;
+
+		float Weight = (NormalizedDotResult * DirectionWeightScale) + (NormalizedDistanceTo * DistanceToWeightScale);
+		if (Weight > HighestWeight)
 		{
 			BestActor = Overlap.GetActor();
-			HighestDotResult = DotResult;
+			HighestWeight = Weight;
 		}
 
 		if (bEnabledDebugDraw)
 		{
-			DrawDebugBox(GetWorld(), OverlapLocation, FVector(50.0f), FColor::Red);
-            FString DebugString = FString::Printf(TEXT("Dot: %f"), DotResult);
-            DrawDebugString(GetWorld(), OverlapLocation, DebugString, nullptr, FColor::White, 0.0f, true);
+			DrawDebugBox(GetWorld(), Origin, FVector(50.0f), FColor::Red);
+            FString DebugString = FString::Printf(TEXT("Weight: %f, Dot: %f, Dist: %f"), Weight, NormalizedDotResult, NormalizedDistanceTo);
+            DrawDebugString(GetWorld(), Origin, DebugString, nullptr, FColor::White, 0.0f, true);
 		}
 		
 	}
