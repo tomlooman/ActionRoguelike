@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "RogueTargetDummy.generated.h"
 
+struct FAttributeModification;
 class URogueActionComponent;
 
 

@@ -6,6 +6,9 @@
 #include "RogueActionEffect.h"
 #include "RogueActionEffect_Thorns.generated.h"
 
+
+struct FAttributeModification;
+
 /**
  * 
  */
