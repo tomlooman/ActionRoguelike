@@ -4,6 +4,7 @@
 #include "AI/RogueBTService_CheckAttackRange.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
+#include "Core/RogueDeferredTaskSystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueBTService_CheckAttackRange)
 
@@ -45,13 +46,26 @@ void URogueBTService_CheckAttackRange::TickNode(UBehaviorTreeComponent& OwnerCom
 		const float DistanceTo = FVector::Distance(TargetActor->GetActorLocation(), Center);
 		const bool bWithinRange = DistanceTo < MaxAttackRange;
 
+#if USE_DEFERRED_TASKS
+		// In reality, we can make the LOS check async easily, but for this case we want to test deferring/slicing the task on the GameThread
+		// as a test of the deferred task system itself
+		URogueDeferredTaskSystem::AddTask(this, [&]()
+			{
+				bool bHasLOS = false;
+				if (bWithinRange)
+				{
+					bHasLOS = MyController->LineOfSightTo(TargetActor);
+				}
+				BlackBoardComp->SetValueAsBool(AttackRangeKey.SelectedKeyName, (bWithinRange && bHasLOS));
+			});
+#else
 		bool bHasLOS = false;
 		if (bWithinRange)
 		{
 			bHasLOS = MyController->LineOfSightTo(TargetActor);
 		}
-
 		BlackBoardComp->SetValueAsBool(AttackRangeKey.SelectedKeyName, (bWithinRange && bHasLOS));
+#endif
 
 #if !UE_BUILD_SHIPPING
 		if (DevelopmentOnly::GDrawDebugAttackRange)

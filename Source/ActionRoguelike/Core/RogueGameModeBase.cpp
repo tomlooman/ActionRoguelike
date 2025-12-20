@@ -13,6 +13,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "RogueMonsterData.h"
 #include "ActionRoguelike.h"
+#include "RogueDeferredTaskSystem.h"
 #include "RogueGameplayFunctionLibrary.h"
 #include "RogueGameState.h"
 #include "ActionSystem/RogueActionComponent.h"
@@ -314,7 +315,21 @@ void ARogueGameModeBase::OnPowerupSpawnQueryCompleted(TSharedPtr<FEnvQueryResult
 		int32 RandomClassIndex = FMath::RandRange(0, PowerupClasses.Num() - 1);
 		TSubclassOf<AActor> RandomPowerupClass = PowerupClasses[RandomClassIndex];
 
+#if USE_DEFERRED_TASKS
+		UWorld* World = GetWorld();
+
+		// Defer the spawning across multiple frames (depending on available budget)
+		URogueDeferredTaskSystem::AddTask(this,[World,RandomPowerupClass,PickedLocation]()
+			{
+				FActorSpawnParameters SpawnParams;
+				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				
+				World->SpawnActor<AActor>(RandomPowerupClass, PickedLocation, FRotator::ZeroRotator, SpawnParams);
+			});
+#else
 		GetWorld()->SpawnActor<AActor>(RandomPowerupClass, PickedLocation, FRotator::ZeroRotator);
+#endif
+		
 
 		// Keep for distance checks
 		UsedLocations.Add(PickedLocation);

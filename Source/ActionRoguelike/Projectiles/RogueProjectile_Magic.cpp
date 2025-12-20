@@ -7,6 +7,7 @@
 #include "ActionSystem/RogueActionComponent.h"
 #include "Projectiles/RogueProjectileMovementComponent.h"
 #include "ActionSystem/RogueActionEffect.h"
+#include "Core/RogueDeferredTaskSystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueProjectile_Magic)
 
@@ -55,10 +56,20 @@ void ARogueProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedCompo
 		{
 			// We only explode if the target can be damaged, it ignores anything it Overlaps that it cannot Damage
 			Explode();
-
+			
+			APawn* MyInstigator = GetInstigator();
 			if (OtherActionComp && BurningActionClass && HasAuthority())
 			{
-				OtherActionComp->AddAction(GetInstigator(), BurningActionClass);
+#if USE_DEFERRED_TASKS
+				// Delay adding the burning FX if necessary
+				URogueDeferredTaskSystem::AddTask(this, [OtherActionComp,MyInstigator,this]()
+					{
+						OtherActionComp->AddAction(MyInstigator, BurningActionClass);
+					});
+#else
+				OtherActionComp->AddAction(MyInstigator, BurningActionClass);
+#endif
+				
 			}
 		}
 	}

@@ -51,6 +51,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category=Components)
 	TObjectPtr<UAudioComponent> OpenChestSound;
 
+	TArray<int32> IntTestArray;
+	void UpdateTestArray(int32 StartIndex, int32 MaxCount);
+
 public:	
 
 	ARogueTreasureChest();

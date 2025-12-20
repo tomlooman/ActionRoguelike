@@ -8,8 +8,10 @@
 #include "Net/UnrealNetwork.h"
 #include "Animation/RogueCurveAnimSubsystem.h"
 #include "Components/AudioComponent.h"
+#include "Core/RogueDeferredTaskSystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueTreasureChest)
+
 
 
 ARogueTreasureChest::ARogueTreasureChest()
@@ -45,7 +47,41 @@ ARogueTreasureChest::ARogueTreasureChest()
 void ARogueTreasureChest::Interact_Implementation(AController* InstigatorController)
 {
 	bLidOpened = true;
+
+#if USE_DEFERRED_TASKS
+	// Experimenting with the deferred tasks, no need to actually do this for the chest
+	URogueDeferredTaskSystem::AddTask(this,[&]()
+		{
+			ConditionalOpenChest();
+		});
+
+	// Some random numbers to "process"
+	IntTestArray = { 4, 5, 7, 574, 4737, 4837, 3726 };
+
+	URogueDeferredTaskSystem::AddTask(this,[&]()
+		{
+			UpdateTestArray(4, 8);
+		});
+#else
 	ConditionalOpenChest();
+#endif
+}
+
+void ARogueTreasureChest::UpdateTestArray(int32 StartIndex, int32 MaxCount)
+{
+#if USE_DEFERRED_TASKS
+	// Process partial array, so it can be split across multiple frames easily
+	int32 CurrentCount = 0;
+	for (int32 i = StartIndex; i < IntTestArray.Num(); i++)
+	{
+		IntTestArray[i] = IntTestArray[i] + 1;
+		CurrentCount++;
+		if (CurrentCount >= MaxCount)
+		{
+			break;
+		}
+	}
+#endif
 }
 
 
