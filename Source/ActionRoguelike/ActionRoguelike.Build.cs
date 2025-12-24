@@ -33,14 +33,17 @@ public class ActionRoguelike : ModuleRules
 			"EnhancedInput",
 			"Niagara",
 			"CoreOnline",
-			"NetCore"
+			"NetCore", 
+			"StateTreeModule", 
+			"GameplayStateTreeModule",
+			"PropertyBindingUtils" // needed for property binding in state tree
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
 			"MoviePlayer", // loading screen
 			"RenderCore", // for PSO caching code access
-			"AnimationBudgetAllocator" 
+			"AnimationBudgetAllocator"
 		});
 	}
 }
