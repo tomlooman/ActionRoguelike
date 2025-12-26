@@ -12,8 +12,28 @@
 #define USE_DEFERRED_TASKS 0
 
 
+DECLARE_DYNAMIC_DELEGATE(FDeferredTaskDelegate);
+
+
+USTRUCT()
+struct FDeferredTask
+{
+	GENERATED_BODY()
+
+	TFunction<void()> FunctionPtr;
+
+	FDeferredTaskDelegate Delegate;
+};
+
 /**
- * 
+ * Allow functions or "tasks" to be delayed to later in the frame or a follow game frame when "budget" is available.
+ * Goal is to improve frame pacing by spreading out non-critical functionality that can be safely delayed across multiple frames
+ * without complex bookkeeping.
+ *
+ * Delegate hook is added as an example of letting Blueprint make use of this in a very straightforward way.
+ * With C++ you instead pass lambdas into the system.
+ *
+ * The system ticks after most TickGroups, before TG_PostUpdateWork.
  */
 UCLASS()
 class ACTIONROGUELIKE_API URogueDeferredTaskSystem : public UTickableWorldSubsystem
@@ -22,9 +42,13 @@ class ACTIONROGUELIKE_API URogueDeferredTaskSystem : public UTickableWorldSubsys
 
 public:
 
-	static void AddTask(const UObject* WorldContextObject, TFunction<void()>&& InFunctionPtr);
+	static void AddLambda(const UObject* WorldContextObject, TFunction<void()> InFunctionPtr);
 
-	void AddFunctionTask(TFunction<void()>&& InFunctionPtr);
+	void AddFunction(TFunction<void()> InFunctionPtr);
+	
+	/* Blueprint-way of delaying some task while budget is available */
+	UFUNCTION(BlueprintCallable)
+	void AddDelegate(FDeferredTaskDelegate InDelegate);
 
 	virtual void Tick(float DeltaTime) override;
 
@@ -32,6 +56,5 @@ public:
 
 protected:
 	
-	TQueue<TFunction<void()>> FunctionPointers;
-
+	TQueue<FDeferredTask> FunctionPointers;
 };

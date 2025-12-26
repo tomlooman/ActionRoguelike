@@ -50,7 +50,7 @@ void ARogueTreasureChest::Interact_Implementation(AController* InstigatorControl
 
 #if USE_DEFERRED_TASKS
 	// Experimenting with the deferred tasks, no need to actually do this for the chest
-	URogueDeferredTaskSystem::AddTask(this,[&]()
+	URogueDeferredTaskSystem::AddLambda(this,[&]()
 		{
 			ConditionalOpenChest();
 		});
@@ -58,7 +58,7 @@ void ARogueTreasureChest::Interact_Implementation(AController* InstigatorControl
 	// Some random numbers to "process"
 	IntTestArray = { 4, 5, 7, 574, 4737, 4837, 3726 };
 
-	URogueDeferredTaskSystem::AddTask(this,[&]()
+	URogueDeferredTaskSystem::AddLambda(this,[&]()
 		{
 			UpdateTestArray(4, 8);
 		});

@@ -5,16 +5,28 @@
 #include "Containers/Queue.h"
 
 
-void URogueDeferredTaskSystem::AddTask(const UObject* WorldContextObject, TFunction<void()>&& InFunctionPtr)
+void URogueDeferredTaskSystem::AddLambda(const UObject* WorldContextObject, TFunction<void()> InFunctionPtr)
 {
 	URogueDeferredTaskSystem* TaskSystem = WorldContextObject->GetWorld()->GetSubsystem<URogueDeferredTaskSystem>();
-	TaskSystem->AddFunctionTask(MoveTemp(InFunctionPtr));
+	TaskSystem->AddFunction(MoveTemp(InFunctionPtr));
 }
 
 
-void URogueDeferredTaskSystem::AddFunctionTask(TFunction<void()>&& InFunctionPtr)
+void URogueDeferredTaskSystem::AddFunction(TFunction<void()> InFunctionPtr)
 {
-	FunctionPointers.Enqueue(MoveTemp(InFunctionPtr));
+	FDeferredTask NewTask = FDeferredTask();
+	NewTask.FunctionPtr = MoveTemp(InFunctionPtr);
+	
+	FunctionPointers.Enqueue(NewTask);
+}
+
+
+void URogueDeferredTaskSystem::AddDelegate(FDeferredTaskDelegate InDelegate)
+{
+	FDeferredTask NewTask = FDeferredTask();
+	NewTask.Delegate = InDelegate;
+	
+	FunctionPointers.Enqueue(NewTask);
 }
 
 
@@ -35,12 +47,17 @@ void URogueDeferredTaskSystem::Tick(float DeltaTime)
 			break;
 		}
 		
-		TFunction<void()> Task;
+		FDeferredTask Task;
 		if (FunctionPointers.Dequeue(Task))
 		{
 			TRACE_CPUPROFILER_EVENT_SCOPE(RogueDeferredTaskSystem::ProcessTask);
 			// Run the lambda
-			Task();
+			if (Task.FunctionPtr.IsSet())
+			{
+				Task.FunctionPtr();
+			}
+			// Run optional delegate (for blueprint)
+			Task.Delegate.ExecuteIfBound();
 		}
 	}
 }

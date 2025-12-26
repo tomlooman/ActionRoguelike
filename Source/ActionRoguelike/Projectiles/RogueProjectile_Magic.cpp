@@ -62,7 +62,7 @@ void ARogueProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedCompo
 			{
 #if USE_DEFERRED_TASKS
 				// Delay adding the burning FX if necessary
-				URogueDeferredTaskSystem::AddTask(this, [OtherActionComp,MyInstigator,this]()
+				URogueDeferredTaskSystem::AddLambda(this, [OtherActionComp,MyInstigator,this]()
 					{
 						OtherActionComp->AddAction(MyInstigator, BurningActionClass);
 					});

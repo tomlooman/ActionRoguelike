@@ -49,7 +49,7 @@ void URogueBTService_CheckAttackRange::TickNode(UBehaviorTreeComponent& OwnerCom
 #if USE_DEFERRED_TASKS
 		// In reality, we can make the LOS check async easily, but for this case we want to test deferring/slicing the task on the GameThread
 		// as a test of the deferred task system itself
-		URogueDeferredTaskSystem::AddTask(this, [&]()
+		URogueDeferredTaskSystem::AddLambda(this, [&]()
 			{
 				bool bHasLOS = false;
 				if (bWithinRange)

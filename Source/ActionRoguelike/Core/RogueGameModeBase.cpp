@@ -319,7 +319,7 @@ void ARogueGameModeBase::OnPowerupSpawnQueryCompleted(TSharedPtr<FEnvQueryResult
 		UWorld* World = GetWorld();
 
 		// Defer the spawning across multiple frames (depending on available budget)
-		URogueDeferredTaskSystem::AddTask(this,[World,RandomPowerupClass,PickedLocation]()
+		URogueDeferredTaskSystem::AddLambda(this,[World,RandomPowerupClass,PickedLocation]()
 			{
 				FActorSpawnParameters SpawnParams;
 				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
