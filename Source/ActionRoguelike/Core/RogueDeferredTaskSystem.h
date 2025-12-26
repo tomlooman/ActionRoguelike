@@ -9,7 +9,7 @@
 /*
  * Toggle between the testing code and experimental use cases easily
  */
-#define USE_DEFERRED_TASKS 0
+#define USE_DEFERRED_TASKS 1
 
 
 DECLARE_DYNAMIC_DELEGATE(FDeferredTaskDelegate);
@@ -55,6 +55,10 @@ public:
 	virtual TStatId GetStatId() const override;
 
 protected:
+
+	double FrameStartTime;
+
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	
 	TQueue<FDeferredTask> FunctionPointers;
 };
