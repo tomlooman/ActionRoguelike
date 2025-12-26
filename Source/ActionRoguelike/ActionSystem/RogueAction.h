@@ -67,10 +67,17 @@ protected:
 	FActionRepData RepData;
 
 	UPROPERTY(Transient, Replicated)
-	float TimeStarted;
+	float TimeStarted = 0;
+
+	/* GameTime until the Action is available again */
+	UPROPERTY(Transient, Replicated)
+	float CooldownUntil = 0;
 
 	UFUNCTION()
 	void OnRep_RepData();
+
+	UPROPERTY(EditDefaultsOnly, Category="Cooldown")
+	float CooldownTime;
 
 	/* Start immediately when added to an action component */
 	UPROPERTY(EditDefaultsOnly, Category = "Action")
@@ -107,6 +114,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void StopAction(AActor* Instigator);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	float CooldownTimeRemaining() const;
 
 	virtual UWorld* GetWorld() const override;
 

@@ -22,6 +22,11 @@ bool URogueAction::CanStart_Implementation(AActor* Instigator)
 		return false;
 	}
 
+	if (CooldownTimeRemaining() > 0.0f)
+	{
+		return false;
+	}
+
 	URogueActionComponent* Comp = GetOwningComponent();
 	
 	if (Comp->ActiveGameplayTags.HasAny(BlockedTags))
@@ -64,9 +69,19 @@ void URogueAction::StopAction_Implementation(AActor* Instigator)
 	RepData.bIsRunning = false;
 	RepData.Instigator = Instigator;
 
+	if (CooldownTime > 0.0f)
+	{
+		CooldownUntil = GetWorld()->TimeSeconds + CooldownTime;
+	}
+
 	GetOwningComponent()->OnActionStopped.Broadcast(GetOwningComponent(), this);
 }
 
+
+float URogueAction::CooldownTimeRemaining() const
+{
+	return FMath::Max(0.0f, CooldownUntil - GetWorld()->TimeSeconds);
+}
 
 UWorld* URogueAction::GetWorld() const
 {
@@ -118,5 +133,6 @@ void URogueAction::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& O
 
 	DOREPLIFETIME(URogueAction, RepData);
 	DOREPLIFETIME(URogueAction, TimeStarted);
+	DOREPLIFETIME(URogueAction, CooldownUntil);
 	DOREPLIFETIME(URogueAction, ActionComp);
 }

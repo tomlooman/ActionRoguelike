@@ -346,6 +346,7 @@ bool URogueActionComponent::StartActionByName(AActor* Instigator, FGameplayTag A
 			uint64 Key = GetTypeHash(OwnerName);
 
 			GEngine->AddOnScreenDebugMessage(Key, 2.0f, FColor::Red, FailedMsg);
+			return false;
 		}
 
 		// Is Client?
