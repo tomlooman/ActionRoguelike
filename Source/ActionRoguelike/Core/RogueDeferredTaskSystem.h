@@ -9,7 +9,7 @@
 /*
  * Toggle between the testing code and experimental use cases easily
  */
-#define USE_DEFERRED_TASKS 1
+#define USE_DEFERRED_TASKS 0
 
 
 DECLARE_DYNAMIC_DELEGATE(FDeferredTaskDelegate);
