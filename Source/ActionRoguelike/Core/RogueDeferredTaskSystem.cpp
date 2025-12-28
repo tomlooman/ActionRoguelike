@@ -91,9 +91,3 @@ void URogueDeferredTaskSystem::Tick(float DeltaTime)
 
 #endif
 }
-
-
-TStatId URogueDeferredTaskSystem::GetStatId() const
-{
-	RETURN_QUICK_DECLARE_CYCLE_STAT(URogueDeferredTaskSystem, STATGROUP_Tickables);
-}

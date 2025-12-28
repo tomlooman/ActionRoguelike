@@ -132,7 +132,6 @@ void ARogueGameModeBase::SpawnBotTimerElapsed()
 
 	// Count alive bots before spawning
 	int32 NrOfAliveBots = 0;
-	// TActorRange simplifies the code compared to TActorIterator<T> (uses internally cached list of all ARogueAICharacter instances)
 	for (ARogueAICharacter* Bot : TActorRange<ARogueAICharacter>(GetWorld()))
 	{
 		if (URogueGameplayFunctionLibrary::IsAlive(Bot))

@@ -52,7 +52,10 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	virtual TStatId GetStatId() const override;
+	virtual TStatId GetStatId() const override
+	{
+		RETURN_QUICK_DECLARE_CYCLE_STAT(URogueDeferredTaskSystem, STATGROUP_Tickables);
+	}
 
 protected:
 

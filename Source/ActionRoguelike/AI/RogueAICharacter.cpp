@@ -20,7 +20,10 @@
 #include "Components/CanvasPanel.h"
 #include "Perception/AISense_Damage.h"
 #include "IAnimationBudgetAllocator.h"
+#include "NavigationSystem.h"
 #include "AnimationBudgetAllocator/Private/AnimationBudgetAllocatorModule.h"
+#include "Core/RogueMessagingSubsystem.h"
+#include "Pickups/RoguePickupSubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueAICharacter)
 
@@ -199,8 +202,30 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 
 				// Clears active actions, and (de)buffs.
 				ActionComp->StopAllActions();
+
+#if USE_DOD_CREDIT_PICKUPS
+				// spawn credit loot, spawn a ton of them for stress testing
+				URoguePickupSubsystem* PickupSubsystem = GetWorld()->GetSubsystem<URoguePickupSubsystem>();
+				FVector ActorLoc = GetActorLocation();
+				for (int i = 0; i < 500; ++i)
+				{
+					FNavLocation OutNavLoc;
+					UNavigationSystemV1::GetNavigationSystem(this)->GetRandomPointInNavigableRadius(ActorLoc, 1024, OutNavLoc);
+
+					PickupSubsystem->AddNewCreditsPickup(OutNavLoc.Location, 10);
+				}
+#endif
+
+#if USE_TAGMESSAGING_SYSTEM
+				FPayLoadTestMessage MsgPayload;
+				MsgPayload.Credits = 25;
+
+				URogueMessagingSubsystem* Msg = UGameInstance::GetSubsystem<URogueMessagingSubsystem>(GetGameInstance());
+				Msg->BroadcastTagNative(SharedGameplayTags::Message_MonsterKilled, MsgPayload);
+#endif
+				
 			}
-			
+
 			// ragdoll
 			GetMesh()->SetAllBodiesSimulatePhysics(true);
 			GetMesh()->SetCollisionProfileName(Collision::Ragdoll_ProfileName);

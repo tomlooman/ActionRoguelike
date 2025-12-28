@@ -24,6 +24,7 @@ public class ActionRoguelike : ModuleRules
 			"Engine", 
 			"InputCore", 
 			"AIModule", 
+			"NavigationSystem",
 			"GameplayTasks", 
 			"UMG", 
 			"GameplayTags", 

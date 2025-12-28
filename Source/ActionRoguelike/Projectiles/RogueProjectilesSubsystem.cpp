@@ -328,7 +328,7 @@ void URogueProjectilesSubsystem::SpawnImpactFX(const UWorld* World, const FProje
 
 		// DECAL, using the Data Channels rather than relying on individual particle systems
 		UNiagaraDataChannelWriter* Writer = UNiagaraDataChannelLibrary::WriteToNiagaraDataChannel(World, ProjConfig.ConfigDataAsset->ImpactDecal_DataChannel,
-			Params, 1, false, true, true, "ImpactDecals");
+			Params, 1, false, false, false, "ImpactDecals");
 
 		Writer->WriteVector("ImpactLocation", 0, ImpactPosition);
 		Writer->WriteVector("ImpactNormal", 0, ProjConfig.Hit.ImpactNormal);
