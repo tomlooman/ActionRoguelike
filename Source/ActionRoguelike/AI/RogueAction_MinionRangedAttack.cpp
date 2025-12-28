@@ -61,12 +61,13 @@ void URogueAction_MinionRangedAttack::StartAction_Implementation(AActor* Instiga
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	Params.Instigator = MyPawn;
 
-	// Disabled for testing data oriented projectiles below
-	//GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, Params);
-
+#if USE_DATA_ORIENTED_PROJECTILES
 	// WIP for data oriented projectiles
 	URogueProjectilesSubsystem* Subsystem = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>();
 	Subsystem->CreateProjectile(MuzzleLocation, MuzzleRotation.Vector(), ProjectileConfig, MyPawn);
+#else // Actor based projectiles
+	GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, Params);
+#endif
 
 	StopAction(Instigator);
 }
