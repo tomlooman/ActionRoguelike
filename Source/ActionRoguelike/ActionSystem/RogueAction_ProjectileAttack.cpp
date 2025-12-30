@@ -31,9 +31,13 @@ void URogueAction_ProjectileAttack::StartAction_Implementation(AActor* Instigato
 	// we use a single audio component on the player, which uses AutoManageAttachment to detach itself when not active
 	Character->PlayAttackSound(CastingSound);
 
+#if USE_DATA_ORIENTED_PROJECTILES
 	// For projectile spawn only run locally
+	// @fixme: verify local prediction for these projectiles works as expected
 	if (Character->IsLocallyControlled())
-	//if (Character->HasAuthority())
+#else
+	if (Character->HasAuthority())
+#endif
 	{
 		FTimerHandle TimerHandle_AttackDelay;
 		FTimerDelegate Delegate;

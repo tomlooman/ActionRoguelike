@@ -45,11 +45,11 @@ void URogueAction::StartAction_Implementation(AActor* Instigator)
 	URogueActionComponent* Comp = GetOwningComponent();	
 	Comp->ActiveGameplayTags.AppendTags(GrantsTags);
 
-	RepData.bIsRunning = true;
-	RepData.Instigator = Instigator;
-
 	if (GetOwningComponent()->GetOwnerRole() == ROLE_Authority)
 	{
+		RepData.bIsRunning = true;
+		RepData.Instigator = Instigator;
+
 		TimeStarted = GetWorld()->TimeSeconds; 
 	}
 
@@ -66,8 +66,11 @@ void URogueAction::StopAction_Implementation(AActor* Instigator)
 	URogueActionComponent* Comp = GetOwningComponent();
 	Comp->ActiveGameplayTags.RemoveTags(GrantsTags);
 
-	RepData.bIsRunning = false;
-	RepData.Instigator = Instigator;
+	if (GetOwningComponent()->GetOwnerRole() == ROLE_Authority)
+	{
+		RepData.bIsRunning = false;
+		RepData.Instigator = Instigator;
+	}
 
 	if (CooldownTime > 0.0f)
 	{

@@ -325,14 +325,10 @@ URogueAction* URogueActionComponent::GetAction(TSubclassOf<URogueAction> ActionC
 
 bool URogueActionComponent::StartActionByName(AActor* Instigator, FGameplayTag ActionName)
 {
-	// Visible in Unreal Insights with namedevents enabled
-	SCOPED_NAMED_EVENT(StartActionName, FColor::Green);
-	// Alternative, available when cpu channel is specified
-	//TRACE_CPUPROFILER_EVENT_SCOPE(StartActionByName);
-
-	// Not yet implemented for clients which needs to fill the array using repnotify array
+	//SCOPED_NAMED_EVENT(StartActionName, FColor::Green); // Visible in Unreal Insights with namedevents enabled
+	TRACE_CPUPROFILER_EVENT_SCOPE(StartActionByName); // Alternative, available when Insights "CPU" channel is specified
+	
 	check(CachedActions.Num() > 0);
-
 	if (TObjectPtr<URogueAction>* ActionPtr = CachedActions.Find(ActionName))
 	{
 		URogueAction* Action = ActionPtr->Get();
@@ -349,17 +345,16 @@ bool URogueActionComponent::StartActionByName(AActor* Instigator, FGameplayTag A
 			return false;
 		}
 
+		// Bookmark for Unreal Insights
+		//TRACE_BOOKMARK(TEXT("StartAction::%s"), *GetNameSafe(Action));
+
 		// Is Client?
 		if (!GetOwner()->HasAuthority())
 		{
 			// Request on the server
 			ServerStartAction(Instigator, ActionName);
-			// let it continue to start locally too, reduces latency but needs special consideration on this "prediction"
 		}
-
-		// Bookmark for Unreal Insights
-		//TRACE_BOOKMARK(TEXT("StartAction::%s"), *GetNameSafe(Action));
-		
+		else
 		{
 			// Scoped within the curly braces. the _FSTRING variant adds additional tracing overhead due to grabbing the class name every time
 			SCOPED_NAMED_EVENT_FSTRING(Action->GetClass()->GetName(), FColor::White);
