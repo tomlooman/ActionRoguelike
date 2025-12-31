@@ -9,6 +9,7 @@
 // Included for struct FInputActionInstance (Enhanced Input)
 #include "GameplayTagContainer.h"
 #include "InputAction.h"
+#include "ActionSystem/RogueActionSystemInterface.h"
 #include "RoguePlayerCharacter.generated.h"
 
 struct FAttributeModification;
@@ -22,7 +23,7 @@ class UAnimMontage;
 class URogueActionComponent;
 
 UCLASS(Abstract)
-class ACTIONROGUELIKE_API ARoguePlayerCharacter : public ACharacter, public IGenericTeamAgentInterface
+class ACTIONROGUELIKE_API ARoguePlayerCharacter : public ACharacter, public IGenericTeamAgentInterface, public IRogueActionSystemInterface
 {
 	GENERATED_BODY()
 
@@ -110,6 +111,11 @@ public:
 
 	UFUNCTION(Client, Unreliable)
 	void ClientOnSeenBy(ARogueAICharacter* SeenByPawn);
+
+	virtual URogueActionComponent* GetActionComponent() const override
+	{
+		return ActionComp;
+	}
 
 protected:
 

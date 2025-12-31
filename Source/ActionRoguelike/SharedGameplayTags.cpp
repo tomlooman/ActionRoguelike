@@ -23,6 +23,7 @@ namespace SharedGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Attribute_HealthMax, "Attribute.HealthMax");
 	UE_DEFINE_GAMEPLAY_TAG(Attribute_AttackDamage, "Attribute.AttackDamage");
 	UE_DEFINE_GAMEPLAY_TAG(Attribute_Rage, "Attribute.Rage");
+	UE_DEFINE_GAMEPLAY_TAG(Attribute_Credits, "Attribute.Credits");
 
 	// Messaging
 	UE_DEFINE_GAMEPLAY_TAG(Message_MonsterKilled, "Message.MonsterKilled");

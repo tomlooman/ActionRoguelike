@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ActionSystem/RogueActionSystemInterface.h"
 #include "ActionSystem/RogueAttributeSet.h"
 #include "GameFramework/Actor.h"
 #include "RogueExplosiveBarrel.generated.h"
@@ -15,7 +16,7 @@ class URadialForceComponent;
 
 
 UCLASS()
-class ACTIONROGUELIKE_API ARogueExplosiveBarrel : public AActor
+class ACTIONROGUELIKE_API ARogueExplosiveBarrel : public AActor, public IRogueActionSystemInterface
 {
 	GENERATED_BODY()
 
@@ -48,7 +49,13 @@ protected:
 
 	void OnHealthAttributeChanged(float NewValue, const FAttributeModification& AttributeModification);
 	
-public:	
+public:
+
+	virtual URogueActionComponent* GetActionComponent() const override
+	{
+		return ActionComp;
+	}
+	
 	ARogueExplosiveBarrel();
 
 	virtual void PostInitializeComponents() override;

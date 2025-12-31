@@ -38,18 +38,13 @@ URogueActionComponent* URogueGameplayFunctionLibrary::GetActionComponentFromActo
 
 bool URogueGameplayFunctionLibrary::IsAlive(AActor* InActor)
 {
-	if (!IsValid(InActor))
-	{
-		return false;
-	}
-
 	URogueActionComponent* ActionComp = GetActionComponentFromActor(InActor);
-	if (ActionComp)
-	{
-		return ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health)->GetValue() > 0.0f;
-	}
+	check(ActionComp);
 
-	return false;
+	FRogueAttribute* FoundAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health);
+	check(FoundAttribute);
+		
+	return FoundAttribute->GetValue() > 0.0f;
 }
 
 

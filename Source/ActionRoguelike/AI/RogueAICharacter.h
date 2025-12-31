@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GenericTeamAgentInterface.h"
+#include "ActionSystem/RogueActionSystemInterface.h"
 #include "ActionSystem/RogueAttributeSet.h"
 #include "GameFramework/Character.h"
 #include "Performance/RogueSignificanceInterface.h"
@@ -16,7 +17,7 @@ class URogueWorldUserWidget;
 class URogueActionComponent;
 
 UCLASS()
-class ACTIONROGUELIKE_API ARogueAICharacter : public ACharacter, public IGenericTeamAgentInterface, public IRogueSignificanceInterface
+class ACTIONROGUELIKE_API ARogueAICharacter : public ACharacter, public IGenericTeamAgentInterface, public IRogueSignificanceInterface, public IRogueActionSystemInterface
 {
 	GENERATED_BODY()
 
@@ -58,7 +59,12 @@ protected:
 	TObjectPtr<URogueWorldUserWidget> ActiveHealthBar;
 
 public:
-	
+
+	virtual URogueActionComponent* GetActionComponent() const override
+	{
+		return ActionComp;
+	}
+
 	virtual void SignificanceLODChanged(int32 NewLOD) override;
 
 	void OnReduceAnimationWork(class USkeletalMeshComponentBudgeted* InComponent, bool bReduce);
