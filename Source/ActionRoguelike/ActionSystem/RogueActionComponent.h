@@ -6,7 +6,6 @@
 #include "Components/ActorComponent.h"
 #include "GameplayTagContainer.h"
 #include "RogueAttributeSet.h"
-#include "StructUtils/InstancedStruct.h"
 #include "RogueActionComponent.generated.h"
 
 class URogueActionComponent;
@@ -59,32 +58,42 @@ public:
 	bool ApplyAttributeChange(FGameplayTag InAttributeTag, float InMagnitude, AActor* Instigator, EAttributeModifyType ModType, FGameplayTagContainer InContextTags = FGameplayTagContainer());
 
 	/* Provide a default attribute set type for (base) classes, blueprint can set this via the details panel instead */
-	void SetDefaultAttributeSet(UScriptStruct* InDefaultType);
+	void SetDefaultAttributeSet(TSubclassOf<URogueAttributeSet> InNewClass);
+
+	/*
+	 * Retrieve the delegate to bind attribute change events, will create new entry in the Map if not currently present
+	 */
+	FAttributeChangedSignature& GetAttributeListenerDelegate(FGameplayTag InTag);
 
 protected:
-
-	void FillAttributeCache();
 
 	UFUNCTION(BlueprintCallable, Category=Attributes, DisplayName="GetAttribute")
 	bool K2_GetAttribute(FGameplayTag InAttributeTag, float& CurrentValue, float& Base, float& Delta);
 
 	/* Marked protected, C++ can use direct access to the OnAttributeChanged inside an Attribute */
 	UFUNCTION(BlueprintCallable, DisplayName="AddAttributeListener", meta = (Keywords = "Bind, Delegate", AdvancedDisplay="bCallImmediately"))
-	void K2_AddAttributeListener(FGameplayTag AttributeTag, FOnAttributeChangedDynamic Event, bool bCallImmediately = false);
+	void K2_AddAttributeListener(FGameplayTag AttributeTag, FAttributeChangedDynamicSignature Event, bool bCallImmediately = false);
 
 	UFUNCTION(BlueprintCallable)
-	void K2_RemoveAttributeListener(FOnAttributeChangedDynamic Event);
+	void K2_RemoveAttributeListener(FAttributeChangedDynamicSignature Event);
 
 	/* Interchangeable set of attributes such as Health, BaseDamage, Strength, Stamina, MoveSpeed, etc. */
-	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category=Attributes, meta = (BaseStruct = "RogueAttributeSet", ExcludeBaseStruct))
-	FInstancedStruct AttributeSet;
+	UPROPERTY(ReplicatedUsing=OnRep_AttributeSet)
+	TObjectPtr<URogueAttributeSet> AttributeSet;
 
-	/* Fetch from properties stored inside the AttributeSet for quick access */
-	TMap<FGameplayTag, FRogueAttribute*> AttributeCache;
+	UFUNCTION()
+	void OnRep_AttributeSet();
+
+	UPROPERTY(EditDefaultsOnly, Category=Attributes, NoClear)
+	TSubclassOf<URogueAttributeSet> AttributeSetClass = URogueAttributeSet::StaticClass();
+
+	void InitAttributeSet();
 
 	/* List of delegates that came from Blueprint to ensure we can clean up "dead" hooks */
-	TMap<FOnAttributeChangedDynamic, FDelegateHandle> DynamicDelegateHandles;
+	TMap<FAttributeChangedDynamicSignature, FDelegateHandle> DynamicDelegateHandles;
 
+	TMap<FGameplayTag, FAttributeChangedSignature> AttributeListenerMap;
+	
 	UFUNCTION(Server, Reliable)
 	void ServerStartAction(AActor* Instigator, FGameplayTag ActionName);
 

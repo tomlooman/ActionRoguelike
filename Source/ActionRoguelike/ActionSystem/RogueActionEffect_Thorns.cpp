@@ -15,7 +15,7 @@ void URogueActionEffect_Thorns::StartAction_Implementation(AActor* Instigator)
 	Super::StartAction_Implementation(Instigator);
 
 	// Start listening
-	AttriChangedHandle = ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health)->OnAttributeChanged.AddUObject(this, &ThisClass::OnHealthChanged);
+	AttriChangedHandle = ActionComp->GetAttributeListenerDelegate(SharedGameplayTags::Attribute_Health).AddUObject(this, &ThisClass::OnHealthChanged);
 }
 
 
@@ -24,7 +24,7 @@ void URogueActionEffect_Thorns::StopAction_Implementation(AActor* Instigator)
 	Super::StopAction_Implementation(Instigator);
 
 	// Stop listening
-	ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health)->OnAttributeChanged.Remove(AttriChangedHandle);
+	ActionComp->GetAttributeListenerDelegate(SharedGameplayTags::Attribute_Health).Remove(AttriChangedHandle);
 }
 
 
@@ -42,7 +42,7 @@ void URogueActionEffect_Thorns::OnHealthChanged(float NewValue, const FAttribute
 		}
 		
 		/*
-		// Round to nearest to avoid 'ugly' damage numbers and tiny reflections
+		// Round to nearest to avoid decimal damage numbers and tiny reflections
 		int32 ReflectedAmount = FMath::RoundToInt(AttributeModification.Magnitude * ReflectFraction);
 		if (ReflectedAmount == 0)
 		{

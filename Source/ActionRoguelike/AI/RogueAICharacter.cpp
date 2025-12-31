@@ -33,8 +33,7 @@ ARogueAICharacter::ARogueAICharacter(const FObjectInitializer& ObjectInitializer
 	:Super(ObjectInitializer.SetDefaultSubobjectClass<USkeletalMeshComponentBudgeted>(ACharacter::MeshComponentName))
 {
 	ActionComp = CreateDefaultSubobject<URogueActionComponent>(TEXT("ActionComp"));
-	// Set some defaults, ideally we handle this through some data asset instead
-	ActionComp->SetDefaultAttributeSet(FRogueMonsterAttributeSet::StaticStruct());
+	ActionComp->SetDefaultAttributeSet(URogueMonsterAttributeSet::StaticClass());
 
 	AttackSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AttackAudioComp"));
 	AttackSoundComp->SetupAttachment(RootComponent);
@@ -149,14 +148,13 @@ void ARogueAICharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ARogueAICharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
-	// The "simplest" syntax compared to the other convoluted attempts
-	FRogueAttribute* FoundAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health);
-	FoundAttribute->OnAttributeChanged.AddUObject(this, &ThisClass::OnHealthAttributeChanged);
 	
 	// Cheap trick to disable until we need it in the health event
 	CachedOverlayMaxDistance = GetMesh()->OverlayMaterialMaxDrawDistance;
 	GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
+
+	FAttributeChangedSignature& Delegate = ActionComp->GetAttributeListenerDelegate(SharedGameplayTags::Attribute_Health);
+	Delegate.AddUObject(this, &ThisClass::OnHealthAttributeChanged);
 }
 
 

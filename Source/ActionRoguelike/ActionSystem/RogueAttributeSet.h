@@ -69,7 +69,7 @@ struct FAttributeModification
 
 
 // Blueprint accessible delegate (this is how we "bind" indirectly in blueprint)
-DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnAttributeChangedDynamic, float, NewValue, FAttributeModification, AppliedModification);
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FAttributeChangedDynamicSignature, float, NewValue, FAttributeModification, AppliedModification);
 // The C++ delegate that is actually broadcast, and may itself call the above dynamic delegate by wrapping it in a lamdba
 DECLARE_MULTICAST_DELEGATE_TwoParams(FAttributeChangedSignature, float /*NewValue*/, const FAttributeModification&);
 
@@ -91,9 +91,6 @@ struct FRogueAttribute
 	UPROPERTY(Transient)
 	float Modifier = 0.0f;
 
-	/* No use in exposing this to blueprint directly as we have no good access to bind to it */
-	FAttributeChangedSignature OnAttributeChanged;
-	
 	/* All game logic should get the value through here */
 	float GetValue() const
 	{
@@ -102,36 +99,74 @@ struct FRogueAttribute
 	}
 };
 
-USTRUCT(BlueprintType)
-struct FRogueAttributeSet
+UCLASS()
+class URogueAttributeSet : public UObject
 {
 	GENERATED_BODY()
 
-	/* Required destructor when dealing with virtual functions inside the struct */
-	virtual ~FRogueAttributeSet() = default;
-	
-	// Nothing happening here...
+public:
+
+	void InitializeAttributes(URogueActionComponent* InNewOwningComponent)
+	{
+		OwningComp = InNewOwningComponent;
+
+		FillAttributeCache();
+	}
 	
 	/* Allow additional work such as clamping Attributes based on another (eg. Health vs. HealthMax) */
 	virtual void PostAttributeChanged() {};
+
+	/* Fill local cache for quick access on each Attribute in the Set */
+	void FillAttributeCache()
+	{
+		TRACE_CPUPROFILER_EVENT_SCOPE(ActionComponent::CacheAttributes);
+
+		AttributeCache.Empty();
+
+		for (TFieldIterator<FStructProperty> PropertyIt(GetClass()); PropertyIt; ++PropertyIt)
+		{
+			const FRogueAttribute* FoundAttribute = PropertyIt->ContainerPtrToValuePtr<FRogueAttribute>(this);
+
+			// Build the tag "Attribute.Health" where "Health" is the variable name of the RogueAttribute we just iterated
+			FString TagName = TEXT("Attribute." + PropertyIt->GetName());
+			FGameplayTag AttributeTag = FGameplayTag::RequestGameplayTag(FName(TagName));
+
+			AttributeCache.Add(AttributeTag, const_cast<FRogueAttribute*>(FoundAttribute));
+		}
+	}
+	
+	virtual bool IsSupportedForNetworking() const override
+	{
+		return true;
+	}
+
+	/* Fetch from properties stored inside the AttributeSet for quick access */
+	TMap<FGameplayTag, FRogueAttribute*> AttributeCache;
+
+	UPROPERTY(Transient)
+	URogueActionComponent* OwningComp;
 };
 
 
 /**
  * Base set containing Health/HealthMax, useful for world gameplay actors
  */
-USTRUCT(BlueprintType)
-struct FRogueHealthAttributeSet : public FRogueAttributeSet
+UCLASS()
+class URogueHealthAttributeSet : public URogueAttributeSet
 {
 	GENERATED_BODY()
 
-	FRogueHealthAttributeSet()
+public:
+	
+	URogueHealthAttributeSet()
 	{
 		Health = FRogueAttribute(100);
 		HealthMax = FRogueAttribute(Health.GetValue());
 	}
+
+protected:
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
+	UPROPERTY(ReplicatedUsing=OnRep_Health, EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
 	FRogueAttribute Health;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
@@ -144,37 +179,57 @@ struct FRogueHealthAttributeSet : public FRogueAttributeSet
 		// @todo: reduce Health when HealthMax is updated by triggering another attribute change
 	}
 
+	UFUNCTION()
+	void OnRep_Health(FRogueAttribute OldValue);
+
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 };
 
-
-USTRUCT(BlueprintType)
-struct FRogueSurvivorAttributeSet : public FRogueHealthAttributeSet
+UCLASS()
+class URoguePawnAttributeSet : public URogueHealthAttributeSet
 {
 	GENERATED_BODY()
 
-	FRogueSurvivorAttributeSet()
+public:
+	
+	URoguePawnAttributeSet() : Super()
 	{
 		AttackDamage = FRogueAttribute(25);
 	}
 
+protected:
+	
 	/* Base Damage value, all skills and damage use this multiplied by a damage coefficient
 	 * (a percentage defaulting to 100%) to simplify balancing and scaling during play */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
 	FRogueAttribute AttackDamage;
 };
 
-
-USTRUCT(BlueprintType)
-struct FRogueMonsterAttributeSet : public FRogueHealthAttributeSet
+UCLASS()
+class URogueSurvivorAttributeSet : public URoguePawnAttributeSet
 {
 	GENERATED_BODY()
 
-	FRogueMonsterAttributeSet()
-	{
-		AttackDamage = FRogueAttribute(10);
-	}
+protected:
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
+	FRogueAttribute Rage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
-	FRogueAttribute AttackDamage;
+	FRogueAttribute Credits;
+	/*
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
+	FRogueAttribute Level;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
+	FRogueAttribute ExperiencePoints;*/
+};
+
+
+UCLASS()
+class URogueMonsterAttributeSet : public URoguePawnAttributeSet
+{
+	GENERATED_BODY()
+
 };
 

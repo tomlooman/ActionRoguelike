@@ -2,6 +2,7 @@
 
 
 #include "ActionSystem/RogueActionComponent.h"
+
 #include "ActionSystem/RogueAction.h"
 #include "../ActionRoguelike.h"
 #include "Core/RogueGameplayFunctionLibrary.h"
@@ -24,10 +25,17 @@ URogueActionComponent::URogueActionComponent()
 
 
 void URogueActionComponent::InitializeComponent()
-{
-	FillAttributeCache();
-	
+{	
 	Super::InitializeComponent();
+	
+	// On clients the instance we make here will eventually be replaced by replicated value from the server
+	AttributeSet = NewObject<URogueAttributeSet>(GetOwner(), AttributeSetClass);
+	InitAttributeSet();
+
+	if (GetOwner()->HasAuthority())
+	{
+		AddReplicatedSubObject(AttributeSet);
+	}
 }
 
 void URogueActionComponent::BeginPlay()
@@ -55,7 +63,9 @@ void URogueActionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 FRogueAttribute* URogueActionComponent::GetAttribute(FGameplayTag InAttributeTag)
 {
-	FRogueAttribute** FoundAttribute = AttributeCache.Find(InAttributeTag);
+	check(AttributeSet);
+		
+	FRogueAttribute** FoundAttribute = AttributeSet->AttributeCache.Find(InAttributeTag);
 	if (FoundAttribute)
 	{
 		return *FoundAttribute;
@@ -85,11 +95,13 @@ bool URogueActionComponent::ApplyAttributeChange(const FAttributeModification& M
 		// Skip on clients.
 		return false;
 	}
+
+	const FGameplayTag AttributeTag = Modification.AttributeTag;
 	
-	FRogueAttribute* Attribute = GetAttribute(Modification.AttributeTag);
+	FRogueAttribute* Attribute = GetAttribute(AttributeTag);
 	if (Attribute == nullptr)
 	{
-		UE_LOG(LogGame, Warning, TEXT("Attribute (%s) not found on Actor (%s)."), *Modification.AttributeTag.ToString(), *GetNameSafe(GetOwner()));
+		UE_LOG(LogGame, Warning, TEXT("Attribute (%s) not found on Actor (%s)."), *AttributeTag.ToString(), *GetNameSafe(GetOwner()));
 		return false;
 	}
 
@@ -118,13 +130,21 @@ bool URogueActionComponent::ApplyAttributeChange(const FAttributeModification& M
 	}
 	
 	// Allow further modification here for the attribute set
-	FRogueAttributeSet* RogueSet = AttributeSet.GetMutablePtr<FRogueAttributeSet>();
-	RogueSet->PostAttributeChanged();
+	AttributeSet->PostAttributeChanged();
 
 	// With clamping inside the attribute (or a zero delta) no real change might have occured
 	if (!FMath::IsNearlyEqual(OriginalValue, Attribute->GetValue()))
 	{
-		Attribute->OnAttributeChanged.Broadcast(Attribute->GetValue(), Modification);
+		// Broadcast for all native listeners
+		if (FAttributeChangedSignature* Event = AttributeListenerMap.Find(AttributeTag))
+		{
+			Event->Broadcast(Attribute->GetValue(), Modification);
+		}
+		// Broadcast any Blueprint listeners
+		/*if (FAttributeChangedDynamicSignature* Event = AttributeDynamicListenerMap.Find(AttributeTag))
+		{
+			Event->ExecuteIfBound(Attribute->GetValue(), Modification);
+		}*/
 		return true;
 	}
 	
@@ -147,20 +167,18 @@ bool URogueActionComponent::ApplyAttributeChange(FGameplayTag InAttributeTag, fl
 }
 
 
-void URogueActionComponent::K2_AddAttributeListener(FGameplayTag AttributeTag, FOnAttributeChangedDynamic Event, bool bCallImmediately /*= false*/)
+void URogueActionComponent::K2_AddAttributeListener(FGameplayTag AttributeTag, FAttributeChangedDynamicSignature Event, bool bCallImmediately /*= false*/)
 {
 	if (!AttributeTag.IsValid())
 	{
 		UE_LOG(LogGame, Log, TEXT("No valid GameplayTag specified in AddAttributeListener for %s"), *GetNameSafe(GetOwner()));
 		return;
 	}
-	
-	FRogueAttribute* FoundAttribute = GetAttribute(AttributeTag);
 
 	// An "Wrapper" to make the binding easier to use with blueprint (returns handle to unbind from Blueprint instance if needed)
 	// Blueprint graph can manually unbind using K2_RemoveAttributeListener, otherwise the binding will clean up when the attribute change
 	// triggers and we can no longer find a valid binding to the original blueprint delegate (meaning ExecuteIfBound returns false below)
-	FDelegateHandle Handle = FoundAttribute->OnAttributeChanged.AddLambda([Event, FoundAttribute, this](float NewValue, FAttributeModification AttriMod)
+	FDelegateHandle Handle = GetAttributeListenerDelegate(AttributeTag).AddLambda([Event, AttributeTag, this](float NewValue, FAttributeModification AttriMod)
 	{
 		SCOPED_NAMED_EVENT(Blueprint_OnAttributeChanged, FColor::Blue);
 		// This lamba is executed anytime we trigger the attribute change.
@@ -172,7 +190,10 @@ void URogueActionComponent::K2_AddAttributeListener(FGameplayTag AttributeTag, F
 		if (!bIsBound)
 		{
 			FDelegateHandle Handle = *DynamicDelegateHandles.Find(Event);
-			FoundAttribute->OnAttributeChanged.Remove(Handle);
+			
+			GetAttributeListenerDelegate(AttributeTag).Remove(Handle);
+			
+			DynamicDelegateHandles.Remove(Event);
 		}
 	});
 
@@ -185,66 +206,56 @@ void URogueActionComponent::K2_AddAttributeListener(FGameplayTag AttributeTag, F
 		// @todo: maybe change EAttributeModifyType?
 		FAttributeModification AttriMod = FAttributeModification(AttributeTag,
 			0.0f, this, GetOwner(), EAttributeModifyType::Invalid, FGameplayTagContainer());
+
+		FRogueAttribute* FoundAttribute = GetAttribute(AttributeTag);
 		
 		Event.Execute(FoundAttribute->GetValue(), AttriMod);
 	}
 }
 
-void URogueActionComponent::K2_RemoveAttributeListener(FOnAttributeChangedDynamic Event)
+void URogueActionComponent::K2_RemoveAttributeListener(FAttributeChangedDynamicSignature Event)
 {
+	// Note: Will fail if we try to remove a non-bound event
 	FDelegateHandle Handle = *DynamicDelegateHandles.Find(Event);
 
-	// Iterate all attributes to find matching handle (alternatively, just pass in the correct attributetag)
-	for (auto Attribute : AttributeCache)
+	// Since we don't specify the Tag, we iterate the full list to find the matching Handle
+	for (auto AttributeEvent : AttributeListenerMap)
 	{
-		bool bFound = Attribute.Value->OnAttributeChanged.Remove(Handle);
-
-		// @todo: maybe count to max 1 or we have an issue with multiple bindings coming from a blueprint...
-		if (bFound)
+		if (AttributeEvent.Value.Remove(Handle))
 		{
+			// Found match, we are done here
+
 			// Temp to verify this is all working
 			UE_LOG(LogTemp, Log, TEXT("Successfully Removed binding from a blueprint"));
+			break;
 		}
 	}
 }
 
 
-void URogueActionComponent::SetDefaultAttributeSet(UScriptStruct* InDefaultType)
+void URogueActionComponent::OnRep_AttributeSet()
+{
+	InitAttributeSet();
+}
+
+
+void URogueActionComponent::InitAttributeSet()
+{
+	AttributeSet->InitializeAttributes(this);
+}
+
+FAttributeChangedSignature& URogueActionComponent::GetAttributeListenerDelegate(FGameplayTag InTag)
+{
+	return AttributeListenerMap.FindOrAdd(InTag);
+}
+
+
+void URogueActionComponent::SetDefaultAttributeSet(TSubclassOf<URogueAttributeSet> InNewClass)
 {
 	// Only allow during init
 	check(!HasBeenInitialized());
 
-	AttributeSet = FInstancedStruct(InDefaultType);
-	check(AttributeSet.GetScriptStruct());
-
-	FillAttributeCache();
-}
-
-
-void URogueActionComponent::FillAttributeCache()
-{
-	// Depending on when we set the attributecache, it might still be nullptr when called
-	// Blueprint might directly set the type on the component, where C++ may call SetAttributeSet
-	if (AttributeSet.GetScriptStruct() == nullptr)
-	{
-		return;
-	}
-	
-	TRACE_CPUPROFILER_EVENT_SCOPE(ActionComponent::CacheAttributes);
-
-	// @todo: preallocate to the correct size if we know the nr of properties in the struct
-	AttributeCache.Empty();
-
-	for (TFieldIterator<FStructProperty> PropertyIt(AttributeSet.GetScriptStruct()); PropertyIt; ++PropertyIt)
-	{
-		const FRogueAttribute* FoundAttribute = PropertyIt->ContainerPtrToValuePtr<FRogueAttribute>(AttributeSet.GetMemory());
-
-		// Build the tag "Attribute.Health" where "Health" is the variable name of the RogueAttribute we just iterated
-		FString TagName = TEXT("Attribute." + PropertyIt->GetName());
-		FGameplayTag AttributeTag = FGameplayTag::RequestGameplayTag(FName(TagName));
-
-		AttributeCache.Add(AttributeTag, const_cast<FRogueAttribute*>(FoundAttribute));
-	}
+	AttributeSetClass = InNewClass;
 }
 
 
@@ -382,8 +393,11 @@ bool URogueActionComponent::StopActionByName(AActor* Instigator, FGameplayTag Ac
 				{
 					ServerStopAction(Instigator, ActionName);
 				}
+				else
+				{
+					Action->StopAction(Instigator);
+				}
 
-				Action->StopAction(Instigator);
 				return true;
 			}
 		}

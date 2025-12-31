@@ -16,16 +16,15 @@ ARogueTargetDummy::ARogueTargetDummy()
 	RootComponent = SkelMeshComp;
 
 	ActionComp = CreateDefaultSubobject<URogueActionComponent>(TEXT("ActionComp"));
-	ActionComp->SetDefaultAttributeSet(FRogueHealthAttributeSet::StaticStruct());
+	ActionComp->SetDefaultAttributeSet(URogueHealthAttributeSet::StaticClass());
 }
 
 
 void ARogueTargetDummy::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
-	FRogueAttribute* FoundAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health);
-	FoundAttribute->OnAttributeChanged.AddUObject(this, &ThisClass::OnHealthChanged);
+	
+	ActionComp->GetAttributeListenerDelegate(SharedGameplayTags::Attribute_Health).AddUObject(this, &ThisClass::OnHealthChanged);
 }
 
 

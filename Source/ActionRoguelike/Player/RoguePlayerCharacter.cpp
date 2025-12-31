@@ -41,7 +41,7 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 	CameraComp->SetupAttachment(SpringArmComp);
 
 	ActionComp = CreateDefaultSubobject<URogueActionComponent>(TEXT("ActionComp"));
-	ActionComp->SetDefaultAttributeSet(FRogueSurvivorAttributeSet::StaticStruct());
+	ActionComp->SetDefaultAttributeSet(URogueSurvivorAttributeSet::StaticClass());
 
 	PerceptionStimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("PerceptionStimuliComp"));
 
@@ -75,11 +75,11 @@ void ARoguePlayerCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health)->OnAttributeChanged.AddUObject(this, &ThisClass::OnHealthAttributeChanged);
-	
 	// Cheap trick to disable until we need it in the health event
 	CachedOverlayMaxDistance = GetMesh()->OverlayMaterialMaxDrawDistance;
 	GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
+
+	ActionComp->GetAttributeListenerDelegate(SharedGameplayTags::Attribute_Health).AddUObject(this, &ThisClass::OnHealthAttributeChanged);
 }
 
 
@@ -316,7 +316,6 @@ FGenericTeamId ARoguePlayerCharacter::GetGenericTeamId() const
 	// We have no team switching support during gameplay
 	return FGenericTeamId(TEAM_ID_PLAYERS);
 }
-
 
 FVector ARoguePlayerCharacter::GetPawnViewLocation() const
 {

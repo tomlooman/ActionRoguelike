@@ -16,7 +16,7 @@
 ARogueExplosiveBarrel::ARogueExplosiveBarrel()
 {
 	ActionComp = CreateDefaultSubobject<URogueActionComponent>(TEXT("ActionComp"));
-	ActionComp->SetDefaultAttributeSet(FRogueHealthAttributeSet::StaticStruct());
+	ActionComp->SetDefaultAttributeSet(URogueHealthAttributeSet::StaticClass());
 	
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetSimulatePhysics(true);
@@ -53,8 +53,8 @@ void ARogueExplosiveBarrel::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	FRogueAttribute* FoundAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health);
-	FoundAttribute->OnAttributeChanged.AddUObject(this, &ThisClass::OnHealthAttributeChanged);
+	FAttributeChangedSignature& Delegate = ActionComp->GetAttributeListenerDelegate(SharedGameplayTags::Attribute_Health);
+	Delegate.AddUObject(this, &ThisClass::OnHealthAttributeChanged);
 }
 
 
