@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Development/RogueDeveloperSettings.h"
+#include "Development/RogueDeveloperLocalSettings.h"
 
 #include "Misc/ConfigUtilities.h"
 
@@ -21,13 +21,13 @@ namespace DevelopmentOnly
 #endif
 
 
-FName URogueDeveloperSettings::GetCategoryName() const
+FName URogueDeveloperLocalSettings::GetCategoryName() const
 {
 	return FApp::GetProjectName();
 }
 
 
-void URogueDeveloperSettings::PostInitProperties()
+void URogueDeveloperLocalSettings::PostInitProperties()
 {
 #if WITH_EDITOR
 	if (IsTemplate())

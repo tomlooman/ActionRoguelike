@@ -46,30 +46,34 @@ void ARogueProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedCompo
 			return;
 		}
 
+		// This could contain things such as CriticalHit, Blocked etc. to tell other systems what special damage handling should be done
 		FGameplayTagContainer ContextTags;
 
-		// @todo: check CanApplyDamage() so we know on the clients to explode rather than passthrough the Overlap.
-		// this keeps them in sync even if the server will notify the client a bit later from latency
-		
-		// Apply Damage & Impulse
-		if (URogueGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageCoefficient, SweepResult, ContextTags))
+		// Overlaps will happen on clients too, and clients only should respond immediately cosmetically
+		// letting the server deal the actual damage. eg. we can "Explode" but only the server will ApplyDamage
+		if (URogueGameplayFunctionLibrary::CanApplyDamage(GetInstigator(), OtherActor, ContextTags))
 		{
 			// We only explode if the target can be damaged, it ignores anything it Overlaps that it cannot Damage
 			Explode();
-			
-			APawn* MyInstigator = GetInstigator();
-			if (OtherActionComp && BurningActionClass && HasAuthority())
+
+			if (HasAuthority())
 			{
-#if USE_DEFERRED_TASKS
-				// Delay adding the burning FX if necessary
-				URogueDeferredTaskSystem::AddLambda(this, [OtherActionComp,MyInstigator,this]()
-					{
-						OtherActionComp->AddAction(MyInstigator, BurningActionClass);
-					});
-#else
-				OtherActionComp->AddAction(MyInstigator, BurningActionClass);
-#endif
+				// Apply Damage & Impulse
+				URogueGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageCoefficient, SweepResult, ContextTags);
 				
+				APawn* MyInstigator = GetInstigator();
+				if (OtherActionComp && BurningActionClass)
+				{
+#if USE_DEFERRED_TASKS
+					// Delay adding the burning FX if necessary
+					URogueDeferredTaskSystem::AddLambda(this, [OtherActionComp,MyInstigator,this]()
+						{
+							OtherActionComp->AddAction(MyInstigator, BurningActionClass);
+						});
+#else
+					OtherActionComp->AddAction(MyInstigator, BurningActionClass);
+#endif
+				}
 			}
 		}
 	}

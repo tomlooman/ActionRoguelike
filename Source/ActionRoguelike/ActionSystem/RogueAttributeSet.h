@@ -33,6 +33,13 @@ struct FAttributeModification
 	FAttributeModification() {}
 
 	FAttributeModification(FGameplayTag InAttribute,
+		float InMagnitude)
+	{
+		AttributeTag = InAttribute;
+		Magnitude = InMagnitude;
+	}
+
+	FAttributeModification(FGameplayTag InAttribute,
 		float InMagnitude,
 		URogueActionComponent* InTargetComp,
 		AActor* InInstigator,
@@ -50,11 +57,11 @@ struct FAttributeModification
 
 	/* Attribute change Applies to this component */
 	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<URogueActionComponent> TargetComp;
+	TObjectPtr<URogueActionComponent> TargetComp = nullptr;
 
 	/* The actor causing the attribute change, eg. the damage dealer */
 	UPROPERTY(BlueprintReadOnly)
-	TWeakObjectPtr<AActor> Instigator;
+	TWeakObjectPtr<AActor> Instigator = nullptr;
 
 	/* The "Delta" to apply to attribute */
 	UPROPERTY(BlueprintReadOnly)

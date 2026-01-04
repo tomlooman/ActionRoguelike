@@ -18,7 +18,7 @@
 #include "RogueGameState.h"
 #include "ActionSystem/RogueActionComponent.h"
 #include "SaveSystem/RogueSaveGameSubsystem.h"
-#include "Development/RogueDeveloperSettings.h"
+#include "Development/RogueDeveloperLocalSettings.h"
 #include "Engine/AssetManager.h"
 #include "Performance/RogueActorPoolingSubsystem.h"
 #include "UI/RogueHUD.h"
@@ -110,7 +110,7 @@ void ARogueGameModeBase::SpawnBotTimerElapsed()
 #if !UE_BUILD_SHIPPING
     // disabled as we now use big button in level for debugging, but in normal gameplay something like this is useful
     // does require some code update on how it handles this as 'override' currently not properly set up.
-	if (GetDefault<URogueDeveloperSettings>()->bDisableSpawnBotsOverride)
+	if (GetDefault<URogueDeveloperLocalSettings>()->bDisableSpawnBotsOverride)
 	{
 		return;
 	}

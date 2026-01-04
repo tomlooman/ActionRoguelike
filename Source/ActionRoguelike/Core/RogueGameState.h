@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
 #include "Net/Serialization/FastArraySerializer.h"
+#include "Pickups/RoguePickupItemReplication.h"
 #include "Projectiles/RogueProjectilesSubsystem.h"
 #include "RogueGameState.generated.h"
 
@@ -140,6 +141,12 @@ public:
 	
 	UPROPERTY(Replicated)
 	FProjectileConfigArray ProjectileData;
+
+	/* Holds the cosmetic information for clients to show pickup locations
+	 * The subsystem holds the internal data to handle actual distance and pickup checks 
+	 */
+	UPROPERTY(Replicated)
+	FPickupLocationsArray CoinPickupData;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

@@ -205,12 +205,15 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 				// spawn credit loot, spawn a ton of them for stress testing
 				URoguePickupSubsystem* PickupSubsystem = GetWorld()->GetSubsystem<URoguePickupSubsystem>();
 				FVector ActorLoc = GetActorLocation();
-				for (int i = 0; i < 500; ++i)
+				const FVector Offset = FVector(0,0,30);
+
+				const int32 SpawnCount = 100;
+				for (int i = 0; i < SpawnCount; ++i)
 				{
 					FNavLocation OutNavLoc;
 					UNavigationSystemV1::GetNavigationSystem(this)->GetRandomPointInNavigableRadius(ActorLoc, 1024, OutNavLoc);
 
-					PickupSubsystem->AddNewCreditsPickup(OutNavLoc.Location, 10);
+					PickupSubsystem->AddCreditsPickup(OutNavLoc.Location + Offset, 10);
 				}
 #endif
 

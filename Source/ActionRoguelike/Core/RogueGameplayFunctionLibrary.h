@@ -8,6 +8,8 @@
 #include "RogueGameplayFunctionLibrary.generated.h"
 
 
+class URogueActionComponent;
+
 USTRUCT()
 struct FDamageInfo
 {
@@ -44,9 +46,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category=Gameplay)
 	static bool ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient, const FHitResult& HitResult, FGameplayTagContainer InContextTags = FGameplayTagContainer());
-/*
-	static bool ApplyRadialDamage(AActor* DamageCauser, FVector Origin, float DamageRadius, float DamageCoefficient);
-*/
+
+	UFUNCTION(BlueprintCallable, Category=Gameplay)
+	static bool CanApplyDamage(AActor* DamageCauser, AActor* TargetActor, FGameplayTagContainer InContextTags = FGameplayTagContainer());
+
+	//static bool ApplyRadialDamage(AActor* DamageCauser, FVector Origin, float DamageRadius, float DamageCoefficient);
+
 	//void OnDamageOverlapComplete(const FTraceHandle& TraceHandle, FOverlapDatum& OverlapDatum, FDamageInfo DamageInfo);
 	
 	UFUNCTION(BlueprintPure, Category = "PSO Caching")

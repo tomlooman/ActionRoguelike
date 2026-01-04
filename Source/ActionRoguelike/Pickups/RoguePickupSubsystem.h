@@ -6,8 +6,7 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "RoguePickupSubsystem.generated.h"
 
-class UNiagaraSystem;
-class UNiagaraComponent;
+class UInstancedStaticMeshComponent;
 
 // Easy toggle to remove the use case testing from game code
 #define USE_DOD_CREDIT_PICKUPS 1
@@ -22,27 +21,28 @@ class ACTIONROGUELIKE_API URoguePickupSubsystem : public UTickableWorldSubsystem
 
 public:
 	
-	void AddNewCreditsPickup(FVector Origin, int32 CreditAmount);
+	void AddCreditsPickup(FVector Origin, int32 CreditAmount);
+
+	TArray<FPrimitiveInstanceId> AddMeshInstances(const TArray<FTransform>& InAdded);
+
+	/* Single ISM that holds all coins, registered directly with the world instead of Actor wrapper */
+	UPROPERTY()
+	TObjectPtr<UInstancedStaticMeshComponent> WorldISM;
 
 protected:
 	
 	void RemoveCreditsPickup(int32 InIndex);
-	
+
+	// -- These arrays are in sync
 	TArray<FVector> CreditPickupLocations;
-
 	TArray<int32> CreditPickupAmount;
-
+	TArray<FPrimitiveInstanceId> MeshIDs;
 	TArray<bool> CreditsPickupDebugList;
+	// -- end
 
-	/* Active VFX mapped to CreditsPickupDataList */
-	UPROPERTY()
-	TArray<UNiagaraComponent*> CreditFXList;
+	FPrimitiveInstanceId AddMeshInstance(FVector InLocation);
 
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UNiagaraSystem> CoinPickupFXTemplate;
-
-	UPROPERTY(EditAnywhere)
-	float PickupRadius = 200;
+	void CreateWorldISM();
 
 	virtual void Tick(float DeltaTime) override;
 

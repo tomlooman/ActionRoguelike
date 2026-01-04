@@ -127,7 +127,9 @@ void ARogueProjectile::Explode_Implementation()
 
 	UGameplayStatics::PlayWorldCameraShake(this, ImpactShake, GetActorLocation(), ImpactShakeInnerRadius, ImpactShakeOuterRadius);
 
+	// @todo: only destroy on host. the client should only make itself dormant.
 	//Destroy();
+	
 	// Release back to pool instead of destroying
 	URogueActorPoolingSubsystem* PoolingSubsystem = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
 	PoolingSubsystem->ReleaseToPool(this);

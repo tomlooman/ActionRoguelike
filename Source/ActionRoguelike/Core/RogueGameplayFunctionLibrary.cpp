@@ -38,6 +38,13 @@ URogueActionComponent* URogueGameplayFunctionLibrary::GetActionComponentFromActo
 
 bool URogueGameplayFunctionLibrary::IsAlive(AActor* InActor)
 {
+	// Allow nullptr as BP may pass in non exist
+	if (!IsValid(InActor))
+	{
+		UE_LOG(LogGame, Warning, TEXT("Checking IsAlive on invalid or nullptr Actor: %s"), *GetNameSafe(InActor));
+		return false;
+	}
+	
 	URogueActionComponent* ActionComp = GetActionComponentFromActor(InActor);
 	check(ActionComp);
 
@@ -71,14 +78,12 @@ bool URogueGameplayFunctionLibrary::IsFullHealth(AActor* InActor)
 
 bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient, FGameplayTagContainer InContextTags)
 {
-	if (!TargetActor->CanBeDamaged())
+	if (!CanApplyDamage(DamageCauser, TargetActor))
 	{
-		// Support things like godmode for player
 		return false;
 	}
 	
 	URogueActionComponent* InstigatorComp = GetActionComponentFromActor(DamageCauser);
-
 	// Blueprint might be missing the component for now
 	if (InstigatorComp == nullptr)
 	{
@@ -87,7 +92,6 @@ bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* Ta
 	}
 
 	FRogueAttribute* FoundAttribute = InstigatorComp->GetAttribute(SharedGameplayTags::Attribute_AttackDamage);
-
 	// We might not have implemented the new attributes on every actor yet.
 	if (FoundAttribute == nullptr)
 	{
@@ -115,8 +119,6 @@ bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* Ta
 		EAttributeModifyType::AddBase,
 		InContextTags);
 
-	// Could pass through dead enemies
-	// @todo: "pass through" enemies is not a great handling as clients will never apply attribute change
 	VictimComp->ApplyAttributeChange(AttriMod);
 	return true;
 }
@@ -124,6 +126,11 @@ bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* Ta
 
 bool URogueGameplayFunctionLibrary::ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient, const FHitResult& HitResult, FGameplayTagContainer InContextTags)
 {
+	if (!CanApplyDamage(DamageCauser, TargetActor))
+	{
+		return false;
+	}
+	
 	if (ApplyDamage(DamageCauser, TargetActor, DamageCoefficient, InContextTags))
 	{
 		UPrimitiveComponent* HitComp = HitResult.GetComponent();
@@ -145,6 +152,15 @@ bool URogueGameplayFunctionLibrary::ApplyDirectionalDamage(AActor* DamageCauser,
 	//UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, nullptr, DamageCauser, nullptr);
 
 	return false;
+}
+
+bool URogueGameplayFunctionLibrary::CanApplyDamage(AActor* DamageCauser, AActor* TargetActor, FGameplayTagContainer InContextTags)
+{
+	// @todo: verify if damagecauser (aka instigator on projectiles) isnt sometimes nullptr on clients
+	check(DamageCauser);
+	check(IsValid(TargetActor));
+	
+	return TargetActor->CanBeDamaged();
 }
 
 /*

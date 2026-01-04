@@ -50,6 +50,8 @@ void ARogueGameState::BeginPlay()
 
 	// Init with subsystem so we can access the world and subsystem within the struct during replication
 	ProjectileData.OwningSubsystem = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>();
+
+	CoinPickupData.OwningSubsystem = GetWorld()->GetSubsystem<URoguePickupSubsystem>();
 }
 
 void ARogueGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -57,4 +59,5 @@ void ARogueGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ARogueGameState, ProjectileData);
+	DOREPLIFETIME(ARogueGameState, CoinPickupData);
 }
