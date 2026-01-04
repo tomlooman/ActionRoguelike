@@ -13,7 +13,7 @@
 class URogueProjectileData;
 class UNiagaraComponent;
 class UNiagaraSystem;
-struct FProjectileConfig;
+struct FProjectileItem;
 
 USTRUCT()
 struct FProjectileInstance
@@ -78,7 +78,7 @@ public:
 
 	virtual TStatId GetStatId() const override;
 
-	void SpawnImpactFX(const UWorld* World, const FProjectileConfig& ProjConfig, FVector ImpactPosition, FRotator ImpactRotation);
+	void SpawnImpactFX(const UWorld* World, const FProjectileItem& ProjConfig, FVector ImpactPosition, FRotator ImpactRotation);
 	
 	uint32 GetUniqueProjID(FVector InPos, float InGameTime);
 	

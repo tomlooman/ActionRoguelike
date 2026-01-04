@@ -56,7 +56,7 @@ void URogueProjectilesSubsystem::InternalCreateProjectile(FVector InPosition, FV
 		
 	UWorld* World = GetWorld();
 	// Now assign the FX Comp to the ProjectileConfig already in the local array
-	FProjectileConfigArray& ProjectileConfigs = World->GetGameState<ARogueGameState>()->ProjectileData;
+	FProjectileArray& ProjectileConfigs = World->GetGameState<ARogueGameState>()->ProjectileData;
 	
 	// Active data that represents the moving projectile
 	FProjectileInstance ProjInfo = FProjectileInstance(InPosition, InDirection * ProjectileConfig->InitialSpeed, NewID);
@@ -73,8 +73,8 @@ void URogueProjectilesSubsystem::InternalCreateProjectile(FVector InPosition, FV
 	EffectComp->SetVariablePosition(UserParamName, LocalVelocity);
 
 	// May exist on the client that spawned this through "prediction"
-	FProjectileConfig* Data = ProjectileConfigs.Items.FindByPredicate(
-	[NewID](FProjectileConfig& Item){ return NewID == Item.ID;  });
+	FProjectileItem* Data = ProjectileConfigs.Items.FindByPredicate(
+	[NewID](FProjectileItem& Item){ return NewID == Item.ID;  });
 
 	// Expected on server or when a client spawns his own projectile before calling the server (RPC)
 	if (Data)
@@ -85,7 +85,7 @@ void URogueProjectilesSubsystem::InternalCreateProjectile(FVector InPosition, FV
 	{
 		float ExpirationGameTime = World->TimeSeconds + ProjectileConfig->Lifespan;
 		// Full data of the projectile instance, used for bookkeeping and replication, not constantly updated
-		FProjectileConfig Info = FProjectileConfig(InPosition, InDirection, ProjectileConfig, InstigatorActor, NewID, ExpirationGameTime);
+		FProjectileItem Info = FProjectileItem(InPosition, InDirection, ProjectileConfig, InstigatorActor, NewID, ExpirationGameTime);
 		
 		Info.TracerEffectComp = EffectComp;
 
@@ -102,10 +102,10 @@ void URogueProjectilesSubsystem::RemoveProjectileID(uint32 IdToRemove)
 {
 	UWorld* World = GetWorld();
 
-	FProjectileConfigArray& DataArray = World->GetGameState<ARogueGameState>()->ProjectileData;
+	FProjectileArray& DataArray = World->GetGameState<ARogueGameState>()->ProjectileData;
 
 	// @todo: faster lookup available like a local TMap cache
-	FProjectileConfig& ProjConfig = *DataArray.Items.FindByPredicate([IdToRemove](FProjectileConfig& Item){ return IdToRemove == Item.ID;  });
+	FProjectileItem& ProjConfig = *DataArray.Items.FindByPredicate([IdToRemove](FProjectileItem& Item){ return IdToRemove == Item.ID;  });
 	
 	if (ProjConfig.TracerEffectComp)
 	{
@@ -153,7 +153,7 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 		return;
 	}
 
-	FProjectileConfigArray& ProjectileConfigs = World->GetGameState<ARogueGameState>()->ProjectileData;
+	FProjectileArray& ProjectileConfigs = World->GetGameState<ARogueGameState>()->ProjectileData;
 
 	TRACE_COUNTER_SET(LightweightProjectilesCount, ProjectileInstances.Num());
 	
@@ -188,7 +188,7 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 				// As far as we can move till hit
 				Proj.Position = HitResults.Last().Location;
 				
-				FProjectileConfig& ProjConfig = *ProjectileConfigs.Items.FindByPredicate([Proj](const FProjectileConfig& OtherProj){ return Proj.ID == OtherProj.ID;  });
+				FProjectileItem& ProjConfig = *ProjectileConfigs.Items.FindByPredicate([Proj](const FProjectileItem& OtherProj){ return Proj.ID == OtherProj.ID;  });
 		
 				//DrawDebugSphere(World, Proj.Position, Shape.GetSphereRadius(), 20, FColor::Green, false, 2.0f);
 		
@@ -214,7 +214,7 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 				FHitResult& Hit = HitResults[HitIndex];
 				AActor* HitActor = Hit.GetActor();
 
-				FProjectileConfig& ProjConfig = *ProjectileConfigs.Items.FindByPredicate([Proj](const FProjectileConfig& OtherProj){ return Proj.ID == OtherProj.ID;  });
+				FProjectileItem& ProjConfig = *ProjectileConfigs.Items.FindByPredicate([Proj](const FProjectileItem& OtherProj){ return Proj.ID == OtherProj.ID;  });
 			
 				if (HitActor->CanBeDamaged())
 				{
@@ -267,7 +267,7 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 		{
 			int32 HitID = ProjectileHitIDs[i];
 			
-			FProjectileConfig& ProjConfig = *ProjectileConfigs.Items.FindByPredicate([HitID](const FProjectileConfig& OtherProj){ return HitID == OtherProj.ID;  });
+			FProjectileItem& ProjConfig = *ProjectileConfigs.Items.FindByPredicate([HitID](const FProjectileItem& OtherProj){ return HitID == OtherProj.ID;  });
 
 			// Apply Damage (server-only, misc. stuff like impulses still runs on clients too)
 			// @todo-fixme: disabled damage to make things much easier to test
@@ -288,7 +288,7 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 		float CurrGameTime = GetWorld()->TimeSeconds;
 		for (int Index = ProjectileConfigs.Items.Num() - 1; Index >= 0; --Index)
 		{
-			FProjectileConfig& Item = ProjectileConfigs.Items[Index];
+			FProjectileItem& Item = ProjectileConfigs.Items[Index];
 			// Is the projectile older than MaxLifespan seconds into the past
 			if (Item.ExpirationGameTime < CurrGameTime)
 			{
@@ -303,7 +303,7 @@ void URogueProjectilesSubsystem::Tick(float DeltaTime)
 }
 
 
-void URogueProjectilesSubsystem::SpawnImpactFX(const UWorld* World, const FProjectileConfig& ProjConfig, FVector ImpactPosition, FRotator ImpactRotation)
+void URogueProjectilesSubsystem::SpawnImpactFX(const UWorld* World, const FProjectileItem& ProjConfig, FVector ImpactPosition, FRotator ImpactRotation)
 {
 	// Impact Explosion
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, ProjConfig.ConfigDataAsset->ImpactEffect, ImpactPosition, ImpactRotation,
