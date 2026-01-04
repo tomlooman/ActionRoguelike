@@ -60,7 +60,7 @@ bool URogueGameplayFunctionLibrary::KillActor(AActor* InActor)
 	URogueActionComponent* ActionComp = URogueActionComponent::GetActionComponent(InActor);
 	const FRogueAttribute* HealthMaxAttribute = ActionComp->GetAttribute(SharedGameplayTags::Attribute_HealthMax);
 	
-	return ActionComp->ApplyAttributeChange(SharedGameplayTags::Attribute_Health, HealthMaxAttribute->GetValue(),
+	return ActionComp->ApplyAttributeChange(SharedGameplayTags::Attribute_Health, -HealthMaxAttribute->GetValue(),
 		InActor, EAttributeModifyType::AddBase);
 }
 
