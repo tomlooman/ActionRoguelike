@@ -15,12 +15,12 @@
 
 void URoguePickupSubsystem::AddCreditsPickup(FVector Origin, int32 CreditAmount)
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE(RoguePickupSubsystem::AddCreditsPickup)
+	
 	ENetMode NetMode = GetWorld()->GetNetMode();
 	// Clients only react to data received from host
 	check(GetWorld()->GetNetMode() != NM_Client);
 
-	TRACE_CPUPROFILER_EVENT_SCOPE(RoguePickupSubsystem::AddCreditsPickup)
-	
 	CreditPickupLocations.Add(Origin);
 	CreditPickupAmount.Add(CreditAmount);
 	
@@ -42,14 +42,14 @@ void URoguePickupSubsystem::AddCreditsPickup(FVector Origin, int32 CreditAmount)
 
 void URoguePickupSubsystem::RemoveCreditsPickup(int32 InIndex)
 {
-	check(GetWorld()->GetNetMode() != NM_Client);
-	
 	TRACE_CPUPROFILER_EVENT_SCOPE(RoguePickupSubsystem::RemoveCreditsPickup)
+	
+	ENetMode NetMode = GetWorld()->GetNetMode();
+	check(NetMode != NM_Client);
 	
 	CreditPickupLocations.RemoveAt(InIndex);
 	CreditPickupAmount.RemoveAt(InIndex);
 
-	ENetMode NetMode = GetWorld()->GetNetMode();
 	// Playing any networked game, clients should not reach here in the first place
 	if (NetMode > NM_Standalone)
 	{
@@ -176,4 +176,10 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 	{
 		//DrawDebugBox(World, CreditPickupLocations[Index], FVector(5.0f), FColor::Blue);
 	}
+}
+
+bool URoguePickupSubsystem::IsTickable() const
+{
+	// Run everywhere except clients. Only standalone/host will check for "overlaps" during tick
+	return GetWorld()->GetNetMode() < NM_Client;
 }

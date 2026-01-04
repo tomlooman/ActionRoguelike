@@ -51,4 +51,6 @@ protected:
 	{
 		RETURN_QUICK_DECLARE_CYCLE_STAT(URoguePickupSubsystem, STATGROUP_Tickables);
 	}
+
+	virtual bool IsTickable() const override;
 };
