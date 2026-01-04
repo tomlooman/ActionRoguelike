@@ -6,6 +6,7 @@
 #include "EngineUtils.h"
 #include "SharedGameplayTags.h"
 #include "ActionSystem/RogueActionComponent.h"
+#include "Components/AudioComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Core/RogueDeveloperSettings.h"
 #include "Core/RogueGameState.h"
@@ -108,6 +109,19 @@ void URoguePickupSubsystem::CreateWorldISM()
 	WorldISM->RegisterComponentWithWorld(World);
 }
 
+
+void URoguePickupSubsystem::PlayPickupSound()
+{
+	if (!CoinPickupAudioComp->IsPlaying())
+	{
+		CoinPickupAudioComp->Play();
+	}
+
+	// by repeatedly triggering this event we play a sequence of higher pitched pickups
+	// The metasound handles "resetting" the pitch of the pickup sequence automatically
+	CoinPickupAudioComp->SetTriggerParameter("CoinPickedUp");
+}
+
 void URoguePickupSubsystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -129,6 +143,7 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 		for (ARoguePlayerCharacter* PlayerPawn : TActorRange<ARoguePlayerCharacter>(World))
 		{
 			Players.Add(PlayerPawn->GetActorLocation());
+			PlayerPawns.Add(PlayerPawn);
 		}
 
 		// @todo: make this a player configured stat or attribute
@@ -165,9 +180,18 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 		// Award each player
 		for (int i = 0; i < PlayerPawns.Num(); ++i)
 		{
-			FAttributeModification Mod = FAttributeModification(SharedGameplayTags::Attribute_Credits, TotalCreditsPerPlayer[i]);
+			int32 AwardAmount = TotalCreditsPerPlayer[i];
+			if (AwardAmount == 0)
+			{
+				continue;
+			}
+			
+			FAttributeModification Mod = FAttributeModification(SharedGameplayTags::Attribute_Credits, AwardAmount);
 
 			PlayerPawns[i]->GetActionComponent()->ApplyAttributeChange(Mod);
+
+			// @todo: play sound properly for networked players...eg. they receive these credits w/ a pickup contextTag
+			PlayPickupSound();
 		}
 	}
 
@@ -182,4 +206,19 @@ bool URoguePickupSubsystem::IsTickable() const
 {
 	// Run everywhere except clients. Only standalone/host will check for "overlaps" during tick
 	return GetWorld()->GetNetMode() < NM_Client;
+}
+
+void URoguePickupSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+
+	UWorld* World = GetWorld();
+
+	// Temp sync loading of the sound, can hitch
+	USoundBase* SoundAsset = GetDefault<URogueDeveloperSettings>()->PickupCoinSound.LoadSynchronous();
+		
+	CoinPickupAudioComp = NewObject<UAudioComponent>(World, NAME_None, RF_Transient);
+	CoinPickupAudioComp->SetSound(SoundAsset);
+	CoinPickupAudioComp->bAutoActivate = false;
+	CoinPickupAudioComp->RegisterComponentWithWorld(World);
 }

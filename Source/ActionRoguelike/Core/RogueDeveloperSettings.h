@@ -19,6 +19,9 @@ public:
 	/* Pickup Subsystem - Coin Mesh used in ISMs */
 	UPROPERTY(Config, EditDefaultsOnly, Category = "PickupSubsystem")
 	TSoftObjectPtr<UStaticMesh> PickupCoinMesh;
+
+	UPROPERTY(Config, EditDefaultsOnly, Category = "PickupSubsystem")
+	TSoftObjectPtr<USoundBase> PickupCoinSound;
 	
 	virtual FName GetCategoryName() const override;
 };

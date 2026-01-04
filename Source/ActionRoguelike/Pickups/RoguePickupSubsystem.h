@@ -41,9 +41,14 @@ protected:
 
 	void CreateWorldISM();
 
+	void PlayPickupSound();
+
 	/* Single ISM that holds all coins, registered directly with the world instead of Actor wrapper */
 	UPROPERTY()
 	TObjectPtr<UInstancedStaticMeshComponent> WorldISM;
+	
+	UPROPERTY()
+	TObjectPtr<UAudioComponent> CoinPickupAudioComp;
 
 	virtual void Tick(float DeltaTime) override;
 
@@ -53,4 +58,6 @@ protected:
 	}
 
 	virtual bool IsTickable() const override;
+
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 };
