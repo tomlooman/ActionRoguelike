@@ -88,6 +88,12 @@ TArray<FPrimitiveInstanceId> URoguePickupSubsystem::AddMeshInstances(const TArra
 	return WorldISM->AddInstancesById(InAdded, true, false);
 }
 
+void URoguePickupSubsystem::RemoveMeshInstances(const TArray<FPrimitiveInstanceId>& IdsToRemove)
+{
+	check(WorldISM);
+	WorldISM->RemoveInstancesById(IdsToRemove, false);
+}
+
 
 void URoguePickupSubsystem::CreateWorldISM()
 {
@@ -151,7 +157,6 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 				TotalCredits += CreditPickupAmount[ProcessList[i]];
 				
 				RemoveCreditsPickup(ProcessList[i]);
-				//CreditsPickupDebugList[ProcessList[i]] = true;
 			}
 
 			TotalCreditsPerPlayer.Add(TotalCredits);
@@ -169,6 +174,6 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 	// Debug Rendering
 	//for (int Index = 0; Index < CreditPickupLocations.Num(); ++Index)
 	{
-		//DrawDebugBox(World, CreditPickupLocations[Index], FVector(5.0f), /*CreditsPickupDebugList[Index] ? FColor::Green :*/ FColor::Blue);
+		//DrawDebugBox(World, CreditPickupLocations[Index], FVector(5.0f), FColor::Blue);
 	}
 }

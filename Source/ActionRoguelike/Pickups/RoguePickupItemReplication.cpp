@@ -47,6 +47,5 @@ void FPickupLocationsArray::PreReplicatedRemove(const TArrayView<int32>& Removed
 		IDsToRemove.Add(Items[RemovedIndex].ID);
 	}
 
-	check(OwningSubsystem->WorldISM);
-	OwningSubsystem->WorldISM->RemoveInstancesById(IDsToRemove, false);
+	OwningSubsystem->RemoveMeshInstances(IDsToRemove);
 }

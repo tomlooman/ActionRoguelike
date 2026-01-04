@@ -25,9 +25,7 @@ public:
 
 	TArray<FPrimitiveInstanceId> AddMeshInstances(const TArray<FTransform>& InAdded);
 
-	/* Single ISM that holds all coins, registered directly with the world instead of Actor wrapper */
-	UPROPERTY()
-	TObjectPtr<UInstancedStaticMeshComponent> WorldISM;
+	void RemoveMeshInstances(const TArray<FPrimitiveInstanceId>& IdsToRemove);
 
 protected:
 	
@@ -37,12 +35,15 @@ protected:
 	TArray<FVector> CreditPickupLocations;
 	TArray<int32> CreditPickupAmount;
 	TArray<FPrimitiveInstanceId> MeshIDs;
-	TArray<bool> CreditsPickupDebugList;
 	// -- end
 
 	FPrimitiveInstanceId AddMeshInstance(FVector InLocation);
 
 	void CreateWorldISM();
+
+	/* Single ISM that holds all coins, registered directly with the world instead of Actor wrapper */
+	UPROPERTY()
+	TObjectPtr<UInstancedStaticMeshComponent> WorldISM;
 
 	virtual void Tick(float DeltaTime) override;
 
