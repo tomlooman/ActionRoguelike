@@ -176,7 +176,7 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 			}
 		}
 
-		// Replaces the above "old" method of requiring unique material instances for every mesh element on the player 
+		// Read by the Overlay Material to flash
 		GetMesh()->SetCustomPrimitiveDataFloat(HitFlash_CustomPrimitiveIndex, GetWorld()->TimeSeconds);
 
 		// We can skip rendering this at a distance
