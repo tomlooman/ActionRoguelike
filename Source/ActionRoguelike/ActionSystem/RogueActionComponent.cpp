@@ -74,6 +74,19 @@ FRogueAttribute* URogueActionComponent::GetAttribute(FGameplayTag InAttributeTag
 	return nullptr;
 }
 
+float URogueActionComponent::GetAttributeValue(FGameplayTag InAttributeTag)
+{
+	check(AttributeSet);
+		
+	FRogueAttribute** FoundAttribute = AttributeSet->AttributeCache.Find(InAttributeTag);
+	if (FoundAttribute)
+	{
+		return (*FoundAttribute)->GetValue();
+	}
+
+	return 0.0f;
+}
+
 
 bool URogueActionComponent::K2_GetAttribute(FGameplayTag InAttributeTag, float& CurrentValue, float& Base, float& Delta)
 {

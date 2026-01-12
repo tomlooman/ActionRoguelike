@@ -51,6 +51,8 @@ public:
 
 	FRogueAttribute* GetAttribute(FGameplayTag InAttributeTag);
 
+	float GetAttributeValue(FGameplayTag InAttributeTag);
+
 	//UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Attributes, meta = (Keywords = "Add, Set"))
 	bool ApplyAttributeChange(const FAttributeModification& Modification);
 
