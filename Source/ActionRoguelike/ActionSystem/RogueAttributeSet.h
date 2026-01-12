@@ -238,5 +238,11 @@ class URogueMonsterAttributeSet : public URoguePawnAttributeSet
 {
 	GENERATED_BODY()
 
+	URogueMonsterAttributeSet()
+	{
+		// Override with lower default attack damage than players
+		AttackDamage = FRogueAttribute(10);
+	}
+
 };
 
