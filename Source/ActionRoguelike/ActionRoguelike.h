@@ -9,6 +9,8 @@
 // Define category "LogGame"
 ACTIONROGUELIKE_API DECLARE_LOG_CATEGORY_EXTERN(LogGame, Log, All);
 
+#define NAME_TargetActor "TargetActor"
+
 // Define alias to easily keep track of custom channels in C++ (must match what is specified in Project Settings > Collision 
 #define COLLISION_PROJECTILE ECC_GameTraceChannel1
 #define TRACE_INTERACT ECC_GameTraceChannel2
