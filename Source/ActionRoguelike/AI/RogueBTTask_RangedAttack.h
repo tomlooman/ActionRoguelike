@@ -29,4 +29,6 @@ class ACTIONROGUELIKE_API URogueBTTask_RangedAttack : public UBTTaskNode
 	float MaxBulletSpread = 5.0f;
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
+	URogueBTTask_RangedAttack();
 };
