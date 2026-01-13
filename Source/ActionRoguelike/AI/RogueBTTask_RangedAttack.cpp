@@ -12,7 +12,7 @@
 
 UDEPRECATED_URogueBTTask_RangedAttack::UDEPRECATED_URogueBTTask_RangedAttack()
 {
-	TargetActorKey.SelectedKeyName = "TargetActor";
+	TargetActorKey.SelectedKeyName = NAME_TargetActor;
 }
 
 

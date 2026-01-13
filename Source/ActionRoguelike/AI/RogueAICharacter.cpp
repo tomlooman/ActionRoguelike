@@ -262,7 +262,7 @@ AActor* ARogueAICharacter::GetTargetActor() const
 	// Not guaranteed to be possessed (as we may use this in the AnimBP)
 	if (AIC)
 	{
-		return Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject("TargetActor"));
+		return Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject(NAME_TargetActor));
 	}
 	return nullptr;
 }

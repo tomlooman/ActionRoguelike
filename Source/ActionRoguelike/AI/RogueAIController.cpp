@@ -29,7 +29,7 @@ void ARogueAIController::BeginPlay()
 
 	// Setup a listener to check black board for target getting set so we can notify (clients) via a UI popup that they were spotted	
 	UBlackboardComponent* BBComp = GetBlackboardComponent();
-	BBComp->RegisterObserver(BBComp->GetKeyID(TEXT("TargetActor")), this,
+	BBComp->RegisterObserver(BBComp->GetKeyID(NAME_TargetActor), this,
 		FOnBlackboardChangeNotification::CreateUObject(this, &ThisClass::OnTargetActorChanged));
 }
 
@@ -45,7 +45,7 @@ void ARogueAIController::PreRegisterAllComponents()
 EBlackboardNotificationResult ARogueAIController::OnTargetActorChanged(const UBlackboardComponent& Comp, FBlackboard::FKey KeyID)
 {
 	// Filter to only players as something we want to notify
-	ARoguePlayerCharacter* TargetPlayer = Cast<ARoguePlayerCharacter>(Comp.GetValueAsObject("TargetActor"));
+	ARoguePlayerCharacter* TargetPlayer = Cast<ARoguePlayerCharacter>(Comp.GetValueAsObject(NAME_TargetActor));
 	if (TargetPlayer)
 	{
 		// This will be running on the host/server as AI controllers only exist there, therefor we run a Client RPC on the character

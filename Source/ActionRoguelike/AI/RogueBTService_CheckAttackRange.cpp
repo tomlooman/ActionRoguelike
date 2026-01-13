@@ -2,6 +2,8 @@
 
 
 #include "AI/RogueBTService_CheckAttackRange.h"
+
+#include "ActionRoguelike.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 #include "Core/RogueDeferredTaskSystem.h"
@@ -23,7 +25,7 @@ namespace DevelopmentOnly
 
 URogueBTService_CheckAttackRange::URogueBTService_CheckAttackRange()
 {
-	TargetActorKey.SelectedKeyName = "TargetActor";
+	TargetActorKey.SelectedKeyName = NAME_TargetActor;
 }
 
 
