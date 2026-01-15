@@ -41,6 +41,10 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnHealthChanged OnHealthChanged;
 
+	float GetHealth() const;
+
+	float GetHealthMax() const;
+
 protected:
 
 	UPROPERTY(BlueprintReadOnly, Category="Attributes")

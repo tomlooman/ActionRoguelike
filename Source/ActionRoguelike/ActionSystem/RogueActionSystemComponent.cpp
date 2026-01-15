@@ -27,3 +27,13 @@ bool URogueActionSystemComponent::IsFullHealth() const
 {
 	return FMath::IsNearlyEqual(Attributes.HealthMax, Attributes.Health);
 }
+
+float URogueActionSystemComponent::GetHealth() const
+{
+	return Attributes.Health;
+}
+
+float URogueActionSystemComponent::GetHealthMax() const
+{
+	return Attributes.HealthMax;
+}
