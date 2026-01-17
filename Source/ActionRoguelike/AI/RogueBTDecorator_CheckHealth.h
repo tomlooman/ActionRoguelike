@@ -15,9 +15,6 @@ class ACTIONROGUELIKE_API URogueBTDecorator_CheckHealth : public UBTDecorator
 	GENERATED_BODY()
 
 protected:
-	
-	UPROPERTY(EditAnywhere, Category = "AI")
-	FBlackboardKeySelector LowHealthKey;
 
 	/* Threshold that is considered 'low health' (eg. 0.3 is 30% of maximum hitpoints) */
 	UPROPERTY(EditAnywhere, Category = "AI", meta = (ClampMin="0.0", ClampMax="1.0"))
