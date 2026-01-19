@@ -10,13 +10,13 @@
 
 void URogueQueryContext_TargetActor::ProvideContext(FEnvQueryInstance& QueryInstance, FEnvQueryContextData& ContextData) const
 {
-	// Querier should be our AI Controller
-	UObject* QuerierObject = QueryInstance.Owner.Get();
-
-	AAIController* Controller = Cast<AAIController>(QuerierObject);
-	// Querier Could be misconfigured by user inside EQS @todo: impl. log warning
-	if (ensure(Controller))
+	// Expect Pawn/Character as instigator/owner
+	APawn* QuerierPawn = Cast<APawn>(QueryInstance.Owner.Get());
+	if (ensure(QuerierPawn))
 	{
+		AAIController* Controller = Cast<AAIController>(QuerierPawn->GetController());
+		check(Controller);
+		
 		AActor* TargetActor = Cast<AActor>(Controller->GetBlackboardComponent()->GetValueAsObject(TargetActorName));
 
 		UEnvQueryItemType_Actor::SetContextHelper(ContextData, TargetActor);		
