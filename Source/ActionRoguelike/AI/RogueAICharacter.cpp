@@ -24,6 +24,7 @@
 #include "AnimationBudgetAllocator/Private/AnimationBudgetAllocatorModule.h"
 #include "Core/RogueMessagingSubsystem.h"
 #include "Pickups/RoguePickupSubsystem.h"
+#include "Subsystems/RogueMonsterCorpseSubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueAICharacter)
 
@@ -234,8 +235,9 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			GetCharacterMovement()->DisableMovement();
 
-			// set lifespan
-			SetLifeSpan(10.0f);
+			//SetLifeSpan(10.0f);
+			URogueMonsterCorpseSubsystem* CorpseSystem = GetWorld()->GetSubsystem<URogueMonsterCorpseSubsystem>();
+			CorpseSystem->AddCorpse(this);
 			return;
 		}
 
