@@ -38,6 +38,8 @@ public:
 
 	void StartAction(FName InActionName);
 
+	void StopAction(FName InActionName);
+
 	void ApplyHealthChange(float InValueChange);
 
 	bool IsFullHealth() const;
