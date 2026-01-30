@@ -19,9 +19,9 @@ struct FMonsterCorpseInfo
 		: Actor(InActor), TimeAdded(TimeOfDeath)
 	{}
 
-	float TimeAdded = 0.0f;
-
 	TWeakObjectPtr<AActor> Actor = nullptr;
+	
+	float TimeAdded = 0.0f;
 };
 
 

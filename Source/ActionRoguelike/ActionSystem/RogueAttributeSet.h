@@ -132,13 +132,13 @@ public:
 
 		for (TFieldIterator<FStructProperty> PropertyIt(GetClass()); PropertyIt; ++PropertyIt)
 		{
-			const FRogueAttribute* FoundAttribute = PropertyIt->ContainerPtrToValuePtr<FRogueAttribute>(this);
+			FRogueAttribute* FoundAttribute = PropertyIt->ContainerPtrToValuePtr<FRogueAttribute>(this);
 
 			// Build the tag "Attribute.Health" where "Health" is the variable name of the RogueAttribute we just iterated
 			FString TagName = TEXT("Attribute." + PropertyIt->GetName());
 			FGameplayTag AttributeTag = FGameplayTag::RequestGameplayTag(FName(TagName));
 
-			AttributeCache.Add(AttributeTag, const_cast<FRogueAttribute*>(FoundAttribute));
+			AttributeCache.Add(AttributeTag, FoundAttribute);
 		}
 	}
 	
