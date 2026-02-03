@@ -30,7 +30,7 @@ void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueAction> NewActio
     Actions.Add(NewAction);
 }
 
-void URogueActionSystemComponent::StartAction(FName InActionName)
+void URogueActionSystemComponent::StartAction(FGameplayTag InActionName)
 {
 	for (URogueAction* Action : Actions)
 	{
@@ -48,7 +48,7 @@ void URogueActionSystemComponent::StartAction(FName InActionName)
 	UE_LOG(LogTemp, Warning, TEXT("No Action found with name %s"), *InActionName.ToString());
 }
 
-void URogueActionSystemComponent::StopAction(FName InActionName)
+void URogueActionSystemComponent::StopAction(FGameplayTag InActionName)
 {
 	for (URogueAction* Action : Actions)
 	{
