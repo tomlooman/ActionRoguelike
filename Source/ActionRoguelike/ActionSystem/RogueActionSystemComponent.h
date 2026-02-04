@@ -8,23 +8,8 @@
 #include "RogueActionSystemComponent.generated.h"
 
 
+class URogueAttributeSet;
 class URogueAction;
-
-USTRUCT(BlueprintType)
-struct FRogueAttributeSet
-{
-	GENERATED_BODY()
-	
-	FRogueAttributeSet() :
-	Health(100.0f),
-	HealthMax(100.0f) {}
-
-	UPROPERTY(BlueprintReadOnly)
-	float Health;
-
-	UPROPERTY(BlueprintReadOnly)
-	float HealthMax;
-};
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, NewHealth, float, OldHealth);
@@ -60,8 +45,11 @@ public:
 
 protected:
 
-	UPROPERTY(BlueprintReadOnly, Category="Attributes")
-	FRogueAttributeSet Attributes;
+	UPROPERTY()
+	TObjectPtr<URogueAttributeSet> Attributes;
+
+	UPROPERTY(EditAnywhere, Category=Attributes, NoClear)
+	TSubclassOf<URogueAttributeSet> AttributeSetClass;
 
 	UPROPERTY()
 	TArray<TObjectPtr<URogueAction>> Actions;
