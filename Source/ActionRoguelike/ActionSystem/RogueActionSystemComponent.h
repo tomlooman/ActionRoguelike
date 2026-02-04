@@ -8,6 +8,7 @@
 #include "RogueActionSystemComponent.generated.h"
 
 
+struct FRogueAttribute;
 class URogueAttributeSet;
 class URogueAction;
 
@@ -33,9 +34,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnHealthChanged OnHealthChanged;
 
-	float GetHealth() const;
-
-	float GetHealthMax() const;
+	FRogueAttribute* GetAttribute(FGameplayTag InAttributeTag);
 
 	virtual void InitializeComponent() override;
 
@@ -47,6 +46,8 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<URogueAttributeSet> Attributes;
+
+	TMap<FGameplayTag, FRogueAttribute*> CachedAttributes;
 
 	UPROPERTY(EditAnywhere, Category=Attributes, NoClear)
 	TSubclassOf<URogueAttributeSet> AttributeSetClass;
