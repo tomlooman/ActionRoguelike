@@ -5,8 +5,11 @@
 
 #include "RogueActionComponent.h"
 #include "SharedGameplayTags.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
+// -- Health Attribute Set -- //
 
 void URogueHealthAttributeSet::OnRep_Health(FRogueAttribute OldValue)
 {
@@ -27,4 +30,13 @@ void URogueHealthAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetime
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(URogueHealthAttributeSet, Health);
+}
+
+// -- Pawn Attribute Set -- //
+
+void URoguePawnAttributeSet::ApplyMovementSpeed()
+{
+	// Assume all Pawns are Characters with CMC (may change with Mover 2.0)
+	ACharacter* OwningCharacter = CastChecked<ACharacter>(OwningComp->GetOwner());
+	OwningCharacter->GetCharacterMovement()->MaxWalkSpeed = MoveSpeed.GetValue();
 }

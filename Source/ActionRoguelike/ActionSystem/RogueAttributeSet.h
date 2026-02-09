@@ -113,7 +113,7 @@ class URogueAttributeSet : public UObject
 
 public:
 
-	void InitializeAttributes(URogueActionComponent* InNewOwningComponent)
+	virtual void InitializeAttributes(URogueActionComponent* InNewOwningComponent)
 	{
 		OwningComp = InNewOwningComponent;
 
@@ -202,6 +202,14 @@ public:
 	URoguePawnAttributeSet() : Super()
 	{
 		AttackDamage = FRogueAttribute(25);
+		MoveSpeed = FRogueAttribute(550);
+	}
+
+	virtual void InitializeAttributes(URogueActionComponent* InNewOwningComponent) override
+	{
+		Super::InitializeAttributes(InNewOwningComponent);
+
+		ApplyMovementSpeed();
 	}
 
 protected:
@@ -210,6 +218,21 @@ protected:
 	 * (a percentage defaulting to 100%) to simplify balancing and scaling during play */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
 	FRogueAttribute AttackDamage;
+
+	/*
+	 * Walking speed directly linked with Character Movement Component
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
+	FRogueAttribute MoveSpeed;
+	
+	virtual void PostAttributeChanged() override
+	{
+		Super::PostAttributeChanged();
+
+		ApplyMovementSpeed();
+	}
+
+	void ApplyMovementSpeed();
 };
 
 UCLASS()
@@ -242,7 +265,8 @@ class URogueMonsterAttributeSet : public URoguePawnAttributeSet
 	{
 		// Override with lower default attack damage than players
 		AttackDamage = FRogueAttribute(10);
+		
+		MoveSpeed = FRogueAttribute(450);
 	}
-
 };
 

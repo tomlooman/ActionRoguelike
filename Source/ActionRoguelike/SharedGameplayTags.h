@@ -23,6 +23,7 @@ namespace SharedGameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attribute_AttackDamage);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attribute_Rage);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attribute_Credits);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attribute_MoveSpeed);
 
 	// Messaging
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Message_MonsterKilled);
