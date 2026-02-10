@@ -80,14 +80,11 @@ protected:
 	void K2_RemoveAttributeListener(FAttributeChangedDynamicSignature Event);
 
 	/* Interchangeable set of attributes such as Health, BaseDamage, Strength, Stamina, MoveSpeed, etc. */
-	UPROPERTY(ReplicatedUsing=OnRep_AttributeSet)
+	UPROPERTY(EditAnywhere, Instanced, NoClear, ReplicatedUsing=OnRep_AttributeSet)
 	TObjectPtr<URogueAttributeSet> AttributeSet;
 
 	UFUNCTION()
 	void OnRep_AttributeSet();
-
-	UPROPERTY(EditDefaultsOnly, Category=Attributes, NoClear)
-	TSubclassOf<URogueAttributeSet> AttributeSetClass = URogueAttributeSet::StaticClass();
 
 	void InitAttributeSet();
 

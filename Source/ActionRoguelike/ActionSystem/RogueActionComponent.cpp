@@ -25,11 +25,17 @@ URogueActionComponent::URogueActionComponent()
 
 
 void URogueActionComponent::InitializeComponent()
-{	
+{
+	// Call before Super:: as we verify we haven't initialized yet
+	if (AttributeSet == nullptr)
+	{
+		SetDefaultAttributeSet(URogueAttributeSet::StaticClass());
+		UE_LOG(LogGame, Warning, TEXT("No default AttributeSet was specified. Set using SetDefaultAttributeSet during Actor construction"
+								"or assign in the Blueprint details panel in the ActionComponent of %s"), *GetNameSafe(GetOwner()));
+	}
+
 	Super::InitializeComponent();
 	
-	// On clients the instance we make here will eventually be replaced by replicated value from the server
-	AttributeSet = NewObject<URogueAttributeSet>(GetOwner(), AttributeSetClass);
 	InitAttributeSet();
 
 	if (GetOwner()->HasAuthority())
@@ -257,6 +263,7 @@ void URogueActionComponent::InitAttributeSet()
 	AttributeSet->InitializeAttributes(this);
 }
 
+
 FAttributeChangedSignature& URogueActionComponent::GetAttributeListenerDelegate(FGameplayTag InTag)
 {
 	return AttributeListenerMap.FindOrAdd(InTag);
@@ -267,8 +274,8 @@ void URogueActionComponent::SetDefaultAttributeSet(TSubclassOf<URogueAttributeSe
 {
 	// Only allow during init
 	check(!HasBeenInitialized());
-
-	AttributeSetClass = InNewClass;
+	
+	AttributeSet = NewObject<URogueAttributeSet>(this, InNewClass, TEXT("Attributes"));
 }
 
 

@@ -106,7 +106,7 @@ struct FRogueAttribute
 	}
 };
 
-UCLASS()
+UCLASS(/*DefaultToInstanced,*/ EditInlineNew)
 class URogueAttributeSet : public UObject
 {
 	GENERATED_BODY()
@@ -173,10 +173,10 @@ public:
 
 protected:
 	
-	UPROPERTY(ReplicatedUsing=OnRep_Health, EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
+	UPROPERTY(ReplicatedUsing=OnRep_Health, EditDefaultsOnly, BlueprintReadOnly, Category=Attributes)
 	FRogueAttribute Health;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Attributes)
 	FRogueAttribute HealthMax;
 
 	virtual void PostAttributeChanged() override
@@ -216,13 +216,13 @@ protected:
 	
 	/* Base Damage value, all skills and damage use this multiplied by a damage coefficient
 	 * (a percentage defaulting to 100%) to simplify balancing and scaling during play */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Attributes)
 	FRogueAttribute AttackDamage;
 
 	/*
 	 * Walking speed directly linked with Character Movement Component
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FRogueAttribute MoveSpeed;
 	
 	virtual void PostAttributeChanged() override
@@ -242,10 +242,10 @@ class URogueSurvivorAttributeSet : public URoguePawnAttributeSet
 
 protected:
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Attributes)
 	FRogueAttribute Rage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Attributes)
 	FRogueAttribute Credits;
 	/*
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
