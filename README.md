@@ -1,6 +1,6 @@
 # Action Roguelike C++ Unreal Engine Game
 
-![Course Header](https://i0.wp.com/www.tomlooman.com/wp-content/uploads/2023/05/coursecpp_banner_widenarrow-3.png)
+![Course Header](https://tomlooman.com/assets/images/coursecpp_banner_widenarrow-3.png)
 
 **Main Branch Engine Version: 5.6** <br>
 
@@ -78,7 +78,7 @@ The project is ocassionally updated to keep up with the latest Unreal Engine rel
 
 **For C++ Course Students: You may use branch "Lecture29-FinishedProject" for finished course code without additions all the way back to UE4.25**
 
-![GitHub Branch Selection Info](https://www.tomlooman.com/wp-content/uploads/2021/01/github_branchesinfo.jpg)
+![GitHub Branch Selection Info](https://tomlooman.com/assets/images/github_branchesinfo.jpg)
 
 # Credits
 
