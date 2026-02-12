@@ -8,6 +8,7 @@
 #include "SharedGameplayTags.h"
 
 
+
 URogueActionSystemComponent::URogueActionSystemComponent()
 {
 	bWantsInitializeComponent = true;
@@ -38,6 +39,13 @@ void URogueActionSystemComponent::InitializeComponent()
 			GrantAction(ActionClass);
 		}
 	}
+}
+
+void URogueActionSystemComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	Attributes->InitializeAttributes();
 }
 
 void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueAction> NewActionClass)
