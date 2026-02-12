@@ -74,9 +74,11 @@ You can get a quick overview by checking out the [initial commit](https://github
 
 # Browsing Older Releases
 
-The project is ocassionally updated to keep up with the latest Unreal Engine release. Additionally, new features are sometimes added to the project, often related to new Articles or Tutorials posted on [tomlooman.com](https://tomlooman.com). These will be included on the main branch, on whatever the latest UE version is at the time.
+The project has been updated over the years to keep up with the latest Unreal Engine release. Additionally, new features are added to the project, often related to new Articles or Tutorials posted on [tomlooman.com](https://tomlooman.com). These will be included on the main branch, on whatever the latest UE version is at the time.
 
-**For C++ Course Students: You may use branch "Lecture29-FinishedProject" for finished course code without additions all the way back to UE4.25**
+**For C++ Course Students:** 
+- For the original UE4 version: View branch [Lecture29-FinishedProject](https://github.com/tomlooman/ActionRoguelike/tree/Lecture29-FinishedProject) for finished course code without additions all the way back to UE4.25.
+- For the new UE5.6 version of the course: [UE5.6-CourseProject](https://github.com/tomlooman/ActionRoguelike/tree/UE5.6-CourseProject) which is also available per individual commit with each lesson of the course.
 
 ![GitHub Branch Selection Info](https://tomlooman.com/assets/images/github_branchesinfo.jpg)
 
