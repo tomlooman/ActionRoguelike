@@ -4,7 +4,7 @@
 
 **Main Branch Engine Version: 5.6** <br>
 
-Please we aware the main branch is a bit of a playground for experimentation of code and systems that may eventually turn into a blog post, or in one of my courses (C++ or Game Optimization). As an example, currently the projectiles have both Object Pooling mechanism AND an experimental Data Oriented Design approach to projectiles using no Actors at all. This may affect stability and is not always supporting multiplayer yet.
+Please be aware the main branch is a bit of a playground for experimentation of code and systems that may eventually turn into a blog post, or in one of my courses (C++ or Game Optimization). As an example, currently the projectiles have both Object Pooling mechanism AND an experimental Data Oriented Design approach to projectiles using no Actors at all. This may affect stability and is not always supporting multiplayer yet.
 
 > ### Learn Unreal Engine C++ The Epic Way
 > **Want to learn how to build this C++ Game from scratch? Learn more at [Professional Game Development in C++ and Unreal Engine Course](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)**
