@@ -54,6 +54,9 @@ public:
 	UFUNCTION(BlueprintCallable, DisplayName="Add Attribute Listener", meta = (Keywords="events,delegate"))
 	void AddDynamicAttributeListener(FOnAttributeDynamicChanged Event, FGameplayTag AttributeTag);
 
+	UFUNCTION(BlueprintCallable, DisplayName="Remove Attribute Listener", meta = (Keywords="events,delegate"))
+	void RemoveDynamicAttributeListener(FOnAttributeDynamicChanged Event);
+
 	virtual void InitializeComponent() override;
 
 	void GrantAction(TSubclassOf<URogueAction> NewActionClass);
