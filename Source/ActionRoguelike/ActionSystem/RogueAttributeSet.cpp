@@ -10,6 +10,7 @@
 URoguePawnAttributeSet::URoguePawnAttributeSet()
 {
 	MoveSpeed = FRogueAttribute(550);
+	MoveSpeedMultiplier = FRogueAttribute(1.0f);
 }
 
 URogueMonsterAttributeSet::URogueMonsterAttributeSet()
@@ -45,7 +46,7 @@ void URoguePawnAttributeSet::InitializeAttributes()
 void URoguePawnAttributeSet::ApplyMoveSpeed()
 {
 	ACharacter* OwningCharacter = Cast<ACharacter>(GetOwningComponent()->GetOwner());
-	OwningCharacter->GetCharacterMovement()->MaxWalkSpeed = MoveSpeed.GetValue();
+	OwningCharacter->GetCharacterMovement()->MaxWalkSpeed = MoveSpeed.GetValue() * MoveSpeedMultiplier.GetValue();
 }
 
 URogueActionSystemComponent* URogueAttributeSet::GetOwningComponent() const
