@@ -204,20 +204,32 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 				// Clears active actions, and (de)buffs.
 				ActionComp->StopAllActions();
 
-#if USE_DOD_CREDIT_PICKUPS
+#if USE_DOD_COIN_PICKUPS
 				// spawn credit loot, spawn a ton of them for stress testing
 				URoguePickupSubsystem* PickupSubsystem = GetWorld()->GetSubsystem<URoguePickupSubsystem>();
 				FVector ActorLoc = GetActorLocation();
-				const FVector Offset = FVector(0,0,30);
+				const FVector CoinOffset = FVector(0,0,30);
 
+				// @todo: reduce to reasonable and psuedo random number, 100 is for testing
 				const int32 SpawnCount = 100;
+				TArray<FVector> CoinLocations;
+				CoinLocations.Reserve(SpawnCount);
+
+				TArray<int32> CoinAmounts;
+				CoinAmounts.Reserve(SpawnCount);
+				
 				for (int i = 0; i < SpawnCount; ++i)
 				{
 					FNavLocation OutNavLoc;
 					UNavigationSystemV1::GetNavigationSystem(this)->GetRandomPointInNavigableRadius(ActorLoc, 1024, OutNavLoc);
 
-					PickupSubsystem->AddCreditsPickup(OutNavLoc.Location + Offset, 10);
+					CoinLocations.Add(OutNavLoc.Location + CoinOffset);
+					//PickupSubsystem->AddCoinsPickup(OutNavLoc.Location + Offset, 10);
+					// @todo: add random amount or grab an amount from the minion data asset
+					CoinAmounts.Add(10);
 				}
+
+				PickupSubsystem->AddCoinsPickup(CoinLocations, CoinAmounts);
 #endif
 
 #if USE_TAGMESSAGING_SYSTEM

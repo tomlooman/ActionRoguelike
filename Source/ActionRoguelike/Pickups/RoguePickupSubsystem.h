@@ -9,7 +9,7 @@
 class UInstancedStaticMeshComponent;
 
 // Easy toggle to remove the use case testing from game code
-#define USE_DOD_CREDIT_PICKUPS 1
+#define USE_DOD_COIN_PICKUPS 1
 
 /**
  * 
@@ -21,7 +21,7 @@ class ACTIONROGUELIKE_API URoguePickupSubsystem : public UTickableWorldSubsystem
 
 public:
 	
-	void AddCreditsPickup(FVector Origin, int32 CreditAmount);
+	void AddCoinsPickup(TArray<FVector> Locations, TArray<int32> CoinAmount);
 
 	TArray<FPrimitiveInstanceId> AddMeshInstances(const TArray<FTransform>& InAdded);
 
@@ -29,11 +29,11 @@ public:
 
 protected:
 	
-	void RemoveCreditsPickup(int32 InIndex);
+	void RemoveCoinsPickup(int32 InIndex);
 
 	// -- These arrays are in sync
-	TArray<FVector> CreditPickupLocations;
-	TArray<int32> CreditPickupAmount;
+	TArray<FVector> CoinPickupLocations;
+	TArray<int32> CoinPickupAmount;
 	TArray<FPrimitiveInstanceId> MeshIDs;
 	// -- end
 

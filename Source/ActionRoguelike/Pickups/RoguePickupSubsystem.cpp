@@ -14,42 +14,55 @@
 
 
 
-void URoguePickupSubsystem::AddCreditsPickup(FVector Origin, int32 CreditAmount)
+void URoguePickupSubsystem::AddCoinsPickup(TArray<FVector> Locations, TArray<int32> CoinAmount)
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE(RoguePickupSubsystem::AddCreditsPickup)
+	TRACE_CPUPROFILER_EVENT_SCOPE(RoguePickupSubsystem::AddCoinsPickup)
 	
 	ENetMode NetMode = GetWorld()->GetNetMode();
 	// Clients only react to data received from host
 	check(GetWorld()->GetNetMode() != NM_Client);
 
-	CreditPickupLocations.Add(Origin);
-	CreditPickupAmount.Add(CreditAmount);
+	CoinPickupLocations.Append(Locations);
+	CoinPickupAmount.Append(CoinAmount);
+
+	// Convert to transforms for ISM
+	TArray<FTransform> Transforms;
+	Transforms.Reserve(Locations.Num());
+	for (int i = 0; i < Locations.Num(); ++i)
+	{
+		Transforms.Add(FTransform(Locations[i]));
+	}
 	
-	// Add locally (unbatched)
-	const FPrimitiveInstanceId& Id = AddMeshInstance(Origin);
-	MeshIDs.Add(Id);
+	TArray<FPrimitiveInstanceId> NewMeshIDs = AddMeshInstances(Transforms);
+	MeshIDs.Append(NewMeshIDs);
 	
 	// Are we playing a networked game
 	if (NetMode > NM_Standalone)
 	{
 		ARogueGameState* GS = GetWorld()->GetGameState<ARogueGameState>();
 
-		FPickupLocationItem NewItem = FPickupLocationItem(Origin, Id);
-		GS->CoinPickupData.Items.Add(NewItem);
-		GS->CoinPickupData.MarkItemDirty(NewItem);
-	}
+		// Grab Locations & Mesh IDs for replication
+		// Note: Unclear if we can Append() and mark the items dirty, instead we just add one by one
+		for (int i = 0; i < NewMeshIDs.Num(); ++i)
+		{
+			FPickupLocationItem NewItem = FPickupLocationItem(Locations[i], NewMeshIDs[i]);
 
+			GS->CoinPickupData.Items.Add(NewItem);
+			GS->CoinPickupData.MarkItemDirty(NewItem);
+		}
+	}
 }
 
-void URoguePickupSubsystem::RemoveCreditsPickup(int32 InIndex)
+
+void URoguePickupSubsystem::RemoveCoinsPickup(int32 InIndex)
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE(RoguePickupSubsystem::RemoveCreditsPickup)
+	TRACE_CPUPROFILER_EVENT_SCOPE(RoguePickupSubsystem::RemoveCoinsPickup)
 	
 	ENetMode NetMode = GetWorld()->GetNetMode();
 	check(NetMode != NM_Client);
 	
-	CreditPickupLocations.RemoveAt(InIndex);
-	CreditPickupAmount.RemoveAt(InIndex);
+	CoinPickupLocations.RemoveAt(InIndex);
+	CoinPickupAmount.RemoveAt(InIndex);
 
 	// Playing any networked game, clients should not reach here in the first place
 	if (NetMode > NM_Standalone)
@@ -84,7 +97,7 @@ TArray<FPrimitiveInstanceId> URoguePickupSubsystem::AddMeshInstances(const TArra
 	{
 		CreateWorldISM();
 	}
-	
+
 	// Batch-add
 	return WorldISM->AddInstancesById(InAdded, true, false);
 }
@@ -131,12 +144,12 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 		TRACE_CPUPROFILER_EVENT_SCOPE(RoguePickupSubsystem::Tick)
 
 		// Performance Note: This processing is laid out to move around and touch as few things per iteration
-		// Therefor we first process all the possible coin pickups and count the total credits before we
+		// Therefor we first process all the possible coin pickups and count the total Coins before we
 		// award any of the players which may end up triggering a bunch of other delegates and pulling classes/data into memory
 
 		TArray<FVector> Players;
 		TArray<ARoguePlayerCharacter*> PlayerPawns;
-		TArray<int32> TotalCreditsPerPlayer;
+		TArray<int32> TotalCoinsPerPlayer;
 		
 		for (ARoguePlayerCharacter* PlayerPawn : TActorRange<ARoguePlayerCharacter>(World))
 		{
@@ -148,15 +161,15 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 		const float PickupRadius = 200.f;
 		const float PickupRadiusSqrd = PickupRadius * PickupRadius;
 
-		// Find pickups and track credits to grant
+		// Find pickups and track Coins to grant
 		for (FVector& PlayerLocation : Players)
 		{
 			// Track all pickups that need to be picked up.
 			TArray<int32> ProcessList;
 
-			for (int Index = 0; Index < CreditPickupLocations.Num(); ++Index)
+			for (int Index = 0; Index < CoinPickupLocations.Num(); ++Index)
 			{
-				float DistSqrd = FVector::DistSquared(CreditPickupLocations[Index], PlayerLocation);
+				float DistSqrd = FVector::DistSquared(CoinPickupLocations[Index], PlayerLocation);
 				if (DistSqrd < PickupRadiusSqrd)
 				{
 					// Bookkeep all pickups that need processing for later
@@ -164,21 +177,21 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 				}
 			}
 
-			int32 TotalCredits = 0;
+			int32 TotalCoins = 0;
 			for (int i = ProcessList.Num() - 1; i >= 0; --i)
 			{
-				TotalCredits += CreditPickupAmount[ProcessList[i]];
+				TotalCoins += CoinPickupAmount[ProcessList[i]];
 				
-				RemoveCreditsPickup(ProcessList[i]);
+				RemoveCoinsPickup(ProcessList[i]);
 			}
 
-			TotalCreditsPerPlayer.Add(TotalCredits);
+			TotalCoinsPerPlayer.Add(TotalCoins);
 		}
 
 		// Award each player
 		for (int i = 0; i < PlayerPawns.Num(); ++i)
 		{
-			int32 AwardAmount = TotalCreditsPerPlayer[i];
+			int32 AwardAmount = TotalCoinsPerPlayer[i];
 			if (AwardAmount == 0)
 			{
 				continue;
@@ -188,15 +201,15 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 
 			PlayerPawns[i]->GetActionComponent()->ApplyAttributeChange(Mod);
 
-			// @todo: play sound properly for networked players...eg. they receive these credits w/ a pickup contextTag
+			// @todo: play sound properly for networked players...eg. they receive these Coins w/ a pickup contextTag
 			PlayPickupSound();
 		}
 	}
 
 	// Debug Rendering
-	//for (int Index = 0; Index < CreditPickupLocations.Num(); ++Index)
+	//for (int Index = 0; Index < CoinPickupLocations.Num(); ++Index)
 	{
-		//DrawDebugBox(World, CreditPickupLocations[Index], FVector(5.0f), FColor::Blue);
+		//DrawDebugBox(World, CoinPickupLocations[Index], FVector(5.0f), FColor::Blue);
 	}
 }
 
