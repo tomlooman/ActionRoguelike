@@ -21,6 +21,7 @@
 #include "Perception/AISense_Damage.h"
 #include "IAnimationBudgetAllocator.h"
 #include "NavigationSystem.h"
+#include "Animation/RogueCurveAnimSubsystem.h"
 #include "AnimationBudgetAllocator/Private/AnimationBudgetAllocatorModule.h"
 #include "Core/RogueMessagingSubsystem.h"
 #include "Core/RogueMonsterData.h"
@@ -290,19 +291,20 @@ AActor* ARogueAICharacter::GetTargetActor() const
 
 bool ARogueAICharacter::AddImpulseAtLocationCustom(FVector Impulse, FVector Location, FName BoneName)
 {
-	// While instance is available, we can assume this character just died
+	// Dead - While instance is available, we can assume this character just died
 	if (CorpseInstance)
 	{
 		CorpseInstance->AddImpulseAtLocationCustom(Impulse, Location, BoneName);
+		return true;
 	}
-	else // Alive
-	{
-		USkeletalMeshComponent* MeshComp = GetMesh();
-		if (MeshComp->IsSimulatingPhysics(BoneName))
-		{
-			MeshComp->AddImpulseAtLocation(Impulse, Location, BoneName);
-		}
-	}
+
+	FHitReactConfig& Config = MonsterConfig->HitReactions;
+	// Play hit Anim
+	GetMesh()->GetAnimInstance()->PlaySlotAnimationAsDynamicMontage(
+		Config.GetAnimFromAngle(this, Impulse.GetSafeNormal()),
+		Config.SlotName,
+		Config.BlendInTime,
+		Config.BlendOutTime);
 
 	// handled
 	return true;

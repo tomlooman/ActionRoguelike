@@ -9,6 +9,62 @@
 class ARogueMonsterCorpse;
 class URogueAction;
 
+
+USTRUCT()
+struct FHitReactConfig
+{
+	GENERATED_BODY()
+
+	UAnimSequence* GetAnimFromAngle(AActor* HitActor, const FVector& ImpactDirection)
+	{
+		// 1.0 front, -1.0 is back
+		float DotResult = FVector::DotProduct(HitActor->GetActorForwardVector(), ImpactDirection);
+		if (DotResult <= -0.5f)
+		{
+			return FrontHit;
+		}
+		if (DotResult >= 0.5f)
+		{
+			return BackHit;
+		}
+
+		float SidewaysDotResult = FVector::DotProduct(HitActor->GetActorRightVector(), ImpactDirection);
+		if (SidewaysDotResult <= -0.5f)
+		{
+			return RightHit;
+		}
+		if (SidewaysDotResult >= 0.5f)
+		{
+			return LeftHit;
+		}
+
+		// Fallback to front
+		return FrontHit;
+	}
+	
+	UPROPERTY(EditDefaultsOnly, Category=HitReactions)
+	TObjectPtr<UAnimSequence> FrontHit;
+
+	UPROPERTY(EditDefaultsOnly, Category=HitReactions)
+	TObjectPtr<UAnimSequence> BackHit;
+	
+	UPROPERTY(EditDefaultsOnly, Category=HitReactions)
+	TObjectPtr<UAnimSequence> LeftHit;
+	
+	UPROPERTY(EditDefaultsOnly, Category=HitReactions)
+	TObjectPtr<UAnimSequence> RightHit;
+	
+	UPROPERTY(EditDefaultsOnly, Category=HitReactions)
+	FName SlotName = "DefaultSlot";
+
+	UPROPERTY(EditDefaultsOnly, Category=HitReactions)
+	float BlendInTime = 0.25f;
+
+	UPROPERTY(EditDefaultsOnly, Category=HitReactions)
+	float BlendOutTime = 0.25f;
+};
+
+
 /**
  * 
  */
@@ -33,11 +89,13 @@ public:
 	TSubclassOf<UAnimInstance> CorpseAnimInstance;
 
 	/*
-	 * Allow remapping bones to others in the skeleton to better handle impulses (eg. for corpse ragdolling)
+	 * Remaps Key to Value - Allow remapping bones to others in the skeleton to better handle impulses (for ragdolling)
 	 */
 	UPROPERTY(EditDefaultsOnly, Category=Physics)
 	TMap<FName, FName> ImpulseBoneRemapping;
-	
+
+	UPROPERTY(EditDefaultsOnly, Category=HitReactions)
+	FHitReactConfig HitReactions;
 
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override
 	{
