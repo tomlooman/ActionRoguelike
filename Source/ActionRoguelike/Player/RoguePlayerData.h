@@ -27,6 +27,12 @@ public:
 	
 	//UPROPERTY(EditDefaultsOnly, Category="Actions")
 	//TArray<TSubclassOf<URogueAction>> DefaultActions;
+	
+	/*
+	 * Remaps Key to Value - Allow remapping bones to others in the skeleton to better handle impulses (for physics hit reactions)
+	 */
+	UPROPERTY(EditDefaultsOnly, Category=Physics)
+	TMap<FName, FName> ImpulseBoneRemapping;
 
 	// -- Input Actions -- //
 

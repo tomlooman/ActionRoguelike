@@ -15,6 +15,7 @@
 #include "RoguePlayerController.h"
 #include "RoguePlayerData.h"
 #include "AI/RogueAICharacter.h"
+#include "Animation/RogueCurveAnimSubsystem.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -314,6 +315,56 @@ FGenericTeamId ARoguePlayerCharacter::GetGenericTeamId() const
 {
 	// We have no team switching support during gameplay
 	return FGenericTeamId(TEAM_ID_PLAYERS);
+}
+
+bool ARoguePlayerCharacter::AddImpulseAtLocationCustom(FVector Impulse, FVector Location, FName BoneName)
+{
+	return false;
+
+	// @todo: disabled as this should be replaced by some hit react animations for best result or at most jiggle some items attached to the player instead
+	/*
+	USkeletalMeshComponent* MeshComp = GetMesh();
+
+	// Check for remapped bones
+	if (FName* RemappedBone = PlayerConfig->ImpulseBoneRemapping.Find(BoneName))
+	{
+		UE_LOG(LogGame, Log, TEXT("Remapping bone %s to bone %s for Impulse on %s."), *BoneName.ToString(), *RemappedBone->ToString(), *GetName())
+		BoneName = *RemappedBone;
+	}
+	
+	// Physics Anim hit reaction
+	float MaxBlendWeight = 0.5f;
+	
+	MeshComp->SetAllBodiesBelowSimulatePhysics(BoneName, true, true);
+	MeshComp->SetAllBodiesBelowPhysicsBlendWeight(BoneName, MaxBlendWeight);
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+	
+	//MeshComp->AddImpulseAtLocation(Impulse, Location, BoneName);
+	// Clamp for VelChange
+	Impulse = Impulse.GetClampedToMaxSize(200.0f);
+	MeshComp->AddVelocityChangeImpulseAtLocation(Impulse, Location, BoneName);
+
+	//MeshComp->AddImpulseToAllBodiesBelow()
+
+	// @todo: only allow one reaction at once or avoid the multiple anims using the same bone hierarchy.
+
+	// Blend back to zero
+	// @todo: turn into curve to both blend in and out
+	GetWorld()->GetSubsystem<URogueCurveAnimSubsystem>()->PlayEasingFunc(EEasingFunc::EaseInOut, 1.0f, 1.0f, [&](float CurrentValue)
+	{
+		float RemapAlpha = CurrentValue * 0.5f;
+		GetMesh()->SetAllBodiesPhysicsBlendWeight(MaxBlendWeight - RemapAlpha);
+		
+		// Is Finished
+		if (CurrentValue >= 1.0f)
+		{
+			GetMesh()->SetAllBodiesSimulatePhysics(false);
+			// Assumes players use QueryOnly
+			GetMesh()->SetCollisionEnabled(ECollisionEnabled::Type::QueryOnly);
+		}
+	});
+	
+	return true;*/
 }
 
 FVector ARoguePlayerCharacter::GetPawnViewLocation() const

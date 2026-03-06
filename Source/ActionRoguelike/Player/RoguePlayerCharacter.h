@@ -10,6 +10,7 @@
 #include "GameplayTagContainer.h"
 #include "InputAction.h"
 #include "ActionSystem/RogueActionSystemInterface.h"
+#include "Core/RogueGameplayInterface.h"
 #include "RoguePlayerCharacter.generated.h"
 
 struct FAttributeModification;
@@ -23,7 +24,7 @@ class UAnimMontage;
 class URogueActionComponent;
 
 UCLASS(Abstract)
-class ACTIONROGUELIKE_API ARoguePlayerCharacter : public ACharacter, public IGenericTeamAgentInterface, public IRogueActionSystemInterface
+class ACTIONROGUELIKE_API ARoguePlayerCharacter : public ACharacter, public IGenericTeamAgentInterface, public IRogueActionSystemInterface, public IRogueGameplayInterface
 {
 	GENERATED_BODY()
 
@@ -116,6 +117,8 @@ public:
 	{
 		return ActionComp;
 	}
+	
+	virtual bool AddImpulseAtLocationCustom(FVector Impulse, FVector Location, FName BoneName = NAME_None) override;
 
 protected:
 
