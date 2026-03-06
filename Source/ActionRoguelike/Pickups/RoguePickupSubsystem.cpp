@@ -225,11 +225,18 @@ void URoguePickupSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	UWorld* World = GetWorld();
 
-	// Temp sync loading of the sound, can hitch //@todo: make async
-	USoundBase* SoundAsset = GetDefault<URogueDeveloperSettings>()->PickupCoinSound.LoadSynchronous();
+	FLoadSoftObjectPathAsyncDelegate Delegate;
+	Delegate.BindUObject(this, &ThisClass::OnSoundAssetLoadComplete);
 		
 	CoinPickupAudioComp = NewObject<UAudioComponent>(World, NAME_None, RF_Transient);
-	CoinPickupAudioComp->SetSound(SoundAsset);
 	CoinPickupAudioComp->bAutoActivate = false;
 	CoinPickupAudioComp->RegisterComponentWithWorld(World);
+
+	// Async load the sound
+	int32 loadId = GetDefault<URogueDeveloperSettings>()->PickupCoinSound.LoadAsync(Delegate);
+}
+
+void URoguePickupSubsystem::OnSoundAssetLoadComplete(const FSoftObjectPath& SoftObjectPath, UObject* LoadedObject)
+{
+	CoinPickupAudioComp->SetSound(Cast<USoundBase>(LoadedObject));
 }

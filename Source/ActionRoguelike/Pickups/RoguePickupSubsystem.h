@@ -60,4 +60,6 @@ protected:
 	virtual bool IsTickable() const override;
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
+	void OnSoundAssetLoadComplete(const FSoftObjectPath& SoftObjectPath, UObject* LoadedObject);
 };
