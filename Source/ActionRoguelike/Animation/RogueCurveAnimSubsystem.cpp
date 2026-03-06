@@ -15,6 +15,9 @@ void URogueCurveAnimSubsystem::Tick(float DeltaTime)
 	{
 		ActiveAnims[i].Tick(DeltaTime);
 
+		FString DebugMsg = FString::Printf(TEXT("CurveAnim: %f"), ActiveAnims[i].Time);
+		GEngine->AddOnScreenDebugMessage(100 + i, 0.0f, FColor::Green, DebugMsg);
+
 		if (ActiveAnims[i].IsFinished())
 		{
 			ActiveAnims.RemoveAtSwap(i);
@@ -25,6 +28,9 @@ void URogueCurveAnimSubsystem::Tick(float DeltaTime)
 	for (int i = ActiveEasingFuncs.Num() - 1; i >= 0; --i)
 	{
 		ActiveEasingFuncs[i].Tick(DeltaTime);
+		
+		FString DebugMsg = FString::Printf(TEXT("EasingAnim: %f"), ActiveEasingFuncs[i].Time);
+		GEngine->AddOnScreenDebugMessage(200 + i, 0.0f, FColor::Green, DebugMsg);
 
 		if (ActiveEasingFuncs[i].IsFinished())
 		{

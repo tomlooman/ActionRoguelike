@@ -22,7 +22,7 @@ struct FActiveCurveAnim
 		PlayRate = InRate;
 
 		// We use first keyframe as start time, you could choose to always start at 0.0f
-		Curve->GetTimeRange(CurrentTime, MaxTime);
+		Curve->GetTimeRange(Time, MaxTime);
 	}
 
 	UPROPERTY()
@@ -31,7 +31,7 @@ struct FActiveCurveAnim
 	float PlayRate = 1.0f;
 
 	/* Current time along curve */
-	float CurrentTime = 0.0f;
+	float Time = 0.0f;
 
 	/* Cached max time to know when we finished */
 	float MaxTime = 0.0f;
@@ -40,13 +40,13 @@ struct FActiveCurveAnim
 
 	void Tick(float DeltaTime)
 	{
-		CurrentTime += (DeltaTime*PlayRate);
+		Time += (DeltaTime*PlayRate);
 
-		float CurrentValue = Curve->GetFloatValue(CurrentTime);
+		float CurrentValue = Curve->GetFloatValue(Time);
 
 		Callback(CurrentValue);
 
-		if (CurrentTime >= MaxTime)
+		if (Time >= MaxTime)
 		{
 			// Mark as "Finished", will be cleaned up by subsystem
 			Curve = nullptr;
@@ -92,6 +92,7 @@ struct FActiveEasingFunc
 
 	bool IsFinished()
 	{
+		// @todo: allow more clear anim duration
 		return Time >= 1.0f;;
 	}
 };
