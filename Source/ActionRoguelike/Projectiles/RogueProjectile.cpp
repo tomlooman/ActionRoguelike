@@ -52,8 +52,11 @@ void ARogueProjectile::PostInitializeComponents()
 	SphereComp->OnComponentHit.AddDynamic(this, &ARogueProjectile::OnActorHit);
 	
 	// Ignore both ways, reduces the number of overlaps we will ignore
-	SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
-	GetInstigator()->MoveIgnoreActorAdd(this);
+	if (APawn* MyInstigator = GetInstigator())
+	{
+		SphereComp->IgnoreActorWhenMoving(MyInstigator, true);
+		MyInstigator->MoveIgnoreActorAdd(this);
+	}
 }
 
 
