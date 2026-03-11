@@ -209,7 +209,7 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 				// spawn credit loot, spawn a ton of them for stress testing
 				URoguePickupSubsystem* PickupSubsystem = GetWorld()->GetSubsystem<URoguePickupSubsystem>();
 				FVector ActorLoc = GetActorLocation();
-				const FVector CoinOffset = FVector(0,0,30);
+				const FVector CoinOffset = FVector(0,0,55);
 
 				// @todo: reduce to reasonable and psuedo random number, 100 is for testing
 				const int32 SpawnCount = 100;
