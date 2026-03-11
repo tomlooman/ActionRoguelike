@@ -73,9 +73,9 @@ void URogueInteractionComponent::FindBestInteractable()
 	const bool bEnableDebugDrawing = CVarInteractionDebugDrawing.GetValueOnGameThread(); 
 
 	// Reset
-	FocusedActor = nullptr;
 	float HighestWeight = -MAX_flt;
-
+	AActor* NewFocusActor = nullptr;
+	
 	// Calc 'weights' to find the best interactable which the player most likely intends to focus
 	for (const FOverlapResult& Overlap : Overlaps)
 	{
@@ -107,38 +107,69 @@ void URogueInteractionComponent::FindBestInteractable()
 				
 				if (HighestWeight < Weight)
 				{
-					FocusedActor = HitActor;
+					NewFocusActor = HitActor;
 					HighestWeight = Weight;
 				}
 			}
 		}
 	}
 
-	if (FocusedActor)
+	// Clear old focus
+	if (FocusedActor && FocusedActor != NewFocusActor)
 	{
-		if (WidgetInst == nullptr && ensureMsgf(DefaultWidgetClass, TEXT("DefaultWidgetClass for the interaction component is not specified in %s. Please update the Blueprint."), *GetNameSafe(OwningController)))
+		TInlineComponentArray<UStaticMeshComponent*> MeshComps;
+		FocusedActor->GetComponents(UStaticMeshComponent::StaticClass(), MeshComps);
+		for (UStaticMeshComponent* MeshComp : MeshComps)
 		{
-			WidgetInst = CreateWidget<URogueWorldUserWidget>(World, DefaultWidgetClass);
+			MeshComp->bDisallowNanite = false;
+			//MeshComp->bEvaluateWorldPositionOffset = true;
+			MeshComp->SetOverlayMaterial(nullptr);
 		}
 
-		if (WidgetInst)
-		{
-			WidgetInst->AttachedActor = FocusedActor;
-
-			if (!WidgetInst->GetParent())
-			{
-				URogueWorldUserWidget::AddToRootCanvasPanel(WidgetInst);
-			}
-		}
-	}
-	else
-	{
 		if (WidgetInst)
 		{
 			WidgetInst->RemoveFromParent();
 		}
 	}
+	
+	// Valid focus
+	if (NewFocusActor)
+	{
+		// New focus
+		if (NewFocusActor != FocusedActor)
+		{
+			if (WidgetInst == nullptr && ensureMsgf(DefaultWidgetClass, TEXT("DefaultWidgetClass for the interaction component is not specified in %s. Please update the Blueprint."), *GetNameSafe(OwningController)))
+			{
+				WidgetInst = CreateWidget<URogueWorldUserWidget>(World, DefaultWidgetClass);
+			}
 
+			if (WidgetInst)
+			{
+				WidgetInst->AttachedActor = NewFocusActor;
+
+				if (!WidgetInst->GetParent())
+				{
+					URogueWorldUserWidget::AddToRootCanvasPanel(WidgetInst);
+				}
+			}
+
+			// Basic implementation, may need interface call to allow custom overrides in highlighted Actors
+			TInlineComponentArray<UStaticMeshComponent*> MeshComps;
+			NewFocusActor->GetComponents(UStaticMeshComponent::StaticClass(), MeshComps);
+			for (UStaticMeshComponent* MeshComp : MeshComps)
+			{
+				// Overlay works only as non-nanite, so we just temporarily disable it while highlighted until nanite is entirely disabled in the project
+				MeshComp->bDisallowNanite = true;
+				//MeshComp->bEvaluateWorldPositionOffset = false;
+				MeshComp->SetOverlayMaterial(HighlightOverlayMaterial);
+			}
+		}
+	}
+
+	// Finalize
+	FocusedActor = NewFocusActor;
+
+#if !UE_BUILD_SHIPPING
 	if (bEnableDebugDrawing)
 	{
 		// Outer radius of interaction
@@ -151,6 +182,7 @@ void URogueInteractionComponent::FindBestInteractable()
 		}
 		//DrawDebugLine(World, TraceOrigin, TraceEnd, LineColor, false, 2.0f, 0, 0.0f);
 	}
+#endif
 }
 
 
