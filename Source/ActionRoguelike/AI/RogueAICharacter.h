@@ -24,4 +24,7 @@ public:
 
 	ARogueAICharacter();
 
+protected:
+
+	FTimerHandle OverlayTimerHandle;
 };
