@@ -3,6 +3,7 @@
 
 #include "RogueAction.h"
 
+#include "ActionRoguelike.h"
 #include "RogueActionSystemComponent.h"
 
 
@@ -13,7 +14,7 @@ void URogueAction::StartAction_Implementation()
 	
 	float GameTime = GetWorld()->TimeSeconds;
 	
-	UE_LOGFMT(LogTemp, Log, "Started Action {ActionName} - {WorldTime}",
+	UE_LOGFMT(LogGame, Log, "Started Action {ActionName} - {WorldTime}",
 		("ActionName", ActionName.ToString()),
 		("WorldTime", GameTime));
 
@@ -32,7 +33,7 @@ void URogueAction::StopAction_Implementation()
 	
 	float GameTime = GetWorld()->TimeSeconds;
 	
-	UE_LOGFMT(LogTemp, Log, "Stopped Action {ActionName} - {WorldTime}",
+	UE_LOGFMT(LogGame, Log, "Stopped Action {ActionName} - {WorldTime}",
 		("ActionName", ActionName.ToString()),
 		("WorldTime", GameTime));
 
@@ -50,7 +51,7 @@ bool URogueAction::CanStart() const
 	
 	if (GetCooldownTimeRemaining() > 0.0f)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Cooldown remaining: %f"), GetCooldownTimeRemaining());
+		UE_LOG(LogGame, Log, TEXT("Cooldown remaining: %f"), GetCooldownTimeRemaining());
 		return false;
 	}
 
@@ -66,7 +67,7 @@ bool URogueAction::CanStart() const
 		if (AvailableAttributeAmount < Cost.Value)
 		{
 			// Not enough resources
-			UE_LOGFMT(LogTemp, Log, "Not enough {AttributeName} to activate {ActionName}. "
+			UE_LOGFMT(LogGame, Log, "Not enough {AttributeName} to activate {ActionName}. "
 						   "Have {AvailableAttributeValue} and need {RequiredAttributeValue}",
 						   ("AttributeName", Cost.Key.ToString()),
 						   ("ActionName", ActionName.ToString()),

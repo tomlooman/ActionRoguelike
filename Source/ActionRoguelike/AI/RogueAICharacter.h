@@ -24,6 +24,8 @@ public:
 
 	ARogueAICharacter();
 
+	virtual void PostInitializeComponents() override;
+
 protected:
 
 	FTimerHandle OverlayTimerHandle;
