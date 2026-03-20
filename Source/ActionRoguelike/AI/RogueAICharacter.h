@@ -15,7 +15,6 @@
 class URogueMonsterData;
 class ARogueMonsterCorpse;
 class UNiagaraComponent;
-class UUserWidget;
 class URogueWorldUserWidget;
 class URogueActionComponent;
 
@@ -70,6 +69,8 @@ protected:
 
 	UPROPERTY(Transient)
 	TObjectPtr<URogueWorldUserWidget> ActiveHealthBar;
+
+	void CreateDamagePopupWidget(float DamageAmount);
 
 public:
 

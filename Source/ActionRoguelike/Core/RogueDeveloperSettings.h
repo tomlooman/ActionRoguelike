@@ -6,6 +6,7 @@
 #include "Engine/DeveloperSettings.h"
 #include "RogueDeveloperSettings.generated.h"
 
+class URogueDamageNumberWidget;
 /**
  * 
  */
@@ -22,6 +23,9 @@ public:
 
 	UPROPERTY(Config, EditDefaultsOnly, Category = "PickupSubsystem")
 	TSoftObjectPtr<USoundBase> PickupCoinSound;
+
+	UPROPERTY(Config, EditDefaultsOnly, Category=UI)
+	TSoftClassPtr<URogueDamageNumberWidget> DamagePopupWidgetClass;
 	
 	virtual FName GetCategoryName() const override;
 };

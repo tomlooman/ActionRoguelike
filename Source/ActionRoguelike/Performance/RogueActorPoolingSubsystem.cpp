@@ -100,6 +100,21 @@ bool URogueActorPoolingSubsystem::ReleaseToPool_Internal(AActor* Actor)
 	return true;
 }
 
+void URogueActorPoolingSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+
+	WidgetPool.SetWorld(GetWorld());
+}
+
+void URogueActorPoolingSubsystem::Deinitialize()
+{
+	Super::Deinitialize();
+
+	WidgetPool.ReleaseAll(true);
+	WidgetPool.ReleaseAllSlateResources();
+}
+
 template <class T>
 T* URogueActorPoolingSubsystem::AcquireFromPool_Internal(TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform,
 	FActorSpawnParameters SpawnParams = FActorSpawnParameters())

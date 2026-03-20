@@ -37,7 +37,9 @@ public class ActionRoguelike : ModuleRules
 			"NetCore", 
 			"StateTreeModule", 
 			"GameplayStateTreeModule",
-			"PropertyBindingUtils" // needed for property binding in state tree
+			"PropertyBindingUtils", // needed for property binding in state tree
+			"SlateCore",
+			"UMG"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

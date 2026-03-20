@@ -34,6 +34,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category= UI)
 	static void AddToRootCanvasPanel(UUserWidget* InNewWidget);
 
+	virtual void RemoveFromParent() override;
+
+	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
+
 	UPROPERTY(EditAnywhere, Category = "UI")
 	FVector WorldOffset;
 

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blueprint/UserWidgetPool.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "RogueActorPoolingSubsystem.generated.h"
 
@@ -36,6 +37,9 @@ public:
 	static bool IsPoolingEnabled(const UObject* WorldContextObject);
 
 	void PrimeActorPool(TSubclassOf<AActor> ActorClass, int32 Amount);
+	
+	UPROPERTY(Transient)
+	FUserWidgetPool WidgetPool;
 
 protected:
 
@@ -43,6 +47,10 @@ protected:
 	T* AcquireFromPool_Internal(TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, FActorSpawnParameters SpawnParams);
 
 	bool ReleaseToPool_Internal(AActor* Actor);
+
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
+	virtual void Deinitialize() override;
 
 protected:
 

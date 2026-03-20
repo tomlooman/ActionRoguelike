@@ -17,16 +17,20 @@
 #include "ActionSystem/RogueActionComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/AudioComponent.h"
-#include "Components/CanvasPanel.h"
 #include "Perception/AISense_Damage.h"
 #include "IAnimationBudgetAllocator.h"
 #include "NavigationSystem.h"
-#include "Animation/RogueCurveAnimSubsystem.h"
 #include "AnimationBudgetAllocator/Private/AnimationBudgetAllocatorModule.h"
+#include "Blueprint/UserWidgetPool.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
+#include "Components/CanvasPanelSlot.h"
+#include "Core/RogueDeveloperSettings.h"
 #include "Core/RogueMessagingSubsystem.h"
 #include "Core/RogueMonsterData.h"
+#include "Performance/RogueActorPoolingSubsystem.h"
 #include "Pickups/RoguePickupSubsystem.h"
 #include "Subsystems/RogueMonsterCorpseSubsystem.h"
+#include "UI/RogueDamageNumberWidget.h"
 #include "World/RogueMonsterCorpse.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueAICharacter)
@@ -64,6 +68,10 @@ ARogueAICharacter::ARogueAICharacter(const FObjectInitializer& ObjectInitializer
 void ARogueAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// For now just load here to be ready in time for the first dmg number request
+	FLoadSoftObjectPathAsyncDelegate Delegate;
+	int32 loadID = GetDefault<URogueDeveloperSettings>()->DamagePopupWidgetClass.LoadAsync(Delegate);
 
 	// Only needs to enable the module once, placing in beginplay for convenience
 	// They didn't expose the blueprint library, so we instead call directly into the module
@@ -180,6 +188,8 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 			}
 		}
 
+		CreateDamagePopupWidget(AttributeModification.Magnitude);
+
 		// Read by the Overlay Material to flash
 		GetMesh()->SetCustomPrimitiveDataFloat(HitFlash_CustomPrimitiveIndex, GetWorld()->TimeSeconds);
 
@@ -274,6 +284,48 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 			}
 		}
 	}
+}
+
+
+void ARogueAICharacter::CreateDamagePopupWidget(float DamageAmount)
+{
+	// Already loaded during beginplay, can be moved to some singular place rather than the bot beginplay
+	TSubclassOf<URogueDamageNumberWidget> DmgPopupWidgetClass = GetDefault<URogueDeveloperSettings>()->DamagePopupWidgetClass.LoadSynchronous();
+
+	URogueActorPoolingSubsystem* Pooler = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
+
+	// @todo: somehow we constantly see just one instance, are we grabbing the same one for re-use too soon?
+	
+	// Damage Pop-up Instance
+	URogueDamageNumberWidget* DmgPopupWidgetInst = Pooler->WidgetPool.GetOrCreateInstance<URogueDamageNumberWidget>(DmgPopupWidgetClass);
+
+	DmgPopupWidgetInst->SetDamageAmount(FMath::Abs(DamageAmount));
+	DmgPopupWidgetInst->AttachedActor = this;
+	DmgPopupWidgetInst->WorldOffset = FVector(0,0, 45.0f);
+
+	URogueDamageNumberWidget::AddToRootCanvasPanel(DmgPopupWidgetInst);
+	
+	// Center align on the projected canvas position
+	UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(DmgPopupWidgetInst);
+	CanvasSlot->SetAlignment(FVector2D(0.5f, 0.5f));
+	CanvasSlot->SetAutoSize(true);
+
+	// Random offset to avoid overlapped numbers
+	const float MaxOffset = 55.0f;
+	FRandomStream RndStream = FRandomStream(FMath::Rand());
+	float OffsetX = RndStream.FRandRange(-1.0f, 1.0f);
+	float OffsetY = RndStream.FRandRange(-1.0f, 1.0f);
+
+	CanvasSlot->SetOffsets(FMargin(OffsetX * MaxOffset, OffsetY * MaxOffset));
+
+	// @todo: calling Release, removes all the instances...so needs fixing.
+	const float DamageNumberDuration = 0.75f;
+	// Auto release after short delay, must be longer than the fade-out anim in the widget
+	FTimerHandle DmgHandle;
+	/*GetWorldTimerManager().SetTimer(DmgHandle, [Pooler, DmgPopupWidgetInst]()
+	{
+		Pooler->WidgetPool.Release(DmgPopupWidgetInst);
+	}, DamageNumberDuration, false);*/
 }
 
 

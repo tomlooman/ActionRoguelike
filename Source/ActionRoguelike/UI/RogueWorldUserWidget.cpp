@@ -71,6 +71,8 @@ void URogueWorldUserWidget::AddToRootCanvasPanel(UUserWidget* InNewWidget)
 	// Expect only one main hud, other menus etc. might mess with this and requires slight change (eg. adding a pause menu to the root)
 	//check(Widgets.Num() == 1)
 
+	// @todo: convert to use a base HUD widget with an assigned CanvasPanel via meta=BindWidget so we can directly reference that.
+
 	// We might be testing without a HUD...
 	if (Widgets.Num() > 0)
 	{
@@ -78,4 +80,16 @@ void URogueWorldUserWidget::AddToRootCanvasPanel(UUserWidget* InNewWidget)
 		UCanvasPanel* CanvasPanel = Cast<UCanvasPanel>(MainHUD->GetRootWidget());
 		CanvasPanel->AddChild(InNewWidget);
 	}
+}
+
+void URogueWorldUserWidget::RemoveFromParent()
+{
+	Super::RemoveFromParent();
+
+	// @todo: WidgetPool.Release(this)
+}
+
+void URogueWorldUserWidget::ReleaseSlateResources(bool bReleaseChildren)
+{
+	Super::ReleaseSlateResources(bReleaseChildren);
 }
