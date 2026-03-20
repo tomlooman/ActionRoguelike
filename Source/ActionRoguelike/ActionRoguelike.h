@@ -6,6 +6,15 @@
 // Added here to more easily include whenever we also use LogGame (structuredlog is new in 5.2)
 #include "Logging/StructuredLog.h"
 
+
+// EXPERIMENTAL FEATURE TOGGLES
+#define USE_TAGMESSAGING_SYSTEM 0
+#define USE_DEFERRED_TASKS 0
+#define USE_DATA_ORIENTED_PROJECTILES 0
+#define USE_DOD_COIN_PICKUPS 1
+#define USE_MULTITHREADED_COIN_PICKUPS 1
+
+
 // Define category "LogGame"
 ACTIONROGUELIKE_API DECLARE_LOG_CATEGORY_EXTERN(LogGame, Log, All);
 
@@ -36,19 +45,4 @@ namespace MeshSockets
 {
 	static FName RightHandMuzzle = FName(TEXT("Muzzle_01"));
 	static FName LeftHandMuzzle = FName(TEXT("Muzzle_02"));
-}
-
-
-static void LogOnScreen(const UObject* WorldContext, const FString& Msg, FColor Color = FColor::White, float Duration = 5.0f)
-{
-	const UWorld* World = GEngine->GetWorldFromContextObject(WorldContext, EGetWorldErrorMode::LogAndReturnNull);
-
-	// Net Prefix is helpful during PIE
-	FString FullMessage = World->IsNetMode(NM_Client) ? "[CLIENT] " : "[SERVER] " + Msg;
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, Duration, Color, FullMessage);
-	}
-
-	UE_LOG(LogGame, Log, TEXT("%s"), *FullMessage);
 }

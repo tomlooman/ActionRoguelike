@@ -11,6 +11,7 @@
 #include "Core/RogueDeveloperSettings.h"
 #include "Core/RogueGameState.h"
 #include "Player/RoguePlayerCharacter.h"
+#include "ActionRoguelike.h"
 
 
 
@@ -166,7 +167,41 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 		{
 			// Track all pickups that need to be picked up.
 			TArray<int32> ProcessList;
-
+			
+#if USE_MULTITHREADED_COIN_PICKUPS
+			// Copy array to avoid issues with 
+			TArray<FVector> CoinPickupLocations_Copy(CoinPickupLocations);
+			
+			// Multiple-producer, single consumer queue
+			TMpscQueue<int32> ProcessQueue;
+			
+			// Min batch size is essential for getting any benefit out of doing this async as the per-iteration
+			// cost for this function is so small (just a distance check)
+			const int32 MinBatchSize = 1000;
+			ParallelFor(TEXT("ParallelCoinTick"), CoinPickupLocations_Copy.Num(), MinBatchSize, [&](int32 Index)
+			{
+				// relatively high overhead vs. just distance checking, so it will skew the numbers
+				//TRACE_CPUPROFILER_EVENT_SCOPE(CoinTick::DistanceCheck)
+				
+				float DistSqrd = FVector::DistSquared(CoinPickupLocations_Copy[Index], PlayerLocation);
+				if (DistSqrd < PickupRadiusSqrd)
+				{
+					// Pickups need processing later to avoid messing with cpu cache					
+					ProcessQueue.Enqueue(Index);
+				}
+			});
+			
+			int32 ProcessIndex; 
+			while (ProcessQueue.Dequeue(ProcessIndex))
+			{
+				ProcessList.Add(ProcessIndex);
+			}
+			
+			// Because of the multithreaded loop (and a queue rather than array) we need to first sort to use an inverse-for loop later
+			Algo::Sort(ProcessList);
+			
+#else
+			
 			for (int Index = 0; Index < CoinPickupLocations.Num(); ++Index)
 			{
 				float DistSqrd = FVector::DistSquared(CoinPickupLocations[Index], PlayerLocation);
@@ -176,7 +211,8 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 					ProcessList.Add(Index);
 				}
 			}
-
+#endif
+			
 			int32 TotalCoins = 0;
 			for (int i = ProcessList.Num() - 1; i >= 0; --i)
 			{
@@ -184,7 +220,7 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 				
 				RemoveCoinsPickup(ProcessList[i]);
 			}
-
+			
 			TotalCoinsPerPlayer.Add(TotalCoins);
 		}
 
@@ -225,15 +261,14 @@ void URoguePickupSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	UWorld* World = GetWorld();
 
-	FLoadSoftObjectPathAsyncDelegate Delegate;
-	Delegate.BindUObject(this, &ThisClass::OnSoundAssetLoadComplete);
-		
 	CoinPickupAudioComp = NewObject<UAudioComponent>(World, NAME_None, RF_Transient);
 	CoinPickupAudioComp->bAutoActivate = false;
 	CoinPickupAudioComp->RegisterComponentWithWorld(World);
 
 	// Async load the sound
-	int32 loadId = GetDefault<URogueDeveloperSettings>()->PickupCoinSound.LoadAsync(Delegate);
+	FLoadSoftObjectPathAsyncDelegate Delegate;
+	Delegate.BindUObject(this, &ThisClass::OnSoundAssetLoadComplete);
+	GetDefault<URogueDeveloperSettings>()->PickupCoinSound.LoadAsync(Delegate);
 }
 
 void URoguePickupSubsystem::OnSoundAssetLoadComplete(const FSoftObjectPath& SoftObjectPath, UObject* LoadedObject)

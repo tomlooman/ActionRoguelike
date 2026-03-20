@@ -6,11 +6,6 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "RogueDeferredTaskSystem.generated.h"
 
-/*
- * Toggle between the testing code and experimental use cases easily
- */
-#define USE_DEFERRED_TASKS 0
-
 
 DECLARE_DYNAMIC_DELEGATE(FDeferredTaskDelegate);
 
@@ -63,5 +58,5 @@ protected:
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	
-	TQueue<FDeferredTask> FunctionPointers;
+	TSpscQueue<FDeferredTask> FunctionPointers;
 };

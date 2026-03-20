@@ -127,9 +127,7 @@ void ARogueGameModeBase::SpawnBotTimerElapsed()
 		// Still cooling down
 		return;
 	}
-
-	LogOnScreen(this, FString::Printf(TEXT("Available SpawnCredits: %f"), AvailableSpawnCredit));
-
+	
 	// Count alive bots before spawning
 	int32 NrOfAliveBots = 0;
 	for (ARogueAICharacter* Bot : TActorRange<ARogueAICharacter>(GetWorld()))
@@ -188,8 +186,6 @@ void ARogueGameModeBase::SpawnBotTimerElapsed()
 	{
 		// Too expensive to spawn, try again soon
 		CooldownBotSpawnUntil = GetWorld()->TimeSeconds + CooldownTimeBetweenFailures;
-
-		LogOnScreen(this, FString::Printf(TEXT("Cooling down until: %f"), CooldownBotSpawnUntil), FColor::Red);
 		return;
 	}
 
@@ -241,8 +237,6 @@ void ARogueGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector Spawn
 	// Spawn might fail if colliding with environment
 	if (NewBot)
 	{
-		LogOnScreen(this, FString::Printf(TEXT("Spawned enemy: %s (%s)"), *GetNameSafe(NewBot), *GetNameSafe(MonsterData)));
-
 		// Grant special actions, buffs etc.
 		URogueActionComponent* ActionComp = URogueGameplayFunctionLibrary::GetActionComponentFromActor(NewBot);
 		check(ActionComp);

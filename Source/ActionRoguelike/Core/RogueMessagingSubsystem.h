@@ -9,8 +9,6 @@
 #include "RogueMessagingSubsystem.generated.h"
 
 
-#define USE_TAGMESSAGING_SYSTEM 0
-
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnMessageReceived, FGameplayTag, InMessageTag, FInstancedStruct, Payload);
 
 /*

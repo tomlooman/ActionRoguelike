@@ -7,7 +7,6 @@
 #include "RogueProjectilesSubsystem.generated.h"
 
 
-#define USE_DATA_ORIENTED_PROJECTILES 0
 
 
 class URogueProjectileData;

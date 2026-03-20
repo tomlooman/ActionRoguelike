@@ -8,9 +8,6 @@
 
 class UInstancedStaticMeshComponent;
 
-// Easy toggle to remove the use case testing from game code
-#define USE_DOD_COIN_PICKUPS 1
-
 /**
  * 
  */
