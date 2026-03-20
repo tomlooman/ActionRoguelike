@@ -38,6 +38,9 @@ void ARogueMonsterCorpse::SetCorpseProperties(USkeletalMeshComponent* ReferenceM
 
 	// Enable rag-doll.
 	MeshComp->SetAllBodiesSimulatePhysics(true);
+	
+	MeshComp->SetOverlayMaterial(MonsterData->HitFlashMaterial);
+
 }
 
 bool ARogueMonsterCorpse::AddImpulseAtLocationCustom(FVector Impulse, FVector Location, FName BoneName)
@@ -49,7 +52,19 @@ bool ARogueMonsterCorpse::AddImpulseAtLocationCustom(FVector Impulse, FVector Lo
 		BoneName = *RemappedBone;
 	}
 
-	GetMesh()->AddImpulseAtLocation(Impulse, Location, BoneName);
+	MeshComp->AddImpulseAtLocation(Impulse, Location, BoneName);
+	
+	// Read by the Overlay Material to flash
+	MeshComp->SetCustomPrimitiveDataFloat(0, GetWorld()->TimeSeconds);
+	MeshComp->SetOverlayMaterialMaxDrawDistance(0);
+
+	// After 1.0seconds we should be finished with the hitflash (re-use the handle to reset timer if we get hit again)
+	FTimerHandle TimerHandle;
+	GetWorldTimerManager().SetTimer(TimerHandle, [this]()
+	{
+		// Cheap trick to skip rendering this all the time unless we are actively hit flashing
+		MeshComp->SetOverlayMaterialMaxDrawDistance(1);
+	}, 0.5f, false);
 
 	// Handled
 	return true;

@@ -96,6 +96,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category=HitReactions)
 	FHitReactConfig HitReactions;
+		
+	/* Hitflash overlay material to use on receiving damage (used both the by the monster and the corpse instance */
+	UPROPERTY(EditDefaultsOnly, Category=HitReactions)
+	TObjectPtr<UMaterialInterface> HitFlashMaterial;
 
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override
 	{
