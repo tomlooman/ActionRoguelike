@@ -17,6 +17,7 @@ class ARogueMonsterCorpse;
 class UNiagaraComponent;
 class URogueWorldUserWidget;
 class URogueActionComponent;
+class UMaterialInstanceDynamic;
 
 UCLASS()
 class ACTIONROGUELIKE_API ARogueAICharacter : public ACharacter, public IGenericTeamAgentInterface, public IRogueSignificanceInterface, public IRogueActionSystemInterface, public IRogueGameplayInterface
@@ -71,6 +72,10 @@ protected:
 	TObjectPtr<URogueWorldUserWidget> ActiveHealthBar;
 
 	void CreateDamagePopupWidget(float DamageAmount);
+	
+	/* Cached MID for hitflash overlay material (other systems might swap out the active material, avoid re-creating MIDs constantly) */
+	UPROPERTY()
+	TObjectPtr<UMaterialInstanceDynamic> OverlayHitflashMID;
 
 public:
 

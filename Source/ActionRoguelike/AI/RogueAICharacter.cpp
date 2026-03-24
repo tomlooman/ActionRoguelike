@@ -72,6 +72,12 @@ void ARogueAICharacter::BeginPlay()
 	// For now just load here to be ready in time for the first dmg number request
 	FLoadSoftObjectPathAsyncDelegate Delegate;
 	int32 loadID = GetDefault<URogueDeveloperSettings>()->DamagePopupWidgetClass.LoadAsync(Delegate);
+	
+	if (ensure(MonsterConfig) && MonsterConfig->HitFlashMaterial)
+	{
+		// Assume material will be used at some point, may opt to create lazily on first hit instead.
+		OverlayHitflashMID = UMaterialInstanceDynamic::Create(MonsterConfig->HitFlashMaterial, this);
+	}
 
 	// Only needs to enable the module once, placing in beginplay for convenience
 	// They didn't expose the blueprint library, so we instead call directly into the module
@@ -190,6 +196,20 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 
 		CreateDamagePopupWidget(AttributeModification.Magnitude);
 
+#if USE_MID_HITFLASHOVERLAY
+		if (OverlayHitflashMID)
+		{
+			GetMesh()->SetOverlayMaterial(OverlayHitflashMID);
+			
+			OverlayHitflashMID->SetScalarParameterValue(MonsterConfig->HitFlashTimeParamName, GetWorld()->TimeSeconds);
+			
+			// After 0.Xseconds we should be finished with the hitflash (re-use the handle to reset timer if we get hit again)
+			GetWorldTimerManager().SetTimer(OverlayTimerHandle, [this]()
+			{
+				GetMesh()->SetOverlayMaterial(nullptr);
+			}, 0.5f, false);
+		}
+#else
 		// Read by the Overlay Material to flash
 		GetMesh()->SetCustomPrimitiveDataFloat(HitFlash_CustomPrimitiveIndex, GetWorld()->TimeSeconds);
 
@@ -202,6 +222,7 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 			// Cheap trick to skip rendering this all the time unless we are actively hit flashing
 			GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
 		}, 1.0f, false);
+#endif
 
 		// Died
 		if (NewValue <= 0.0f)

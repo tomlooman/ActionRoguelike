@@ -100,6 +100,10 @@ public:
 	/* Hitflash overlay material to use on receiving damage (used both the by the monster and the corpse instance */
 	UPROPERTY(EditDefaultsOnly, Category=HitReactions)
 	TObjectPtr<UMaterialInterface> HitFlashMaterial;
+	
+	/* Material Parameter that defines the time of hit */
+	UPROPERTY(EditDefaultsOnly, Category=HitReactions)
+	FName HitFlashTimeParamName = FName("TimeOfHit");
 
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override
 	{
