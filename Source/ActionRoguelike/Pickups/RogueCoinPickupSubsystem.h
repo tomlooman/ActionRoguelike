@@ -27,8 +27,14 @@ public:
 		RETURN_QUICK_DECLARE_CYCLE_STAT(RogueCoinPickupSubsystem, STATGROUP_Tickables);
 	}
 
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
+
 protected:
+
+	UPROPERTY()
+	TObjectPtr<UInstancedStaticMeshComponent> WorldISM;
 	
 	TArray<FVector> CoinLocations;
 	TArray<int32> CoinAmounts;
+	TArray<FPrimitiveInstanceId> MeshIDs;
 };
