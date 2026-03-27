@@ -18,6 +18,8 @@ public:
 
 	void AddCoinPickups(TArray<FVector> NewLocations, TArray<int32> NewAmounts);
 
+	void RemoveCoinPickup(int32 IndexToRemove);
+
 	virtual void Tick(float DeltaTime) override;
 
 	virtual TStatId GetStatId() const override
