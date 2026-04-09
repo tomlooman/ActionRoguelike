@@ -5,6 +5,7 @@
 
 #include "ActionRoguelike.h"
 #include "EngineUtils.h"
+#include "Components/AudioComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Core/RogueDeveloperSettings.h"
 #include "Player/RoguePlayerCharacter.h"
@@ -20,13 +21,38 @@ void URogueCoinPickupSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	WorldISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	WorldISM->RegisterComponentWithWorld(World);
 
-	GetDefault<URogueDeveloperSettings>()->CoinPickupMesh.LoadAsync(
+	const URogueDeveloperSettings* DevSettings = GetDefault<URogueDeveloperSettings>();
+	CoinPickupTriggerParamName = DevSettings->CoinPickupTriggerParameter;
+	
+	DevSettings->CoinPickupMesh.LoadAsync(
 		FLoadSoftObjectPathAsyncDelegate::CreateUObject(this, &ThisClass::OnPickupMeshLoadComplete));
+
+	WorldAudioComp = NewObject<UAudioComponent>(World, NAME_None, RF_Transient);
+	WorldAudioComp->SetAutoActivate(false);
+	WorldAudioComp->RegisterComponentWithWorld(World);
+
+	DevSettings->CoinPickupSound.LoadAsync(
+		FLoadSoftObjectPathAsyncDelegate::CreateUObject(this, &ThisClass::OnPickupSoundLoadComplete));
 }
 
 void URogueCoinPickupSubsystem::OnPickupMeshLoadComplete(const FSoftObjectPath& SoftObjectPath, UObject* LoadedObject)
 {
 	WorldISM->SetStaticMesh(Cast<UStaticMesh>(LoadedObject));
+}
+
+void URogueCoinPickupSubsystem::OnPickupSoundLoadComplete(const FSoftObjectPath& SoftObjectPath, UObject* LoadedObject)
+{
+	WorldAudioComp->SetSound(Cast<USoundBase>(LoadedObject));
+}
+
+void URogueCoinPickupSubsystem::PlayPickupSound()
+{
+	if (!WorldAudioComp->IsPlaying())
+	{
+		WorldAudioComp->Play();
+	}
+
+	WorldAudioComp->SetTriggerParameter(CoinPickupTriggerParamName);
 }
 
 void URogueCoinPickupSubsystem::AddCoinPickups(TArray<FVector> NewLocations, TArray<int32> NewAmounts)
@@ -87,6 +113,11 @@ void URogueCoinPickupSubsystem::Tick(float DeltaTime)
 		TotalCoinsToGrant += CoinAmounts[CoinIndex];
 
 		RemoveCoinPickup(CoinIndex);
+	}
+
+	if (TotalCoinsToGrant > 0)
+	{
+		PlayPickupSound();
 	}
 
 	// @todo: grant coins to player(s)
