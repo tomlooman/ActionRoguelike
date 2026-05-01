@@ -23,6 +23,7 @@ void URogueCoinPickupSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 
 	WorldISM = NewObject<UInstancedStaticMeshComponent>(World, NAME_None, RF_Transient);
 	WorldISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	WorldISM->SetAffectDistanceFieldLighting(false);
 	WorldISM->RegisterComponentWithWorld(World);
 	
 	TRACE_COUNTER_SET(CoinInstanceCount, 0);
