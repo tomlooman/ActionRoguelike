@@ -24,7 +24,7 @@ void URogueAnimNotifyState_Melee::NotifyTick(USkeletalMeshComponent* MeshComp, U
 {
 	// We could run async requests here continuously any time we have new results to fetch, could stop request after the first successful 'hit'
 
-	if (!MeshComp->GetOwner()->HasAuthority())
+	if (MeshComp->GetOwner() == nullptr || !MeshComp->GetOwner()->HasAuthority())
 	{
 		// We can skip both overlaps and callbacks for clients
 		// unless we want to do some kind of empty callback anyway on clients
