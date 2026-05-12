@@ -1,15 +1,15 @@
-# Co-op Action Roguelike Unreal Engine Sample Game
+# Project Orion: Co-op Action Rogue-like Sample Game in Unreal Engine
 
 ![Course Header](https://tomlooman.com/assets/images/coursecpp_banner_widenarrow-3.png)
 
-Welcome to the **Co-op Action Roguelike Sample Game** made in Unreal Engine 5 and C++. The project is an evolution of the game you build during the [Professional Game Development in C++ and Unreal Engine 5](https://tomlooman.com/courses/unrealengine-cpp) Course and is my continued effort at building the most advanced sample game for Unreal Engine, while being easy to understand, learn from and adapt to your own games.
+Welcome to **"Project Orion", a co-op Action Roguelike Sample Game** made in Unreal Engine 5 and C++. The project is an expansion on the game that you can build during the [Professional Game Development in C++ and Unreal Engine 5](https://tomlooman.com/courses/unrealengine-cpp) Course and is my continued effort at building the most advanced sample game for Unreal Engine, while being easy to understand, learn from and adapt to your own games.
 
 **Main Branch Engine Version: 5.6** <br>
 
 The main branch is a bit of a playground for experimentation of new systems that may eventually turn into a blog post or in one of my courses (C++ or Game Optimization). For example, the projectiles have both Object Pooling mechanism AND an experimental Data Oriented Design approach to projectiles using no Actors at all. This may affect stability and is not always supporting multiplayer yet until the systems stabilize over time. Many of the experimental features are disabled by default using `#define` directives to easily toggle on/off during compilation.
 
 > ### Learn Unreal Engine C++ The Epic Way
-> **Want to learn how to build this C++ Game from scratch? Learn more at [Professional Game Development in C++ and Unreal Engine Course](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)**
+> **Want to learn how to build this UE5 C++ Game from scratch? Learn more at [Professional Game Development in C++ and Unreal Engine Course](https://tomlooman.com/courses/unrealengine-cpp)**
 
 # Project Documentation
 
