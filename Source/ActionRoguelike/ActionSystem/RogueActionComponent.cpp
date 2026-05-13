@@ -3,6 +3,7 @@
 
 #include "ActionSystem/RogueActionComponent.h"
 
+#include "RogueActionEffect.h"
 #include "ActionSystem/RogueAction.h"
 #include "../ActionRoguelike.h"
 #include "Core/RogueGameplayFunctionLibrary.h"
@@ -275,17 +276,32 @@ URogueActionComponent* URogueActionComponent::GetActionComponent(AActor* FromAct
 
 void URogueActionComponent::AddAction(AActor* Instigator, TSubclassOf<URogueAction> ActionClass)
 {
-	// @todo: instead warn earlier about a poorly configured array
-	/*if (!ensure(ActionClass))
-	{
-		return;
-	}*/
-
 	// Skip for clients
 	if (!GetOwner()->HasAuthority())
 	{
 		UE_LOGFMT(LogGame, Warning, "Client attempting to AddAction. [Class: {Class}]", GetNameSafe(ActionClass));
 		return;
+	}
+	
+	const bool bIsEffectClass = ActionClass->IsChildOf(URogueActionEffect::StaticClass());
+	
+	// First check if we can increment a buff stack instead of adding a fresh Action(Effect)
+	if (bIsEffectClass)
+	{
+		// @todo: name is not quite accurate for effect descriptions (something like Status.Burning)
+		FGameplayTag Tag = ActionClass->GetDefaultObject<URogueAction>()->GetActivationTag();
+		// Buffs may not be setting these TAGs yet.
+		ensure(Tag.IsValid());
+
+		// Effect may not be present
+		if (TObjectPtr<URogueAction>* FoundItem = CachedActions.Find(Tag))
+		{
+			if (URogueActionEffect* FoundEffect = Cast<URogueActionEffect>(*FoundItem))
+			{
+				FoundEffect->IncrementStackSize();
+				return;			
+			}
+		}
 	}
 
 	URogueAction* NewAction = NewObject<URogueAction>(GetOwner(), ActionClass);
@@ -298,13 +314,14 @@ void URogueActionComponent::AddAction(AActor* Instigator, TSubclassOf<URogueActi
 	// New Replicated Objects list (for networking)
 	AddReplicatedSubObject(NewAction);
 
-	if (NewAction->IsAutoStart() && ensure(NewAction->CanStart(Instigator)))
+	// Auto start all buffs, if allowed
+	if (bIsEffectClass && ensure(NewAction->CanStart(Instigator)))
 	{
 		NewAction->StartAction(Instigator);
 	}
 
 	// For this mechanism to work, we cant have multiple actions with the same activation tag
-	// Only for actions with activation tag, buffs wont have those set
+	// Only for actions with activation tag, buffs will not have those set
 	if (NewAction->GetActivationTag().IsValid())
 	{
 		check(!CachedActions.Contains(NewAction->GetActivationTag()));

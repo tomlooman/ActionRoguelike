@@ -79,10 +79,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Cooldown")
 	float CooldownTime;
 
-	/* Start immediately when added to an action component */
-	UPROPERTY(EditDefaultsOnly, Category = "Action")
-	bool bAutoStart;
-
 	/* Action nickname to start/stop without a reference to the object */
 	UPROPERTY(EditDefaultsOnly, Category = "Action")
 	FGameplayTag ActivationTag;
@@ -93,12 +89,6 @@ public:
 	FGameplayTag GetActivationTag() const
 	{
 		return ActivationTag;
-	}
-
-	UFUNCTION(BlueprintPure)
-	bool IsAutoStart() const
-	{
-		return bAutoStart;
 	}
 
 	void Initialize(URogueActionComponent* NewActionComp);

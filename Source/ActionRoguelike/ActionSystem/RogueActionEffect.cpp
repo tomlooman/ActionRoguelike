@@ -2,6 +2,8 @@
 
 
 #include "RogueActionEffect.h"
+
+#include "ActionRoguelike.h"
 #include "ActionSystem/RogueActionComponent.h"
 #include "GameFramework/GameStateBase.h"
 
@@ -10,22 +12,13 @@
 
 
 
-URogueActionEffect::URogueActionEffect()
-{
-	bAutoStart = true;
-}
-
-
 void URogueActionEffect::StartAction_Implementation(AActor* Instigator)
 {
 	Super::StartAction_Implementation(Instigator);
 
 	if (Duration > 0.0f)
 	{
-		FTimerDelegate Delegate;
-		Delegate.BindUObject(this, &ThisClass::StopAction, Instigator);
-
-		GetWorld()->GetTimerManager().SetTimer(DurationHandle, Delegate, Duration, false);
+		ResetDuration();
 	}
 
 	if (Period > 0.0f)
@@ -56,6 +49,25 @@ void URogueActionEffect::StopAction_Implementation(AActor* Instigator)
 	Comp->RemoveAction(this);
 }
 
+
+void URogueActionEffect::IncrementStackSize()
+{
+	StackCount++;
+	
+	// Refresh duration each increment, on expiration all stacks are removed at once
+	ResetDuration();
+	
+	UE_LOG(LogGame, Log, TEXT("Incremented %s (%s) Stack to %d"), *GetName(), *GetNameSafe(GetOwningComponent()->GetOwner()), StackCount);
+}
+
+
+void URogueActionEffect::ResetDuration()
+{
+	FTimerDelegate Delegate;
+	Delegate.BindUObject(this, &ThisClass::StopAction, RepData.Instigator.Get());
+
+	GetWorld()->GetTimerManager().SetTimer(DurationHandle, Delegate, Duration, false);
+}
 
 float URogueActionEffect::GetTimeRemaining() const
 {
