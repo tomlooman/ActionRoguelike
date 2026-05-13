@@ -170,13 +170,14 @@ void ARoguePlayerCharacter::CrosshairTraceComplete(const FTraceHandle& InTraceHa
 
 void ARoguePlayerCharacter::ClientOnSeenBy_Implementation(ARogueAICharacter* SeenByPawn)
 {
-	URogueWorldUserWidget* NewWidget = CreateWidget<URogueWorldUserWidget>(GetWorld(), SpottedWidgetClass);
+	// @todo: disabled, its the only Client RPC example, but the clients can likely figure this out locally when the TargetActor is replicated instead of sending this RPC
+	/*URogueWorldUserWidget* NewWidget = CreateWidget<URogueWorldUserWidget>(GetWorld(), SpottedWidgetClass);
 	// Can be nullptr if we do not specify a class to use in Blueprint
 	if (NewWidget)
 	{
 		NewWidget->AttachedActor = SeenByPawn;
 		NewWidget->AddToRootCanvasPanel();
-	}
+	}*/
 }
 
 void ARoguePlayerCharacter::PlayAttackSound(USoundBase* InSound)
