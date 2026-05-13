@@ -33,7 +33,7 @@ struct FPayLoadTestMessage
 	float Credits = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	AActor* VictimActor = nullptr;
+	TObjectPtr<AActor> VictimActor = nullptr;
 };
 
 /**

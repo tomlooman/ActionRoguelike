@@ -25,7 +25,7 @@ public:
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category= "Animation")
-	UCurveFloat* LidAnimCurve;
+	TObjectPtr<UCurveFloat> LidAnimCurve;
 
 	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly, SaveGame)
 	bool bLidOpened;

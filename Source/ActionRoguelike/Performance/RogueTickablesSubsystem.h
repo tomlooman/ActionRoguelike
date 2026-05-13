@@ -7,6 +7,8 @@
 #include "RogueTickablesSubsystem.generated.h"
 
 
+class URogueTickablesSubsystem;
+
 /* Registered tick of the subsystem with the standard tick task graph */
 USTRUCT()
 struct FTickablesTickFunction : public FTickFunction
@@ -14,7 +16,7 @@ struct FTickablesTickFunction : public FTickFunction
 	GENERATED_BODY()
 
 	UPROPERTY(Transient)
-	URogueTickablesSubsystem* Target = nullptr;
+	TObjectPtr<URogueTickablesSubsystem> Target = nullptr;
 
 	virtual void ExecuteTick(float DeltaTime, ELevelTick TickType, ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent) override;
 

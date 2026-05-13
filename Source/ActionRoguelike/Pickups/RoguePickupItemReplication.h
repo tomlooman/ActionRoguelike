@@ -49,7 +49,7 @@ struct FPickupLocationsArray: public FFastArraySerializer
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(NotReplicated)
-	URoguePickupSubsystem* OwningSubsystem = nullptr;
+	TObjectPtr<URoguePickupSubsystem> OwningSubsystem = nullptr;
 
 	UPROPERTY()
 	TArray<FPickupLocationItem> Items;

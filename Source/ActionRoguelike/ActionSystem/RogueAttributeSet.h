@@ -151,7 +151,7 @@ public:
 	TMap<FGameplayTag, FRogueAttribute*> AttributeCache;
 
 	UPROPERTY(Transient)
-	URogueActionComponent* OwningComp;
+	TObjectPtr<URogueActionComponent> OwningComp;
 };
 
 

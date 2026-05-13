@@ -19,7 +19,7 @@ protected:
 	TObjectPtr<URadialForceComponent> RadialForceComp;
 
 	UPROPERTY(EditDefaultsOnly, Category=Animation)
-	UCurveFloat* AnimRadiusCurve;
+	TObjectPtr<UCurveFloat> AnimRadiusCurve;
 
 	UPROPERTY(EditDefaultsOnly, Category=Animation)
 	float MaxRadius;

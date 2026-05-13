@@ -26,7 +26,7 @@ struct FActiveCurveAnim
 	}
 
 	UPROPERTY()
-	UCurveFloat* Curve = nullptr;
+	TObjectPtr<UCurveFloat> Curve = nullptr;
 
 	float PlayRate = 1.0f;
 

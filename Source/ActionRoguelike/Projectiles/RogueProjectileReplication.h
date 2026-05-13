@@ -53,10 +53,10 @@ struct FProjectileItem : public FFastArraySerializerItem
 	FVector InitialDirection;
 
 	UPROPERTY() // @todo: can we replicate this asset pointer?
-	URogueProjectileData* ConfigDataAsset;
+	TObjectPtr<URogueProjectileData> ConfigDataAsset;
 
 	UPROPERTY()
-	AActor* InstigatorActor;
+	TObjectPtr<AActor> InstigatorActor;
 		
 	/* ID for tracking with the instance data */
 	UPROPERTY()
@@ -75,7 +75,7 @@ struct FProjectileItem : public FFastArraySerializerItem
 	float ExpirationGameTime = 0;
 
 	UPROPERTY(NotReplicated)
-	UNiagaraComponent* TracerEffectComp = nullptr;
+	TObjectPtr<UNiagaraComponent> TracerEffectComp = nullptr;
 	
 	void PostReplicatedAdd(const FProjectileArray& InArraySerializer);
 	void PreReplicatedRemove(const FProjectileArray& InArraySerializer);
@@ -96,7 +96,7 @@ struct FProjectileArray: public FFastArraySerializer
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(NotReplicated)
-	URogueProjectilesSubsystem* OwningSubsystem = nullptr;
+	TObjectPtr<URogueProjectilesSubsystem> OwningSubsystem = nullptr;
 
 	UPROPERTY()
 	TArray<FProjectileItem> Items;

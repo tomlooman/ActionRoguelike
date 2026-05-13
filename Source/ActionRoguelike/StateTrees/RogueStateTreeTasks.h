@@ -13,7 +13,7 @@ struct FRogueST_SelectMonsterInstanceData
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category=Parameter)
-	UDataTable* MonsterTable = nullptr;
+	TObjectPtr<UDataTable> MonsterTable = nullptr;
 	
 	UPROPERTY(EditAnywhere)
 	TStateTreePropertyRef<int32> AvailableCreditsRef;
