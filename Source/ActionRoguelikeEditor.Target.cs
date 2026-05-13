@@ -10,6 +10,8 @@ public class ActionRoguelikeEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.Latest;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+		
+		NativePointerMemberBehaviorOverride = PointerMemberBehavior.Disallow;
 
 		ExtraModuleNames.AddRange( new string[] { "ActionRoguelike" } );
 	}
