@@ -2,8 +2,47 @@
 
 
 #include "UI/RogueHUD.h"
+
+#include "RogueMainHUDWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/RoguePlayerController.h"
+
+
+void ARogueHUD::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	ARoguePlayerController* MyPC = Cast<ARoguePlayerController>(GetOwningPlayerController());
+	
+	// For clients we wait until the playerstate is ready
+	if (GetNetMode() == NM_Client && MyPC->PlayerState == nullptr)
+	{
+		MyPC->OnPlayerStateReceived.AddDynamic(this, &ThisClass::OnPlayerStateReady);
+	}
+	else
+	{
+		// For host or standalone, create immediately
+		CreateMainHUD();
+	}
+}
+
+
+void ARogueHUD::OnPlayerStateReady(APlayerState* NewPlayerState)
+{
+	CreateMainHUD();
+}
+
+
+void ARogueHUD::CreateMainHUD()
+{
+	if (MainHUDClass)
+	{
+		APlayerController* MyPC = GetOwningPlayerController();
+		MainHUDInstance = CreateWidget<URogueMainHUDWidget>(MyPC, MainHUDClass);
+		MainHUDInstance->AddToViewport();
+	}
+}
 
 
 void ARogueHUD::TogglePauseMenu()

@@ -175,7 +175,7 @@ void ARoguePlayerCharacter::ClientOnSeenBy_Implementation(ARogueAICharacter* See
 	if (NewWidget)
 	{
 		NewWidget->AttachedActor = SeenByPawn;
-		URogueWorldUserWidget::AddToRootCanvasPanel(NewWidget);
+		NewWidget->AddToRootCanvasPanel();
 	}
 }
 

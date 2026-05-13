@@ -4,6 +4,8 @@
 #include "UI/RogueWorldUserWidget.h"
 
 #include "ActionRoguelike.h"
+#include "RogueHUD.h"
+#include "RogueMainHUDWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
@@ -63,22 +65,15 @@ void URogueWorldUserWidget::NativeConstruct()
 	}
 }
 
-void URogueWorldUserWidget::AddToRootCanvasPanel(UUserWidget* InNewWidget)
+void URogueWorldUserWidget::AddToRootCanvasPanel()
 {
-	// Grab the 'main hud' which will have a Canvas Panel to use.
-	TArray<UUserWidget*> Widgets;
-	UWidgetBlueprintLibrary::GetAllWidgetsOfClass(InNewWidget, Widgets, UUserWidget::StaticClass(), true);
-	// Expect only one main hud, other menus etc. might mess with this and requires slight change (eg. adding a pause menu to the root)
-	//check(Widgets.Num() == 1)
-
-	// @todo: convert to use a base HUD widget with an assigned CanvasPanel via meta=BindWidget so we can directly reference that.
-
-	// We might be testing without a HUD...
-	if (Widgets.Num() > 0)
+	ARogueHUD* HUD = Cast<ARogueHUD>(GetOwningPlayer()->GetHUD());
+	check(HUD);
+	
+	// We might be testing without a HUD Widget...
+	if (URogueMainHUDWidget* Widget = HUD->GetMainHUD())
 	{
-		UUserWidget* MainHUD = Widgets[0];
-		UCanvasPanel* CanvasPanel = Cast<UCanvasPanel>(MainHUD->GetRootWidget());
-		CanvasPanel->AddChild(InNewWidget);
+		Widget->MainCanvasPanel->AddChild(this);
 	}
 }
 

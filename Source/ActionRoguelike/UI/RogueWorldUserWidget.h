@@ -32,7 +32,7 @@ public:
 
 	/* Find the root canvas panel (expected in a 'main hud' style widget) and add new widget as child. */
 	UFUNCTION(BlueprintCallable, Category= UI)
-	static void AddToRootCanvasPanel(UUserWidget* InNewWidget);
+	void AddToRootCanvasPanel();
 
 	virtual void RemoveFromParent() override;
 

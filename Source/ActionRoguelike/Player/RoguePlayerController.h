@@ -28,6 +28,11 @@ public:
 	{
 		return bIsUsingGamepad;
 	}
+		
+	// Listen for incoming player state (for clients this may be nullptr when initially joining a game, 
+	// afterwards player state will not change again as PlayerControllers maintain the same player state throughout the level)
+	UPROPERTY(BlueprintAssignable)
+	FOnPlayerStateChanged OnPlayerStateReceived;
 
 protected:
 	
@@ -42,11 +47,6 @@ protected:
 	virtual void SetupInputComponent() override;
 
 	void AnyKeyInput(FKey PressedKey);
-	
-	// Listen for incoming player state (for clients this may be nullptr when initially joining a game, 
-	// afterwards player state will not change again as PlayerControllers maintain the same player state throughout the level)
-	UPROPERTY(BlueprintAssignable)
-	FOnPlayerStateChanged OnPlayerStateReceived;
 
 	/* Called when player controller is ready to begin playing, good moment to initialize things like UI which might be too early in BeginPlay 
 		(esp. in multiplayer clients where not all data such as PlayerState may have been received yet) */

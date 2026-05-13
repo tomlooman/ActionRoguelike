@@ -190,11 +190,11 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 			if (ActiveHealthBar)
 			{
 				ActiveHealthBar->AttachedActor = this;
-				URogueWorldUserWidget::AddToRootCanvasPanel(ActiveHealthBar);
+				ActiveHealthBar->AddToRootCanvasPanel();
 			}
 		}
 
-		CreateDamagePopupWidget(AttributeModification.Magnitude);
+		//CreateDamagePopupWidget(AttributeModification.Magnitude);
 
 #if USE_MID_HITFLASHOVERLAY
 		if (OverlayHitflashMID)
@@ -324,7 +324,7 @@ void ARogueAICharacter::CreateDamagePopupWidget(float DamageAmount)
 	DmgPopupWidgetInst->AttachedActor = this;
 	DmgPopupWidgetInst->WorldOffset = FVector(0,0, 45.0f);
 
-	URogueDamageNumberWidget::AddToRootCanvasPanel(DmgPopupWidgetInst);
+	DmgPopupWidgetInst->AddToRootCanvasPanel();
 	
 	// Center align on the projected canvas position
 	UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(DmgPopupWidgetInst);

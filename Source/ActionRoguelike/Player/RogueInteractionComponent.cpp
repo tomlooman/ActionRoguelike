@@ -149,7 +149,7 @@ void URogueInteractionComponent::FindBestInteractable()
 
 				if (!WidgetInst->GetParent())
 				{
-					URogueWorldUserWidget::AddToRootCanvasPanel(WidgetInst);
+					WidgetInst->AddToRootCanvasPanel();
 				}
 			}
 
