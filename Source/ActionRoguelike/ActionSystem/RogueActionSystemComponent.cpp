@@ -83,6 +83,48 @@ void URogueActionSystemComponent::RemoveAction(URogueAction* ActionToRemove)
 	ensure(RemoveCount == 1);
 }
 
+void URogueActionSystemComponent::AppendActiveTags(FGameplayTagContainer NewTags)
+{
+	ActiveGameplayTags.AppendTags(NewTags);
+	
+	CheckAgainstBlockedTags(NewTags);
+
+	for (FGameplayTag Tag : NewTags)
+	{
+		GameplayTagUpdated.Broadcast(Tag, 1);
+	}
+}
+
+void URogueActionSystemComponent::RemoveActiveTags(FGameplayTagContainer TagsToRemove)
+{
+	int32 PrevCount = ActiveGameplayTags.Num();
+	
+	ActiveGameplayTags.RemoveTags(TagsToRemove);
+	
+	ensure((PrevCount - ActiveGameplayTags.Num()) == TagsToRemove.Num());
+	
+	for (FGameplayTag Tag : TagsToRemove)
+	{
+		GameplayTagUpdated.Broadcast(Tag, 0);
+	}
+}
+
+void URogueActionSystemComponent::CheckAgainstBlockedTags(const FGameplayTagContainer& NewTags)
+{
+	for (URogueAction* Action : Actions)
+	{
+		if (Action->IsRunning() && NewTags.HasAny(Action->GetBlockedTags()))
+		{
+			Action->StopAction();
+			
+			UE_LOGFMT(LogGame, Log, "Stopped {ActionName} due to any matching blocked tag {BlockedTags} for {Owner}",
+				("ActionName", Action->GetActionName().ToString()),
+				("BlockedTags", NewTags.ToString()),
+				("Owner", GetNameSafe(GetOwner())));
+		}
+	}
+}
+
 void URogueActionSystemComponent::StartAction(FGameplayTag InActionName)
 {
 	for (URogueAction* Action : Actions)

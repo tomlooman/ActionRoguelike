@@ -36,6 +36,11 @@ protected:
 	TMap<FGameplayTag, float> ActivationCost;
 
 public:
+	
+	const FGameplayTagContainer& GetBlockedTags() const
+	{
+		return BlockedTags;
+	}
 
 	UFUNCTION(BlueprintCallable)
 	URogueActionSystemComponent* GetOwningComponent() const;
