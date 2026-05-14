@@ -116,7 +116,7 @@ void URogueAction_ProjectileAttack::AttackDelay_Elapsed(ARoguePlayerCharacter* I
 
 			URogueActorPoolingSubsystem* Pooler = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
 			// re-use a pooled actor instead of always spawning new Actors
-			Pooler->AcquireFromPool<AActor>(this, ProjectileClass, SpawnTM, SpawnParams);	
+			Pooler->AcquireFromPool<AActor>(ProjectileClass, SpawnTM, SpawnParams);	
 #endif
 	}
 

@@ -26,13 +26,16 @@ class ACTIONROGUELIKE_API URogueActorPoolingSubsystem : public UWorldSubsystem
 
 public:
 
-	UFUNCTION(BlueprintCallable, Category= "Actor Pooling", meta = (WorldContext="WorldContextObject"))
-	AActor* SpawnActorPooled(const UObject* WorldContextObject, TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, ESpawnActorCollisionHandlingMethod SpawnHandling);
+	UFUNCTION(BlueprintCallable, Category= "Actor Pooling")
+	AActor* SpawnActorPooled(TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, ESpawnActorCollisionHandlingMethod SpawnHandling);
 
 	bool ReleaseToPool(AActor* Actor);
 
 	template <class T>
-	T* AcquireFromPool(const UObject* WorldContextObject, TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, FActorSpawnParameters SpawnParams = FActorSpawnParameters());
+	T* AcquireFromPool(TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, FActorSpawnParameters SpawnParams = FActorSpawnParameters())
+	{
+		return Cast<T>(AcquireFromPool_Internal(ActorClass, SpawnTransform, SpawnParams));
+	}
 
 	static bool IsPoolingEnabled(const UObject* WorldContextObject);
 
@@ -43,8 +46,7 @@ public:
 
 protected:
 
-	template <class T>
-	T* AcquireFromPool_Internal(TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, FActorSpawnParameters SpawnParams);
+	AActor* AcquireFromPool_Internal(TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, FActorSpawnParameters SpawnParams);
 
 	bool ReleaseToPool_Internal(AActor* Actor);
 

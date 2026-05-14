@@ -17,41 +17,30 @@ static TAutoConsoleVariable CVarActorPoolingEnabled(
 	ECVF_Default);
 
 
-AActor* URogueActorPoolingSubsystem::SpawnActorPooled(const UObject* WorldContextObject, TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, ESpawnActorCollisionHandlingMethod SpawnHandling)
+AActor* URogueActorPoolingSubsystem::SpawnActorPooled(TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, ESpawnActorCollisionHandlingMethod SpawnHandling)
 {
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = SpawnHandling;
 	
-	return AcquireFromPool<AActor>(WorldContextObject, ActorClass, SpawnTransform, Params);
+	if (IsPoolingEnabled(this))
+	{
+		return AcquireFromPool<AActor>(ActorClass, SpawnTransform, Params);
+	}
+	
+	// Fallback
+	return GetWorld()->SpawnActor<AActor>(ActorClass, SpawnTransform, Params);
 }
 
 bool URogueActorPoolingSubsystem::ReleaseToPool(AActor* Actor)
 {
-	if (IsPoolingEnabled(Actor))
+	if (IsPoolingEnabled(this))
 	{
 		URogueActorPoolingSubsystem* PoolingSubsystem = Actor->GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
 		return PoolingSubsystem->ReleaseToPool_Internal(Actor);
 	}
 
-	SCOPED_NAMED_EVENT(DestroyActorNoPool, FColor::Red);
 	Actor->Destroy();
 	return false;
-}
-
-
-template <class T>
-T* URogueActorPoolingSubsystem::AcquireFromPool(const UObject* WorldContextObject, TSubclassOf<AActor> ActorClass,
-	const FTransform& SpawnTransform, FActorSpawnParameters SpawnParams /*= FActorSpawnParameters()*/)
-{
-	if (IsPoolingEnabled(WorldContextObject))
-	{
-		URogueActorPoolingSubsystem* PoolingSystem = WorldContextObject->GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
-		return PoolingSystem->AcquireFromPool_Internal<T>(ActorClass, SpawnTransform, SpawnParams);
-	}
-	
-	SCOPED_NAMED_EVENT(SpawnActorNoPool, FColor::Red);
-	// Fallback to standard spawning when not enabled
-	return WorldContextObject->GetWorld()->SpawnActor<T>(ActorClass, SpawnTransform, SpawnParams);
 }
 
 
@@ -115,8 +104,8 @@ void URogueActorPoolingSubsystem::Deinitialize()
 	//WidgetPool.ReleaseAllSlateResources();
 }
 
-template <class T>
-T* URogueActorPoolingSubsystem::AcquireFromPool_Internal(TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform,
+
+AActor* URogueActorPoolingSubsystem::AcquireFromPool_Internal(TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform,
 	FActorSpawnParameters SpawnParams = FActorSpawnParameters())
 {
 	SCOPED_NAMED_EVENT(AcquireActorFromPool, FColor::White);
@@ -142,7 +131,7 @@ T* URogueActorPoolingSubsystem::AcquireFromPool_Internal(TSubclassOf<AActor> Act
 		UE_LOGFMT(LogGame, Log, "Actor Pool empty, spawning new Actor for {actorclass}", GetNameSafe(ActorClass));
 		
 		// Spawn fresh instance that can eventually be release to the pool
-		return GetWorld()->SpawnActor<T>(ActorClass, SpawnTransform, SpawnParams);
+		return GetWorld()->SpawnActor<AActor>(ActorClass, SpawnTransform, SpawnParams);
 	}
 	
 	AcquiredActor->SetActorTransform(SpawnTransform);
@@ -157,5 +146,5 @@ T* URogueActorPoolingSubsystem::AcquireFromPool_Internal(TSubclassOf<AActor> Act
 	
 	IRogueActorPoolingInterface::Execute_PoolBeginPlay(AcquiredActor);
 
-	return CastChecked<T>(AcquiredActor);
+	return CastChecked<AActor>(AcquiredActor);
 }
