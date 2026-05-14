@@ -318,7 +318,7 @@ void ARogueAICharacter::CreateDamagePopupWidget(float DamageAmount)
 	// @todo: somehow we constantly see just one instance, are we grabbing the same one for re-use too soon?
 	
 	// Damage Pop-up Instance
-	URogueDamageNumberWidget* DmgPopupWidgetInst = Pooler->WidgetPool.GetOrCreateInstance<URogueDamageNumberWidget>(DmgPopupWidgetClass);
+	URogueDamageNumberWidget* DmgPopupWidgetInst = nullptr;//Pooler->WidgetPool.GetOrCreateInstance<URogueDamageNumberWidget>(DmgPopupWidgetClass);
 
 	DmgPopupWidgetInst->SetDamageAmount(FMath::Abs(DamageAmount));
 	DmgPopupWidgetInst->AttachedActor = this;

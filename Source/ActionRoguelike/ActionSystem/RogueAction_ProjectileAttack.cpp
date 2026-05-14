@@ -114,8 +114,9 @@ void URogueAction_ProjectileAttack::AttackDelay_Elapsed(ARoguePlayerCharacter* I
 			// Standard spawning, replaced by pooling system below
 			//GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 
+			URogueActorPoolingSubsystem* Pooler = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
 			// re-use a pooled actor instead of always spawning new Actors
-			URogueActorPoolingSubsystem::AcquireFromPool<AActor>(this, ProjectileClass, SpawnTM, SpawnParams);	
+			Pooler->AcquireFromPool<AActor>(this, ProjectileClass, SpawnTM, SpawnParams);	
 #endif
 	}
 

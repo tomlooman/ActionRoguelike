@@ -114,7 +114,8 @@ float ARogueProjectile::GetGravityScale() const
 void ARogueProjectile::LifeSpanExpired()
 {
 	// Skip destroy and instead release to pool
-	URogueActorPoolingSubsystem::ReleaseToPool(this);
+	URogueActorPoolingSubsystem* Pooler = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
+	Pooler->ReleaseToPool(this);
 }
 
 

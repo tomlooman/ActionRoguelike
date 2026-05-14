@@ -27,19 +27,19 @@ class ACTIONROGUELIKE_API URogueActorPoolingSubsystem : public UWorldSubsystem
 public:
 
 	UFUNCTION(BlueprintCallable, Category= "Actor Pooling", meta = (WorldContext="WorldContextObject"))
-	static AActor* SpawnActorPooled(const UObject* WorldContextObject, TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, ESpawnActorCollisionHandlingMethod SpawnHandling);
+	AActor* SpawnActorPooled(const UObject* WorldContextObject, TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, ESpawnActorCollisionHandlingMethod SpawnHandling);
 
-	static bool ReleaseToPool(AActor* Actor);
+	bool ReleaseToPool(AActor* Actor);
 
 	template <class T>
-	static T* AcquireFromPool(const UObject* WorldContextObject, TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, FActorSpawnParameters SpawnParams = FActorSpawnParameters());
+	T* AcquireFromPool(const UObject* WorldContextObject, TSubclassOf<AActor> ActorClass, const FTransform& SpawnTransform, FActorSpawnParameters SpawnParams = FActorSpawnParameters());
 
 	static bool IsPoolingEnabled(const UObject* WorldContextObject);
 
 	void PrimeActorPool(TSubclassOf<AActor> ActorClass, int32 Amount);
 	
-	UPROPERTY(Transient)
-	FUserWidgetPool WidgetPool;
+	//UPROPERTY(Transient)
+	//FUserWidgetPool WidgetPool;
 
 protected:
 

@@ -15,7 +15,7 @@ ARogueMonsterCorpse* URogueMonsterCorpseSubsystem::FetchCorpse(AActor* InActor, 
 
 	URogueActorPoolingSubsystem* Pooler = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
 
-	ARogueMonsterCorpse* PooledCorpse = Pooler->AcquireFromPool<ARogueMonsterCorpse>(this, ARogueMonsterCorpse::StaticClass(), SpawnTM);
+	ARogueMonsterCorpse* PooledCorpse = Cast<ARogueMonsterCorpse>(Pooler->AcquireFromPool<AActor>(this, ARogueMonsterCorpse::StaticClass(), SpawnTM));
 	PooledCorpse->SetCorpseProperties(InActor->FindComponentByClass<USkeletalMeshComponent>(), MonsterData);
 
 	// Track to clean up after some time or limit reached

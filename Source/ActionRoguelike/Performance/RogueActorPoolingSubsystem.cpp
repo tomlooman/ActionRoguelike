@@ -104,15 +104,15 @@ void URogueActorPoolingSubsystem::Initialize(FSubsystemCollectionBase& Collectio
 {
 	Super::Initialize(Collection);
 
-	WidgetPool.SetWorld(GetWorld());
+	//WidgetPool.SetWorld(GetWorld());
 }
 
 void URogueActorPoolingSubsystem::Deinitialize()
 {
 	Super::Deinitialize();
 
-	WidgetPool.ReleaseAll(true);
-	WidgetPool.ReleaseAllSlateResources();
+	//WidgetPool.ReleaseAll(true);
+	//WidgetPool.ReleaseAllSlateResources();
 }
 
 template <class T>
