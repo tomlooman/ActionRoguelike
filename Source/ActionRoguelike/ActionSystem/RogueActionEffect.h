@@ -31,8 +31,11 @@ protected:
 	float Period = 0.0f;
 	
 	/* Adding the same Effect multiple times instead increases the stack size. Can be used to amplify certain effects. Resets effect duration */
-	UPROPERTY(BlueprintReadOnly, Category=Effect)
+	UPROPERTY(Transient, BlueprintReadOnly, Category=Effect)
 	int32 StackCount = 1;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect")
+	bool bResetDurationOnStackIncrease = true;
 
 	FTimerHandle PeriodHandle;
 	FTimerHandle DurationHandle;

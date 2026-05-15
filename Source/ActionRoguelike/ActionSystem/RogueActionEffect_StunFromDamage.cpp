@@ -31,6 +31,12 @@ void URogueActionEffect_StunFromDamage::OnHealthChanged(float NewValue, const FA
 	// Did less time pass than the threshold?
 	const float DeltaTime = TimeNow - LastDamageTime;
 	
+	// Do not count until Stunned has expired (avoid stunlocking)
+	if (GetOwningComponent()->GetActiveTags().HasTag(SharedGameplayTags::Status_Stunned))
+	{
+		return;
+	}
+	
 	if (DeltaTime < TimeDeltaThreshold)
 	{
 		SummedRecentDamage += FMath::Abs(AttriMod.Magnitude);

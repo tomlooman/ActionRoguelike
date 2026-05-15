@@ -54,9 +54,11 @@ void URogueActionEffect::IncrementStackSize()
 {
 	StackCount++;
 	
-	// Refresh duration each increment, on expiration all stacks are removed at once
-	ResetDuration();
-	
+	if (bResetDurationOnStackIncrease)
+	{
+		// Refresh duration each increment, on expiration all stacks are removed at once
+		ResetDuration();
+	}
 	UE_LOG(LogGame, Log, TEXT("Incremented %s (%s) Stack to %d"), *GetName(), *GetNameSafe(GetOwningComponent()->GetOwner()), StackCount);
 }
 

@@ -29,7 +29,7 @@ bool URogueAction::CanStart_Implementation(AActor* Instigator)
 
 	URogueActionComponent* Comp = GetOwningComponent();
 	
-	if (Comp->ActiveGameplayTags.HasAny(BlockedTags))
+	if (Comp->GetActiveTags().HasAny(BlockedTags))
 	{
 		return false;
 	}
@@ -43,7 +43,7 @@ void URogueAction::StartAction_Implementation(AActor* Instigator)
 	UE_LOGFMT(LogGame, Verbose, "Started: {ActionName}", ("ActionName", GetName()));
 
 	URogueActionComponent* Comp = GetOwningComponent();	
-	Comp->ActiveGameplayTags.AppendTags(GrantsTags);
+	Comp->AppendActiveTags(GrantsTags);
 
 	if (GetOwningComponent()->GetOwnerRole() == ROLE_Authority)
 	{
@@ -64,7 +64,7 @@ void URogueAction::StopAction_Implementation(AActor* Instigator)
 	//ensureAlways(bIsRunning);
 
 	URogueActionComponent* Comp = GetOwningComponent();
-	Comp->ActiveGameplayTags.RemoveTags(GrantsTags);
+	Comp->RemoveActiveTags(GrantsTags);
 
 	if (GetOwningComponent()->GetOwnerRole() == ROLE_Authority)
 	{

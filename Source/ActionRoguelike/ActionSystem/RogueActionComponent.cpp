@@ -288,19 +288,27 @@ void URogueActionComponent::AddAction(AActor* Instigator, TSubclassOf<URogueActi
 	// First check if we can increment a buff stack instead of adding a fresh Action(Effect)
 	if (bIsEffectClass)
 	{
-		// @todo: name is not quite accurate for effect descriptions (something like Status.Burning)
+		// @todo: ActivationTag is not quite suitable for effect descriptions, we use it for now anyway to lookup actions in the cached map
 		FGameplayTag Tag = ActionClass->GetDefaultObject<URogueAction>()->GetActivationTag();
+		
 		// Buffs may not be setting these TAGs yet.
-		ensure(Tag.IsValid());
-
-		// Effect may not be present
-		if (TObjectPtr<URogueAction>* FoundItem = CachedActions.Find(Tag))
+		if (ensure(Tag.IsValid()))
 		{
-			if (URogueActionEffect* FoundEffect = Cast<URogueActionEffect>(*FoundItem))
+			// Effect may not be present
+			if (TObjectPtr<URogueAction>* FoundItem = CachedActions.Find(Tag))
 			{
-				FoundEffect->IncrementStackSize();
-				return;			
+				if (URogueActionEffect* FoundEffect = Cast<URogueActionEffect>(*FoundItem))
+				{
+					FoundEffect->IncrementStackSize();
+					return;			
+				}
 			}
+		}
+		else
+		{
+			// Just log and ignore, do not create any additional instance @todo: until we can support multiple debuffs per class with StackedTags
+			UE_LOG(LogGame, Log, TEXT("Ignoring ActionEffect, no ActivationTag present which must be set to identify effects, for now."));
+			//return;
 		}
 	}
 
@@ -342,6 +350,35 @@ void URogueActionComponent::RemoveAction(URogueAction* ActionToRemove)
 	Actions.Remove(ActionToRemove);
 
 	CachedActions.Remove(ActionToRemove->GetActivationTag());
+}
+
+
+void URogueActionComponent::AppendActiveTags(FGameplayTagContainer NewTags)
+{
+	ActiveGameplayTags.AppendTags(NewTags);
+	
+	//CheckAgainstBlockedTags(NewTags);
+
+	for (FGameplayTag Tag : NewTags)
+	{
+		GameplayTagUpdated.Broadcast(Tag, 1);
+	}
+}
+
+
+void URogueActionComponent::RemoveActiveTags(FGameplayTagContainer TagsToRemove)
+{
+	int32 PrevCount = ActiveGameplayTags.Num();
+	
+	ActiveGameplayTags.RemoveTags(TagsToRemove);
+	
+	// @todo: this can easily fail until we implement StackedTags (Lyra) as multiple applied Stunned debuffs can cause conflicts
+	ensure((PrevCount - ActiveGameplayTags.Num()) == TagsToRemove.Num());
+	
+	for (FGameplayTag Tag : TagsToRemove)
+	{
+		GameplayTagUpdated.Broadcast(Tag, 0);
+	}
 }
 
 

@@ -372,13 +372,18 @@ bool ARogueAICharacter::AddImpulseAtLocationCustom(FVector Impulse, FVector Loca
 	}
 
 	FHitReactConfig& Config = MonsterConfig->HitReactions;
-	// Play hit Anim
-	GetMesh()->GetAnimInstance()->PlaySlotAnimationAsDynamicMontage(
-		Config.GetAnimFromAngle(this, Impulse.GetSafeNormal()),
-		Config.SlotName,
-		Config.BlendInTime,
-		Config.BlendOutTime);
-
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	// Skip playback if we are attacking, stunned etc. which currently rely on the same slot
+	// @todo: possibly introduce additional slotgroups...
+	if (AnimInst->IsSlotActive(Config.SlotName))
+	{
+		// Play hit Anim
+		AnimInst->PlaySlotAnimationAsDynamicMontage(
+			Config.GetAnimFromAngle(this, Impulse.GetSafeNormal()),
+			Config.SlotName,
+			Config.BlendInTime,
+			Config.BlendOutTime);
+	}
 	// handled
 	return true;
 }

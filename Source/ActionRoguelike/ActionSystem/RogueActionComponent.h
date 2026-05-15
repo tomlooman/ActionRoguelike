@@ -15,24 +15,36 @@ class URogueAction;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnActionStateChanged, URogueActionComponent*, OwningComp, URogueAction*, Action);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGameplayTagCountChanged, FGameplayTag, UpdatedTag, int32, NewCount);
+
 
 UCLASS(ClassGroup=(RogueGame), meta=(BlueprintSpawnableComponent))
 class ACTIONROGUELIKE_API URogueActionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
+	UPROPERTY(Transient, EditDefaultsOnly, Category = "Tags")
+	FGameplayTagContainer ActiveGameplayTags;
+
 public:
+	
+	UFUNCTION(BlueprintCallable)
+	const FGameplayTagContainer& GetActiveTags() const
+	{
+		return ActiveGameplayTags;
+	}
 
 	static URogueActionComponent* GetActionComponent(AActor* FromActor);
-
-	UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, Category = "Tags")
-	FGameplayTagContainer ActiveGameplayTags;
 
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 	void AddAction(AActor* Instigator, TSubclassOf<URogueAction> ActionClass);
 
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 	void RemoveAction(URogueAction* ActionToRemove);
+	
+	void AppendActiveTags(FGameplayTagContainer NewTags);
+	
+	void RemoveActiveTags(FGameplayTagContainer TagsToRemove);
 
 	/* Returns first occurrence of action matching the class provided */
 	UFUNCTION(BlueprintCallable, Category = "Actions")
@@ -96,6 +108,9 @@ protected:
 	TMap<FGameplayTag, FAttributeChangedSignature> AttributeListenerMap;
 	
 	TMap<FGameplayTag, TArray<FAttributeChangedDynamicSignature>> AttributeBlueprintListeners;
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnGameplayTagCountChanged GameplayTagUpdated;
 	
 	UFUNCTION(Server, Reliable)
 	void ServerStartAction(AActor* Instigator, FGameplayTag ActionName);
