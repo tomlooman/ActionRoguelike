@@ -9,12 +9,10 @@ void URogueDeferredTaskSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	// Track the frame start time to know if we have budget to process more this frame
-	FCoreDelegates::OnBeginFrame.AddLambda([&]
-	{
-		FrameStartTime = FPlatformTime::Seconds();
-	});
+	// AddUObject replaces AddLambda which caused hard to track down crashes as it was never properly unbound.
+	FCoreDelegates::OnBeginFrame.AddUObject(this, &ThisClass::SetFrameStartTime);
 }
+
 
 void URogueDeferredTaskSystem::AddLambda(const UObject* WorldContextObject, TFunction<void()> InFunctionPtr)
 {
@@ -38,6 +36,12 @@ void URogueDeferredTaskSystem::AddDelegate(FDeferredTaskDelegate InDelegate)
 	NewTask.Delegate = InDelegate;
 	
 	FunctionPointers.Enqueue(NewTask);
+}
+
+
+void URogueDeferredTaskSystem::SetFrameStartTime()
+{
+	FrameStartTime = FPlatformTime::Seconds();
 }
 
 

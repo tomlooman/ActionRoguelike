@@ -55,6 +55,8 @@ public:
 protected:
 
 	double FrameStartTime;
+	
+	void SetFrameStartTime();
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	
