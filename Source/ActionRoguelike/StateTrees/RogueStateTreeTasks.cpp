@@ -6,6 +6,8 @@
 #include "StateTreeLinker.h"
 #include "Core/RogueGameModeBase.h"
 #include "StateTreePropertyRef.h"
+#include "Engine/AssetManager.h"
+#include "Engine/StreamableManager.h"
 
 
 FRogueSTTask_SelectMonster::FRogueSTTask_SelectMonster()
@@ -61,11 +63,11 @@ EStateTreeRunStatus FRogueSTTask_SelectMonster::EnterState(FStateTreeExecutionCo
 		// Too expensive to spawn
 		return EStateTreeRunStatus::Failed;
 	}
-
-
-	UClass** SelectedMonsterClass = InstanceData.SelectedMonsterRef.GetMutablePtr(Context);
+	
+	FPrimaryAssetId* SelectedMonsterClassId = InstanceData.SelectedMonsterRef.GetMutablePtr(Context);
 	// Store it back into state tree memory
-	*SelectedMonsterClass = AActor::StaticClass();
+	*SelectedMonsterClassId = SelectedRow->MonsterId;
 
-	return EStateTreeRunStatus::Running;
+	// We trigger a completion once the load/spawn delegate is finished
+	return EStateTreeRunStatus::Succeeded;
 }

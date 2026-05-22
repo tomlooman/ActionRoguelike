@@ -11,6 +11,8 @@ USTRUCT()
 struct FRogueST_SelectMonsterInstanceData
 {
 	GENERATED_BODY()
+	
+	// Note: Refs do not support that many types as of 5.6,so we rely on simple types and structs (not (soft)class pointers)
 
 	UPROPERTY(EditAnywhere, Category=Parameter)
 	TObjectPtr<UDataTable> MonsterTable = nullptr;
@@ -19,7 +21,7 @@ struct FRogueST_SelectMonsterInstanceData
 	TStateTreePropertyRef<int32> AvailableCreditsRef;
 	
 	UPROPERTY(EditAnywhere)
-	TStateTreePropertyRef<UClass*> SelectedMonsterRef;
+	TStateTreePropertyRef<FPrimaryAssetId> SelectedMonsterRef;
 };
 
 
