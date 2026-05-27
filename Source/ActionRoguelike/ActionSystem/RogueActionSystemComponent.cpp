@@ -65,14 +65,32 @@ void URogueActionSystemComponent::BeginPlay()
 
 void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueAction> NewActionClass)
 {
-	URogueAction* NewAction = NewObject<URogueAction>(this, NewActionClass);
-    Actions.Add(NewAction);
+	const bool bIsEffectClass = NewActionClass->IsChildOf(URogueActionEffect::StaticClass());
+	if (bIsEffectClass)
+	{
+		// Find existing debuff by class, you could have different 'stacking behavior' eg. allowing one debuff class PER instigator
+		// Note: Buffs and Actions may desire their own individual arrays when expanding on the Action System
+		for (URogueAction* Action : Actions)
+		{
+			if (URogueActionEffect* Effect = Cast<URogueActionEffect>(Action))
+			{
+				if (Effect->GetClass() == NewActionClass)
+				{
+					Effect->IncrementStackSize();
+					return;
+				}
+			}
+		}
+	}
 	
-	if (NewAction->IsA(URogueActionEffect::StaticClass()))
+	URogueAction* NewAction = NewObject<URogueAction>(this, NewActionClass);
+	Actions.Add(NewAction);
+
+	if (bIsEffectClass)
 	{
 		// Sanity check that buffs are allowed to run. We do not handle this case yet
 		ensureMsgf(NewAction->CanStart(), TEXT("Effect can not start CanStart returns FALSE. Case not handled."));
-		
+
 		NewAction->StartAction();
 	}
 }

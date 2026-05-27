@@ -18,6 +18,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<URogueActionSystemComponent> ActionSystemComponent;
 	
+	UFUNCTION()
+	void OnGameplayTagUpdated(FGameplayTag UpdatedTag, int32 NewCount);
+	
+	UPROPERTY(EditDefaultsOnly, Category=Animation)
+	TObjectPtr<UAnimMontage> StunnedAnimation;
+
 public:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;

@@ -2,7 +2,10 @@
 
 
 #include "RogueProjectileMagic.h"
+
+#include "ActionSystem/RogueActionSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "ActionSystem/RogueActionEffect.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 
@@ -23,5 +26,14 @@ void ARogueProjectileMagic::OnActorHit(UPrimitiveComponent* HitComponent, AActor
 	
 	UGameplayStatics::ApplyPointDamage(OtherActor, 10.f, HitFromDirection, Hit,  GetInstigatorController(),
 		this, DmgTypeClass);
+	
+	if (EffectOnHit)
+	{
+		URogueActionSystemComponent* ActionComp = OtherActor->FindComponentByClass<URogueActionSystemComponent>();
+		if (ActionComp) // Not everything will have one
+		{
+			ActionComp->GrantAction(EffectOnHit);
+		}
+	}
 }
 
