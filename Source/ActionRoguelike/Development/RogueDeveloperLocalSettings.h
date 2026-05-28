@@ -7,6 +7,13 @@
 #include "RogueDeveloperLocalSettings.generated.h"
 
 
+#if !UE_BUILD_SHIPPING
+namespace DevelopmentOnly
+{
+	static bool GDisableSpawnBotsOverride = false;
+}
+#endif
+
 /**
  * Place for Development Only configuration AND only stored via local INI files.
  */
