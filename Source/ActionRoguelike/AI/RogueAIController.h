@@ -32,9 +32,9 @@ protected:
 
 	virtual void BeginPlay() override;
 
-	virtual void PreRegisterAllComponents() override;
-
 public:
+
+	virtual void PreRegisterAllComponents() override;
 
 	ARogueAIController();
 };
