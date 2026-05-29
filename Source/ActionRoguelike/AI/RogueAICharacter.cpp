@@ -25,6 +25,8 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Core/RogueDeveloperSettings.h"
+#include "Core/RogueGameInstance.h"
+#include "Core/RogueGameState.h"
 #include "Core/RogueMessagingSubsystem.h"
 #include "Core/RogueMonsterData.h"
 #include "Performance/RogueActorPoolingSubsystem.h"
@@ -68,6 +70,11 @@ ARogueAICharacter::ARogueAICharacter(const FObjectInitializer& ObjectInitializer
 void ARogueAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	// Register
+	URogueGameInstance* GI = Cast<URogueGameInstance>(GetGameInstance());
+	check(GI);
+	GI->AliveMonsters.Add(this);
 
 	// For now just load here to be ready in time for the first dmg number request
 	FLoadSoftObjectPathAsyncDelegate Delegate;
@@ -158,6 +165,10 @@ void ARogueAICharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		// Make sure we unregister the same object as during Registration, in our case that's the SkeletalMeshComponent instead of the Actor
 		SigMan->UnregisterObject(GetMesh());
 	}
+	
+	// De-register (in case we never died but still removed from world)
+	URogueGameInstance* GI = Cast<URogueGameInstance>(GetGameInstance());
+	GI->AliveMonsters.RemoveSingleSwap(this, EAllowShrinking::No);
 
 	Super::EndPlay(EndPlayReason);
 }
@@ -178,13 +189,20 @@ void ARogueAICharacter::PostInitializeComponents()
 
 void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttributeModification& AttributeModification)
 {
-	float Delta = AttributeModification.Magnitude;
-	AActor* InstigatorActor = AttributeModification.Instigator.Get();
-	
+	const float Delta = AttributeModification.Magnitude;
 	if (Delta < 0.0f)
 	{
+		CreateDamagePopupWidget(AttributeModification.Magnitude);
+		
+		// Died
+		if (NewValue <= 0.0f)
+		{
+			HandleKilled();
+			return;
+		}
+		
 		// Create once, and skip on instant kill
-		if (ActiveHealthBar == nullptr && NewValue > 0.0)
+		if (ActiveHealthBar == nullptr)
 		{
 			ActiveHealthBar = CreateWidget<URogueWorldUserWidget>(GetWorld(), HealthBarWidgetClass);
 			if (ActiveHealthBar)
@@ -194,8 +212,7 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 			}
 		}
 
-		//CreateDamagePopupWidget(AttributeModification.Magnitude);
-
+		// We only hitflash when not killed, when killed we hitflash on the corpse mesh instead
 #if USE_MID_HITFLASHOVERLAY
 		if (OverlayHitflashMID)
 		{
@@ -224,78 +241,13 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 		}, 1.0f, false);
 #endif
 
-		// Died
-		if (NewValue <= 0.0f)
-		{
-			// stop BT
-			if (HasAuthority())
-			{
-				AAIController* AIC = GetController<AAIController>();
-				AIC->GetBrainComponent()->StopLogic("Killed");
-
-				// Clears active actions, and (de)buffs.
-				ActionComp->StopAllActions();
-
-#if USE_DOD_COIN_PICKUPS
-				// spawn credit loot, spawn a ton of them for stress testing
-				URoguePickupSubsystem* PickupSubsystem = GetWorld()->GetSubsystem<URoguePickupSubsystem>();
-				FVector ActorLoc = GetActorLocation();
-				const FVector CoinOffset = FVector(0,0,55);
-
-				// @todo: reduce to reasonable and psuedo random number, 100 is for testing
-				const int32 SpawnCount = 100;
-				TArray<FVector> CoinLocations;
-				CoinLocations.Reserve(SpawnCount);
-
-				TArray<int32> CoinAmounts;
-				CoinAmounts.Reserve(SpawnCount);
-				
-				for (int i = 0; i < SpawnCount; ++i)
-				{
-					FNavLocation OutNavLoc;
-					UNavigationSystemV1::GetNavigationSystem(this)->GetRandomPointInNavigableRadius(ActorLoc, 1024, OutNavLoc);
-
-					CoinLocations.Add(OutNavLoc.Location + CoinOffset);
-					//PickupSubsystem->AddCoinsPickup(OutNavLoc.Location + Offset, 10);
-					// @todo: add random amount or grab an amount from the minion data asset
-					CoinAmounts.Add(10);
-				}
-
-				PickupSubsystem->AddCoinsPickup(CoinLocations, CoinAmounts);
-#endif
-
-#if USE_TAGMESSAGING_SYSTEM
-				FPayLoadTestMessage MsgPayload;
-				MsgPayload.Credits = 25;
-
-				URogueMessagingSubsystem* Msg = UGameInstance::GetSubsystem<URogueMessagingSubsystem>(GetGameInstance());
-				Msg->BroadcastTagNative(SharedGameplayTags::Message_MonsterKilled, MsgPayload);
-#endif
-				
-			}
-
-			// We swap out a special ragdoll-only Actor that handles all visuals of the mesh and hide this enemy to reclaim into a pool.
-			
-			GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			GetCharacterMovement()->DisableMovement();
-
-			// Hide and prepare to pool @todo: implement some actual pooling
-			SetActorHiddenInGame(true);
-			// @fixme: enabled lifespan again to kill hidden monsters until we implement pooling for them
-			// @todo: remember to clear CorpseInstance on the pooled monster when he is claimed from the pool
-			SetLifeSpan(2.0f);
-			
-			URogueMonsterCorpseSubsystem* CorpseSystem = GetWorld()->GetSubsystem<URogueMonsterCorpseSubsystem>();
-			CorpseInstance = CorpseSystem->FetchCorpse(this, MonsterConfig);
-			return;
-		}
-
 		// Damaged, but not dead yet
 
 		// AI logic only runs on server
 		if (HasAuthority())
 		{
+			AActor* InstigatorActor = AttributeModification.Instigator.Get();
+			
 			// Skip reporting damage event for "Friendly" units. (We could also catch this earlier and prevent friendly-fire between AI units)
 			ETeamAttitude::Type Attitude = GetTeamAttitudeTowards(*InstigatorActor);
 			if (Attitude != ETeamAttitude::Friendly)
@@ -308,6 +260,76 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 }
 
 
+void ARogueAICharacter::HandleKilled()
+{
+	// De-register (in case we never died but still removed from world)
+	URogueGameInstance* GI = Cast<URogueGameInstance>(GetGameInstance());
+	GI->AliveMonsters.RemoveSingleSwap(this, EAllowShrinking::No);
+	
+	// stop BT
+	if (HasAuthority())
+	{
+		AAIController* AIC = GetController<AAIController>();
+		AIC->GetBrainComponent()->StopLogic("Killed");
+		
+		// Clears active actions, and (de)buffs.
+		ActionComp->StopAllActions();
+
+#if USE_DOD_COIN_PICKUPS
+		// spawn credit loot, spawn a ton of them for stress testing
+		URoguePickupSubsystem* PickupSubsystem = GetWorld()->GetSubsystem<URoguePickupSubsystem>();
+		FVector ActorLoc = GetActorLocation();
+		const FVector CoinOffset = FVector(0,0,55);
+
+		// @todo: reduce to reasonable and psuedo random number, 100 is for testing
+		const int32 SpawnCount = 100;
+		TArray<FVector> CoinLocations;
+		CoinLocations.Reserve(SpawnCount);
+
+		TArray<int32> CoinAmounts;
+		CoinAmounts.Reserve(SpawnCount);
+		
+		for (int i = 0; i < SpawnCount; ++i)
+		{
+			FNavLocation OutNavLoc;
+			UNavigationSystemV1::GetNavigationSystem(this)->GetRandomPointInNavigableRadius(ActorLoc, 1024, OutNavLoc);
+
+			CoinLocations.Add(OutNavLoc.Location + CoinOffset);
+			//PickupSubsystem->AddCoinsPickup(OutNavLoc.Location + Offset, 10);
+			// @todo: add random amount or grab an amount from the minion data asset
+			CoinAmounts.Add(10);
+		}
+
+		PickupSubsystem->AddCoinsPickup(CoinLocations, CoinAmounts);
+#endif
+
+#if USE_TAGMESSAGING_SYSTEM
+		FPayLoadTestMessage MsgPayload;
+		MsgPayload.Credits = 25;
+
+		URogueMessagingSubsystem* Msg = UGameInstance::GetSubsystem<URogueMessagingSubsystem>(GetGameInstance());
+		Msg->BroadcastTagNative(SharedGameplayTags::Message_MonsterKilled, MsgPayload);
+#endif
+		
+	}
+
+	// We swap out a special ragdoll-only Actor that handles all visuals of the mesh and hide this enemy to reclaim into a pool.
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCharacterMovement()->DisableMovement();
+
+	// Hide and prepare to pool @todo: implement some actual pooling
+	SetActorHiddenInGame(true);
+	// @fixme: enabled lifespan again to kill hidden monsters until we implement pooling for them
+	// @todo: remember to clear CorpseInstance on the pooled monster when he is claimed from the pool
+	// @todo: make sure the possessing AIController is dormant too until we re-use this monster
+	SetLifeSpan(2.0f);
+	
+	URogueMonsterCorpseSubsystem* CorpseSystem = GetWorld()->GetSubsystem<URogueMonsterCorpseSubsystem>();
+	CorpseInstance = CorpseSystem->FetchCorpse(this, MonsterConfig);	
+}
+
+
 void ARogueAICharacter::CreateDamagePopupWidget(float DamageAmount)
 {
 	// Already loaded during beginplay, can be moved to some singular place rather than the bot beginplay
@@ -316,7 +338,6 @@ void ARogueAICharacter::CreateDamagePopupWidget(float DamageAmount)
 	URogueActorPoolingSubsystem* Pooler = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
 
 	// @todo: somehow we constantly see just one instance, are we grabbing the same one for re-use too soon?
-	
 	// Damage Pop-up Instance
 	URogueDamageNumberWidget* DmgPopupWidgetInst = nullptr;//Pooler->WidgetPool.GetOrCreateInstance<URogueDamageNumberWidget>(DmgPopupWidgetClass);
 

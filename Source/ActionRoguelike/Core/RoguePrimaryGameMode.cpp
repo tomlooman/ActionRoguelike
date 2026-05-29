@@ -5,6 +5,7 @@
 
 #include "ActionRoguelike.h"
 #include "EngineUtils.h"
+#include "RogueGameInstance.h"
 #include "RogueGameplayFunctionLibrary.h"
 #include "RogueMonsterData.h"
 #include "ActionSystem/RogueAction.h"
@@ -14,75 +15,106 @@
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
+#include "GameRules/RogueSpawnDirectors.h"
+
 
 void ARoguePrimaryGameMode::StartPlay()
 {
 	Super::StartPlay();
 	
-	AvailableSpawnCredit = InitialSpawnCredit;
-
-	StartSpawningBots();
+	// 0.1sec is plenty for handling the frequency of credits, spawning, etc.
+	PrimaryActorTick.TickInterval = 0.1f;
 	
+	FRandomStream GlobalStream = FRandomStream(StartingSeed);
+
+	// Init here, modify the director seeds before we init the stream
+	for (FRogueDirectorData& Director : Directors)
+	{
+		float NewSeed = GlobalStream.FRand();
+		Director.RandomStream_MonsterSelection = FRandomStream(NewSeed);
+		
+#if WITH_EDITORONLY_DATA
+		// Validate we get consistent random numbers between runs
+		UE_LOG(LogGame, Log, TEXT("Director '%s' seeded with %f"), *Director.EditorDisplayName, NewSeed);
+#endif
+		
+	}
 }
 
-void ARoguePrimaryGameMode::StartSpawningBots()
-{
-	// Continuous timer to spawn in more bots.
-	// Actual amount of bots and whether it's allowed to spawn determined by spawn logic later in the chain...
-	GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &ThisClass::SpawnBotTimerElapsed, SpawnTimerInterval, true);
-}
 
-
-void ARoguePrimaryGameMode::SpawnBotTimerElapsed()
+void ARoguePrimaryGameMode::Tick(float DeltaSeconds)
 {
+	Super::Tick(DeltaSeconds);
+	
 #if !UE_BUILD_SHIPPING
-    // disabled as we now use big button in level for debugging, but in normal gameplay something like this is useful
+	// disabled as we now use big button in level for debugging, but in normal gameplay something like this is useful
 	if (DevelopmentOnly::GDisableSpawnBotsOverride)
 	{
 		return;
 	}
 #endif
 
-	// Give points to spend
-	if (SpawnCreditCurve)
-	{
-		AvailableSpawnCredit += SpawnCreditCurve->GetFloatValue(GetWorld()->TimeSeconds);
-	}
-
-	if (CooldownBotSpawnUntil > GetWorld()->TimeSeconds)
-	{
-		// Still cooling down
-		return;
-	}
+	const float CurrGameTime = GetWorld()->TimeSeconds;
 	
+	// @todo: validate the curve asset exists
+	// @todo: warn about no monsterrow much earlier in the game and don't even bother arriving here if not set.
+	// Use either DataValidation, asserts, or combination to prevent this from crashing here.
+
+	for (FRogueDirectorData& Director : Directors)
+	{
+		// Check if we should "tick"
+		if (Director.NextTickTime > CurrGameTime)
+		{
+			continue;	
+		}
+		
+		const float PlayerCountMultiplier = 1.0f;
+		float NrOfAlivePlayers = 1; // grab from cached array, just like QueryContext_AlivePlayers
+		
+		const float DifficultyMultiplier = 1.0f;
+		
+		// Award Credits
+		float BaseCredits = Director.CreditsGainCurve->GetFloatValue(CurrGameTime) * DeltaSeconds;
+		Director.CurrentCredits += BaseCredits * DifficultyMultiplier * (PlayerCountMultiplier * NrOfAlivePlayers);
+		
+		// Try Spawn
+		TrySpawnMonster(Director);
+		
+		// Setup next "tick"
+		Director.NextTickTime = CurrGameTime + Director.TickInterval;
+	}
+}
+
+
+bool ARoguePrimaryGameMode::TrySpawnMonster(FRogueDirectorData& DirectorData)
+{
 	// Count alive bots before spawning
-	int32 NrOfAliveBots = 0;
+	/*int32 NrOfAliveBots = 0;
 	for (ARogueAICharacter* Bot : TActorRange<ARogueAICharacter>(GetWorld()))
 	{
+		// @todo: this will fail once we start pooling the pawns unless we check against their pool state.
 		if (URogueGameplayFunctionLibrary::IsAlive(Bot))
 		{
 			NrOfAliveBots++;
 		}
-	}
+	}*/
+	
+	URogueGameInstance* GI = Cast<URogueGameInstance>(GetGameInstance());
+	int32 NrOfAliveBots = GI->AliveMonsters.Num();
 
 	UE_LOGFMT(LogGame, Log, "Found {number} alive bots.", NrOfAliveBots);
 
-	const float MaxBotCount = 10.0f;
-	if (NrOfAliveBots >= MaxBotCount)
+	if (NrOfAliveBots >= NrMaxEnemies)
 	{
 		UE_LOGFMT(LogGame, Log, "At maximum bot capacity. Skipping bot spawn.");
-		return;
+		return false;
 	}
 
 	// Row to pass along with EQS delegate
 	FMonsterInfoRow* SelectedRow = nullptr;
 
-	// @todo: warn about no monsterrow much earlier in the game and don't even bother arriving here if not set.
-	// Use either DataValidation, asserts, or combination to prevent this from crashing here.
-	//if (MonsterTable)
-	
 	TArray<FMonsterInfoRow*> Rows;
-	MonsterTable->GetAllRows("", Rows);
+	DirectorData.MonsterTable->GetAllRows("", Rows);
 
 	// Get total weight
 	float TotalWeight = 0;
@@ -92,7 +124,7 @@ void ARoguePrimaryGameMode::SpawnBotTimerElapsed()
 	}
 
 	// Random number within total random
-	int32 RandomWeight = FMath::RandRange(0.0f, TotalWeight);
+	int32 RandomWeight = DirectorData.RandomStream_MonsterSelection.FRandRange(0.0f, TotalWeight);
 
 	//Reset
 	TotalWeight = 0;
@@ -109,23 +141,26 @@ void ARoguePrimaryGameMode::SpawnBotTimerElapsed()
 		}
 	}
 
-	if (SelectedRow && SelectedRow->SpawnCost >= AvailableSpawnCredit)
+	if (SelectedRow && SelectedRow->SpawnCost >= DirectorData.CurrentCredits)
 	{
 		// Too expensive to spawn, try again soon
-		CooldownBotSpawnUntil = GetWorld()->TimeSeconds + CooldownTimeBetweenFailures;
-		return;
+		return false;
 	}
-
-	// Skip the Blueprint wrapper and use the direct C++ option which the Wrapper uses as well
-	FEnvQueryRequest Request(SpawnBotQuery, this);
-
-	FQueryFinishedSignature FinishedDelegate = FQueryFinishedSignature::CreateUObject(this, &ThisClass::OnBotSpawnQueryCompleted, SelectedRow);
 	
-	Request.Execute(EEnvQueryRunMode::RandomBest5Pct, FinishedDelegate);
+	// Immediately apply cost.
+	DirectorData.CurrentCredits -= SelectedRow->SpawnCost;
+	
+	// Find a spawn location
+	FEnvQueryRequest Request(DirectorData.SpawnLocationQuery, this);
+	Request.Execute(EEnvQueryRunMode::RandomBest5Pct, 
+		FQueryFinishedSignature::CreateUObject(this, &ThisClass::SpawnQueryCompleted, SelectedRow));
+	
+	// Success
+	return true;
 }
 
 
-void ARoguePrimaryGameMode::OnBotSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result, FMonsterInfoRow* SelectedRow)
+void ARoguePrimaryGameMode::SpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result, FMonsterInfoRow* SelectedRow)
 {
 	FEnvQueryResult* QueryResult = Result.Get();
 	if (!QueryResult->IsSuccessful())
@@ -137,32 +172,24 @@ void ARoguePrimaryGameMode::OnBotSpawnQueryCompleted(TSharedPtr<FEnvQueryResult>
 	// Retrieve all possible locations that passed the query
 	TArray<FVector> Locations;
 	QueryResult->GetAllAsLocations(Locations);
-
-	if (Locations.IsValidIndex(0) && MonsterTable)
+	
+	if (Locations.IsValidIndex(0))
 	{
-		UAssetManager& Manager = UAssetManager::Get();
-		
-		// Apply spawn cost
-		AvailableSpawnCredit -= SelectedRow->SpawnCost;
-
 		FPrimaryAssetId MonsterId = SelectedRow->MonsterId;
 
 		TArray<FName> Bundles;
 		FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ThisClass::OnMonsterLoaded, MonsterId, Locations[0]);
-		Manager.LoadPrimaryAsset(MonsterId, Bundles, Delegate);
+		UAssetManager::Get().LoadPrimaryAsset(MonsterId, Bundles, Delegate);
 	}
 }
 
 
 void ARoguePrimaryGameMode::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation)
 {
-	UAssetManager& Manager = UAssetManager::Get();
+	URogueMonsterData* MonsterData = CastChecked<URogueMonsterData>(UAssetManager::Get().GetPrimaryAssetObject(LoadedId));
 
-	URogueMonsterData* MonsterData = CastChecked<URogueMonsterData>(Manager.GetPrimaryAssetObject(LoadedId));
-	
-	AActor* NewBot = GetWorld()->SpawnActor<AActor>(MonsterData->MonsterClass, SpawnLocation, FRotator::ZeroRotator);
 	// Spawn might fail if colliding with environment
-	if (NewBot)
+	if (AActor* NewBot = GetWorld()->SpawnActor<AActor>(MonsterData->MonsterClass, SpawnLocation, FRotator::ZeroRotator))
 	{
 		// Grant special actions, buffs etc.
 		URogueActionComponent* ActionComp = URogueGameplayFunctionLibrary::GetActionComponentFromActor(NewBot);

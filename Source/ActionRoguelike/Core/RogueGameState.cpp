@@ -3,6 +3,7 @@
 
 #include "RogueGameState.h"
 #include "Net/UnrealNetwork.h"
+#include "Pickups/RoguePickupSubsystem.h"
 #include "Projectiles/RogueProjectilesSubsystem.h"
 
 

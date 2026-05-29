@@ -58,6 +58,8 @@ protected:
 	TObjectPtr<UAnimMontage> AttackMontage;
 
 	void OnHealthAttributeChanged(float NewValue, const FAttributeModification& AttributeModification);
+	
+	void HandleKilled();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<URogueActionComponent> ActionComp;

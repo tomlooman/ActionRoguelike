@@ -9,6 +9,8 @@
 #include "RogueGameState.generated.h"
 
 
+class ARoguePlayerCharacter;
+
 /**
  * 
  */
@@ -16,6 +18,10 @@ UCLASS()
 class ACTIONROGUELIKE_API ARogueGameState : public AGameStateBase
 {
 	GENERATED_BODY()
+	
+protected:
+	
+	virtual void BeginPlay() override;
 
 public:
 
@@ -25,8 +31,6 @@ public:
 	UFUNCTION(Server, reliable)
 	void ServerCreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig,
 		AActor* InstigatorActor, uint32 NewID);
-
-	virtual void BeginPlay() override;
 
 	/*
 	 * Holds all replicated "data oriented" projectiles. No Actors, just data handling all movement, cosmetics and overlaps

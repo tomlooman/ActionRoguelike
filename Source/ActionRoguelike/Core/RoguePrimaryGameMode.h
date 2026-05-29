@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "RogueGameModeBase.h"
+#include "GameRules/RogueSpawnDirectors.h"
 #include "RoguePrimaryGameMode.generated.h"
 
 
@@ -48,44 +49,30 @@ class ACTIONROGUELIKE_API ARoguePrimaryGameMode : public ARogueGameModeBase
 	
 protected:
 	
-	/* All available monsters */
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	TObjectPtr<UDataTable> MonsterTable;
-
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	TObjectPtr<UEnvQuery> SpawnBotQuery;
-
-	/* Curve to grant credits to spend on spawning monsters */
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	TObjectPtr<UCurveFloat> SpawnCreditCurve;
+	/* Single game seed to generate other random streams, for consistent playback of a run */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=SpawnLogic)
+	float StartingSeed = 0;
 	
-	/* Time to wait between failed attempts to spawn/buy monster to give some time to build up credits. */
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	float CooldownTimeBetweenFailures = 8.0f;
-
-	FTimerHandle TimerHandle_SpawnBots;
-
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	float SpawnTimerInterval = 2.0f;
-
-	/* Amount available to start spawning some bots immediately */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
-	int32 InitialSpawnCredit = 50.0f;
-
-	void StartSpawningBots();
+	/* (Combat) Directors for spawning loot, monsters, events */
+	UPROPERTY(EditAnywhere, Category="Spawning", meta = (TitleProperty="EditorDisplayName"))
+	TArray<FRogueDirectorData> Directors;
 	
-	void SpawnBotTimerElapsed();
+	UPROPERTY(EditDefaultsOnly, Category="Spawning")
+	int32 NrMaxEnemies = 10;
 	
-	void OnBotSpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result, FMonsterInfoRow* SelectedRow);
+	/*
+	 * Returns TRUE if the spawn was successful, can fail if not enough credits are available
+	 */
+	bool TrySpawnMonster(FRogueDirectorData& DirectorData);
+	
+	void SpawnQueryCompleted(TSharedPtr<FEnvQueryResult> Result, FMonsterInfoRow* SelectedRow);
 
 	void OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation);
+
+public:
 	
 	virtual void StartPlay() override;
 	
-	// Points available to spend on spawning monsters
-	float AvailableSpawnCredit = 0;
-
-	/* GameTime cooldown to give spawner some time to build up credits */
-	float CooldownBotSpawnUntil = 0;
+	virtual void Tick(float DeltaSeconds) override;
 
 };
