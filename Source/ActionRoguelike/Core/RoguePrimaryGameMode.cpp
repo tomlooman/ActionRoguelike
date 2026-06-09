@@ -4,13 +4,11 @@
 #include "RoguePrimaryGameMode.h"
 
 #include "ActionRoguelike.h"
-#include "EngineUtils.h"
 #include "RogueGameInstance.h"
 #include "RogueGameplayFunctionLibrary.h"
 #include "RogueMonsterData.h"
 #include "ActionSystem/RogueAction.h"
 #include "ActionSystem/RogueActionComponent.h"
-#include "AI/RogueAICharacter.h"
 #include "Development/RogueDeveloperLocalSettings.h"
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
@@ -61,13 +59,7 @@ void ARoguePrimaryGameMode::Tick(float DeltaSeconds)
 	// Use either DataValidation, asserts, or combination to prevent this from crashing here.
 
 	for (FRogueDirectorData& Director : Directors)
-	{
-		// Check if we should "tick"
-		if (Director.NextTickTime > CurrGameTime)
-		{
-			continue;	
-		}
-		
+	{		
 		const float PlayerCountMultiplier = 1.0f;
 		float NrOfAlivePlayers = 1; // grab from cached array, just like QueryContext_AlivePlayers
 		
@@ -77,32 +69,25 @@ void ARoguePrimaryGameMode::Tick(float DeltaSeconds)
 		float BaseCredits = Director.CreditsGainCurve->GetFloatValue(CurrGameTime) * DeltaSeconds;
 		Director.CurrentCredits += BaseCredits * DifficultyMultiplier * (PlayerCountMultiplier * NrOfAlivePlayers);
 		
+		// Check if we should "tick"
+		if (Director.NextTickTime > CurrGameTime)
+		{
+			continue;	
+		}
+		
 		// Try Spawn
-		TrySpawnMonster(Director);
+		bool bSuccess = TrySpawnMonster(Director);
 		
 		// Setup next "tick"
-		Director.NextTickTime = CurrGameTime + Director.TickInterval;
+		Director.NextTickTime = CurrGameTime + (bSuccess ? Director.TickInterval : Director.TimeBetweenWaves);
 	}
 }
 
 
 bool ARoguePrimaryGameMode::TrySpawnMonster(FRogueDirectorData& DirectorData)
 {
-	// Count alive bots before spawning
-	/*int32 NrOfAliveBots = 0;
-	for (ARogueAICharacter* Bot : TActorRange<ARogueAICharacter>(GetWorld()))
-	{
-		// @todo: this will fail once we start pooling the pawns unless we check against their pool state.
-		if (URogueGameplayFunctionLibrary::IsAlive(Bot))
-		{
-			NrOfAliveBots++;
-		}
-	}*/
-	
 	URogueGameInstance* GI = Cast<URogueGameInstance>(GetGameInstance());
 	int32 NrOfAliveBots = GI->AliveMonsters.Num();
-
-	UE_LOGFMT(LogGame, Log, "Found {number} alive bots.", NrOfAliveBots);
 
 	if (NrOfAliveBots >= NrMaxEnemies)
 	{
