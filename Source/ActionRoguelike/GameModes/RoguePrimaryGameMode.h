@@ -6,6 +6,7 @@
 #include "Core/RogueGameMode.h"
 #include "RoguePrimaryGameMode.generated.h"
 
+struct FMonsterSpawnData;
 struct FEnvQueryResult;
 class UEnvQuery;
 /**
@@ -20,8 +21,13 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Spawn System")
 	TObjectPtr<UEnvQuery> SpawnLocationQuery;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Spawn System")
+	TObjectPtr<UDataTable> MonsterSpawnTable;
 
-	void SpawnQueryCompleted(TSharedPtr<FEnvQueryResult> QueryResult);
+	void SpawnQueryCompleted(TSharedPtr<FEnvQueryResult> QueryResult, FMonsterSpawnData* SelectedMonster);
+	
+	void OnMonsterClassLoaded(const FSoftObjectPath& LoadedObjectPath, UObject* LoadedObject, FVector SpawnLocation, FMonsterSpawnData* SelectedMonster);
 	
 public: 
 	
