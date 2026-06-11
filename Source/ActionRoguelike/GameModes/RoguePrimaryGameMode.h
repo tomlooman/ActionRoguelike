@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "RogueGameTypes.h"
 #include "Core/RogueGameMode.h"
 #include "RoguePrimaryGameMode.generated.h"
 
 struct FMonsterSpawnData;
 struct FEnvQueryResult;
-class UEnvQuery;
 /**
  * 
  */
@@ -19,15 +19,14 @@ class ACTIONROGUELIKE_API ARoguePrimaryGameMode : public ARogueGameMode
 	
 protected:
 	
-	UPROPERTY(EditDefaultsOnly, Category="Spawn System")
-	TObjectPtr<UEnvQuery> SpawnLocationQuery;
+	UPROPERTY(EditDefaultsOnly, Category= "Spawn System")
+	TArray<FRogueDirectorData> Directors;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Spawn System")
-	TObjectPtr<UDataTable> MonsterSpawnTable;
-
 	void SpawnQueryCompleted(TSharedPtr<FEnvQueryResult> QueryResult, FMonsterSpawnData* SelectedMonster);
 	
 	void OnMonsterClassLoaded(const FSoftObjectPath& LoadedObjectPath, UObject* LoadedObject, FVector SpawnLocation, FMonsterSpawnData* SelectedMonster);
+	
+	bool TrySpawnMonster(FRogueDirectorData& Director);
 	
 public: 
 	

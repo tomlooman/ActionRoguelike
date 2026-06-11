@@ -11,29 +11,60 @@
 ARoguePrimaryGameMode::ARoguePrimaryGameMode()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.TickInterval = 1.0f;
+	PrimaryActorTick.TickInterval = 0.1f;
 }
 
 void ARoguePrimaryGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	
-	if (MonsterSpawnTable == nullptr)
+
+	float TotalElapsedTime = GetWorld()->TimeSeconds;
+
+	for (FRogueDirectorData& Director : Directors)
 	{
-		return;
-	}
+		if (Director.MonsterSpawnTable == nullptr)
+		{
+			return;
+		}
+		
+		float CreditsPerSecond = Director.CreditGainCurve.GetRichCurve()->Eval(TotalElapsedTime);
+		Director.CurrentCredits += CreditsPerSecond * DeltaSeconds;
+		
+		if (Director.NextTickTime > TotalElapsedTime)
+		{
+			continue;
+		}
 	
+		bool bSuccess = TrySpawnMonster(Director);
+		
+		Director.NextTickTime = TotalElapsedTime + (bSuccess ? Director.TickInterval : Director.TimeBetweenWaves);
+		
+		UE_LOG(LogGameMode, Log, TEXT("Total Credits: %f"), Director.CurrentCredits);
+	}
+
+}
+
+bool ARoguePrimaryGameMode::TrySpawnMonster(FRogueDirectorData& Director)
+{
 	TArray<FMonsterSpawnData*> AllRows;
-	MonsterSpawnTable->GetAllRows("SelectMonster", AllRows);
+	Director.MonsterSpawnTable->GetAllRows("SelectMonster", AllRows);
 	
 	int32 SelectedIndex = FMath::RandRange(0, AllRows.Num()-1);
-	
 	FMonsterSpawnData* SelectedRow = AllRows[SelectedIndex];
+	
+	if (Director.CurrentCredits < SelectedRow->SpawnCost)
+	{
+		UE_LOG(LogGameMode, Log, TEXT("Not enough credits to spawn monster %s"), *SelectedRow->MonsterClass.GetAssetName());
+		return false;
+	}
 	
 	FQueryFinishedSignature CompleteDelegate = FQueryFinishedSignature::CreateUObject(this, &ThisClass::SpawnQueryCompleted, SelectedRow);
 	
-	FEnvQueryRequest Request(SpawnLocationQuery, this);
-	Request.Execute(EEnvQueryRunMode::SingleResult, CompleteDelegate);
+	FEnvQueryRequest Request(Director.SpawnLocationQuery, this);
+	int32 QueryID = Request.Execute(EEnvQueryRunMode::SingleResult, CompleteDelegate);
+	
+	// EQS started successfully
+	return QueryID != INDEX_NONE;
 }
 
 void ARoguePrimaryGameMode::SpawnQueryCompleted(TSharedPtr<FEnvQueryResult> QueryResult, FMonsterSpawnData* SelectedMonster)
@@ -51,3 +82,4 @@ void ARoguePrimaryGameMode::OnMonsterClassLoaded(const FSoftObjectPath& LoadedOb
 	
 	// Set attributes, add buffs/debuffs, etc.
 }
+
