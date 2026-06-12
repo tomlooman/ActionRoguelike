@@ -36,7 +36,7 @@ struct FRogueDirectorData
 	
 	/* Curve (Nr of Credits scaling with Time) of credits gained per second. */
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UCurveFloat> CreditsGainCurve;
+	FRuntimeFloatCurve CreditsGainCurve;
 	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UDataTable> MonsterTable;

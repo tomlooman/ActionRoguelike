@@ -23,7 +23,9 @@ class ACTIONROGUELIKE_API URogueActionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	UPROPERTY(Transient, EditDefaultsOnly, Category = "Tags")
+protected:
+
+	UPROPERTY(Transient)
 	FGameplayTagContainer ActiveGameplayTags;
 
 public:

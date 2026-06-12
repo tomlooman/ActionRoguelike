@@ -16,12 +16,17 @@
 #include "GameRules/RogueSpawnDirectors.h"
 
 
+ARoguePrimaryGameMode::ARoguePrimaryGameMode()
+{
+	PrimaryActorTick.bCanEverTick = true;
+	// 0.1sec is plenty for handling the frequency of credits, spawning, etc.
+	PrimaryActorTick.TickInterval = 0.1f;
+}
+
+
 void ARoguePrimaryGameMode::StartPlay()
 {
 	Super::StartPlay();
-	
-	// 0.1sec is plenty for handling the frequency of credits, spawning, etc.
-	PrimaryActorTick.TickInterval = 0.1f;
 	
 	FRandomStream GlobalStream = FRandomStream(StartingSeed);
 
@@ -35,7 +40,6 @@ void ARoguePrimaryGameMode::StartPlay()
 		// Validate we get consistent random numbers between runs
 		UE_LOG(LogGame, Log, TEXT("Director '%s' seeded with %f"), *Director.EditorDisplayName, NewSeed);
 #endif
-		
 	}
 }
 
@@ -53,20 +57,25 @@ void ARoguePrimaryGameMode::Tick(float DeltaSeconds)
 #endif
 
 	const float CurrGameTime = GetWorld()->TimeSeconds;
-	
-	// @todo: validate the curve asset exists
-	// @todo: warn about no monsterrow much earlier in the game and don't even bother arriving here if not set.
-	// Use either DataValidation, asserts, or combination to prevent this from crashing here.
 
 	for (FRogueDirectorData& Director : Directors)
-	{		
-		const float PlayerCountMultiplier = 1.0f;
-		float NrOfAlivePlayers = 1; // grab from cached array, just like QueryContext_AlivePlayers
+	{
+		if (Director.MonsterTable == nullptr)
+		{
+#if WITH_EDITORONLY_DATA
+			// @todo: this will spam the log until fixed...should log once
+			UE_LOG(LogGame, Warning, TEXT("Director %s is missing a valid DataTable."), *Director.EditorDisplayName);
+#endif
+			continue;
+		}
 		
+		const float PlayerCountMultiplier = 1.0f;
+		float NrOfAlivePlayers = 1; // @todo: grab from cached array, just like QueryContext_AlivePlayers	
 		const float DifficultyMultiplier = 1.0f;
+		const float DefaultCreditValue = 1.0f;
 		
 		// Award Credits
-		float BaseCredits = Director.CreditsGainCurve->GetFloatValue(CurrGameTime) * DeltaSeconds;
+		float BaseCredits = Director.CreditsGainCurve.GetRichCurve()->Eval(CurrGameTime, DefaultCreditValue) * DeltaSeconds;
 		Director.CurrentCredits += BaseCredits * DifficultyMultiplier * (PlayerCountMultiplier * NrOfAlivePlayers);
 		
 		// Check if we should "tick"

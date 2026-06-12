@@ -74,5 +74,7 @@ public:
 	virtual void StartPlay() override;
 	
 	virtual void Tick(float DeltaSeconds) override;
+	
+	ARoguePrimaryGameMode();
 
 };
