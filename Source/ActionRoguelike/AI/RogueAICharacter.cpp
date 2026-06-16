@@ -8,6 +8,7 @@
 #include "ActionSystem/RogueActionSystemComponent.h"
 #include "ActionSystem/RogueAttributeSet.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
+#include "Core/RogueGameInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 
@@ -24,6 +25,23 @@ void ARogueAICharacter::PostInitializeComponents()
 	GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
 	
 	ActionSystemComponent->GameplayTagUpdated.AddDynamic(this, &ThisClass::OnGameplayTagUpdated);
+}
+
+void ARogueAICharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	URogueGameInstance* GI = GetGameInstance<URogueGameInstance>();
+	check(GI);
+	GI->AliveMonsters.Add(this);
+}
+
+void ARogueAICharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	
+	URogueGameInstance* GI = GetGameInstance<URogueGameInstance>();
+	GI->AliveMonsters.RemoveSingleSwap(this, EAllowShrinking::No);
 }
 
 
@@ -79,6 +97,8 @@ float ARogueAICharacter::TakeDamage(float DamageAmount, struct FDamageEvent cons
 	{
 		GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
 	}, 1.0f, false);
+	
+	// @todo: handle death, remove from AliveMonsters array
 
 	return ActualDamage;
 }
