@@ -33,7 +33,7 @@ void ARoguePrimaryGameMode::StartPlay()
 	// Init here, modify the director seeds before we init the stream
 	for (FRogueDirectorData& Director : Directors)
 	{
-		float NewSeed = GlobalStream.FRand();
+		float NewSeed = GlobalStream.FRandRange(0.0f, MAX_int32);
 		Director.RandomStream_MonsterSelection = FRandomStream(NewSeed);
 		
 #if WITH_EDITORONLY_DATA
