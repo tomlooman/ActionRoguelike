@@ -22,6 +22,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category= "Spawn System")
 	TArray<FRogueDirectorData> Directors;
 	
+	UPROPERTY(EditDefaultsOnly, Category= "Spawn System")
+	int32 GlobalStartingSeed = 0;
+	
 	void SpawnQueryCompleted(TSharedPtr<FEnvQueryResult> QueryResult, FMonsterSpawnData* SelectedMonster);
 	
 	void OnMonsterClassLoaded(const FSoftObjectPath& LoadedObjectPath, UObject* LoadedObject, FVector SpawnLocation, FMonsterSpawnData* SelectedMonster);
@@ -29,6 +32,8 @@ protected:
 	bool TrySpawnMonster(FRogueDirectorData& Director);
 	
 public: 
+	
+	virtual void StartPlay() override;
 	
 	virtual void Tick(float DeltaSeconds) override;
 	

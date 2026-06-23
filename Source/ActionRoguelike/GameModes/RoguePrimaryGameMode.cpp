@@ -16,6 +16,22 @@ ARoguePrimaryGameMode::ARoguePrimaryGameMode()
 	PrimaryActorTick.TickInterval = 0.1f;
 }
 
+
+void ARoguePrimaryGameMode::StartPlay()
+{
+	Super::StartPlay();
+	
+	FRandomStream GlobalStream = FRandomStream(GlobalStartingSeed);
+
+	for (FRogueDirectorData& Director : Directors)
+	{
+		int32 NewSeed = GlobalStream.RandRange(0, MAX_int32-1);
+		Director.RandomStream_MonsterSelection = FRandomStream(NewSeed);
+		
+		UE_LOG(LogGameMode, Log, TEXT("Seed: %d"), Director.RandomStream_MonsterSelection.GetInitialSeed());
+	}
+}
+
 void ARoguePrimaryGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -64,8 +80,33 @@ bool ARoguePrimaryGameMode::TrySpawnMonster(FRogueDirectorData& Director)
 	TArray<FMonsterSpawnData*> AllRows;
 	Director.MonsterSpawnTable->GetAllRows("SelectMonster", AllRows);
 	
-	int32 SelectedIndex = FMath::RandRange(0, AllRows.Num()-1);
-	FMonsterSpawnData* SelectedRow = AllRows[SelectedIndex];
+	//int32 SelectedIndex = Director.RandomStream_MonsterSelection.RandRange(0, AllRows.Num()-1);
+	//FMonsterSpawnData* SelectedRow = AllRows[SelectedIndex];
+
+	float TotalWeights = 0.0f;
+	for (FMonsterSpawnData* Row : AllRows)
+	{
+		TotalWeights += Row->SpawnWeight;
+	}
+	
+	float SelectedWeight = Director.RandomStream_MonsterSelection.FRandRange(0.0f, TotalWeights);
+	
+	// row 0 - 10 weight (10 total)
+	// row 1 - 15 weight (25 total)
+	// row 2 - 5 weight (30 total)
+	// SelectedWeight (28) selects row 2, which ranges from 26-30 weight.
+
+	FMonsterSpawnData* SelectedRow = nullptr;
+	TotalWeights = 0.0f;
+	for (FMonsterSpawnData* Row : AllRows)
+	{
+		TotalWeights += Row->SpawnWeight;
+		if (SelectedWeight <= TotalWeights)
+		{
+			SelectedRow = Row;
+			break;
+		}
+	}	
 	
 	if (Director.CurrentCredits < SelectedRow->SpawnCost)
 	{
