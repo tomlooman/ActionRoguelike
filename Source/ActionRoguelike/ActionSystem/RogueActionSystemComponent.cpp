@@ -37,14 +37,6 @@ void URogueActionSystemComponent::InitializeComponent()
 
 		CachedAttributes.Add(AttributeTag, FoundAttribute);
 	}
-
-	for (TSubclassOf<URogueAction> ActionClass : DefaultActions)
-	{
-		if (ensure(ActionClass))
-		{
-			GrantAction(ActionClass);
-		}
-	}
 }
 
 void URogueActionSystemComponent::SetDefaultAttributeSet(TSubclassOf<URogueAttributeSet> AttributeSetClass)
@@ -61,6 +53,14 @@ void URogueActionSystemComponent::BeginPlay()
 	Super::BeginPlay();
 
 	Attributes->InitializeAttributes();
+	
+	for (TSubclassOf<URogueAction> ActionClass : DefaultActions)
+	{
+		if (ensure(ActionClass))
+		{
+			GrantAction(ActionClass);
+		}
+	}
 }
 
 void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueAction> NewActionClass)

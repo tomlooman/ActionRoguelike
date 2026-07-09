@@ -10,7 +10,7 @@
 
 bool URogueGameplayStatics::IsFullHealth(URogueActionSystemComponent* ActionComp)
 {
-	if (ActionComp)
+	if (IsValid(ActionComp))
 	{
 		FRogueAttribute* Health = ActionComp->GetAttribute(SharedGameplayTags::Attribute_Health);
 		FRogueAttribute* HealthMax = ActionComp->GetAttribute(SharedGameplayTags::Attribute_HealthMax);
@@ -23,7 +23,7 @@ bool URogueGameplayStatics::IsFullHealth(URogueActionSystemComponent* ActionComp
 
 bool URogueGameplayStatics::IsAlive(AActor* ActorToCheck)
 {
-	if (ActorToCheck)
+	if (IsValid(ActorToCheck))
 	{
 		URogueActionSystemComponent* ActionComp = ActorToCheck->FindComponentByClass<URogueActionSystemComponent>();
 		
