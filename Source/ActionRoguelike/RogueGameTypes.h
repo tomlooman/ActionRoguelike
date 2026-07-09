@@ -9,6 +9,7 @@
 #define COLLISION_PROJECTILE  ECC_GameTraceChannel2
 
 
+class URogueMonsterData;
 class ARogueAICharacter;
 class UEnvQuery;
 class UDataTable;
@@ -19,9 +20,9 @@ struct FMonsterSpawnData : public FTableRowBase
 	GENERATED_BODY()
 	
 public:
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSoftClassPtr<ARogueAICharacter> MonsterClass;
+	TSoftObjectPtr<URogueMonsterData> MonsterData;
 	
 	/* Points required by gamemode to spawn this unit. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
