@@ -5,11 +5,12 @@
 
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Perception/AIPerceptionComponent.h"
 
 
 ARogueAIController::ARogueAIController()
 {
-
+	PerceptionComp = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComp"));
 }
 
 void ARogueAIController::BeginPlay()
@@ -18,10 +19,10 @@ void ARogueAIController::BeginPlay()
 
 	RunBehaviorTree(BehaviorTree);
 
-	FName TargetActor = FName("TargetActor");
+	/*FName TargetActor = FName("TargetActor");
 
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
 	check(PlayerPawn);
 
-	GetBlackboardComponent()->SetValueAsObject(TargetActor, PlayerPawn);
+	GetBlackboardComponent()->SetValueAsObject(TargetActor, PlayerPawn);*/
 }
