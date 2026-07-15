@@ -10,6 +10,7 @@
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "Core/RogueGameInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Perception/AISense_Damage.h"
 
 
 ARogueAICharacter::ARogueAICharacter()
@@ -87,6 +88,12 @@ float ARogueAICharacter::TakeDamage(float DamageAmount, struct FDamageEvent cons
                                     class AController* EventInstigator, AActor* DamageCauser)
 {
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
+	if (IsValid(EventInstigator))
+	{
+		UAISense_Damage::ReportDamageEvent(this, this, EventInstigator->GetPawn(), FMath::Abs(ActualDamage), 
+			EventInstigator->GetPawn()->GetActorLocation(), GetActorLocation());
+	}
 	
 	ActionSystemComponent->ApplyAttributeChange(SharedGameplayTags::Attribute_Health, -ActualDamage, Base);
 
