@@ -24,8 +24,15 @@ void ARogueProjectileMagic::OnActorHit(UPrimitiveComponent* HitComponent, AActor
 
 	FVector HitFromDirection = GetActorRotation().Vector();
 	
-	UGameplayStatics::ApplyPointDamage(OtherActor, 10.f, HitFromDirection, Hit,  GetInstigatorController(),
-		this, DmgTypeClass);
+	//FVector TravelDirection = (Hit.TraceEnd - Hit.TraceStart).GetSafeNormal();
+	
+	UGameplayStatics::ApplyPointDamage(OtherActor, AttackDamage, HitFromDirection, Hit,  GetInstigatorController(),
+		this, nullptr);
+	
+	if (OtherComp->IsSimulatingPhysics(Hit.BoneName))
+	{
+		OtherComp->AddImpulseAtLocation(HitFromDirection * ImpulseIntensity, Hit.Location, Hit.BoneName);
+	}
 	
 	if (EffectOnHit)
 	{

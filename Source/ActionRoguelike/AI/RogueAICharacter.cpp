@@ -9,6 +9,7 @@
 #include "ActionSystem/RogueActionSystemComponent.h"
 #include "ActionSystem/RogueAttributeSet.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Core/RogueGameInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Perception/AISense_Damage.h"
@@ -29,6 +30,7 @@ void ARogueAICharacter::PostInitializeComponents()
 	GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
 	
 	ActionSystemComponent->GameplayTagUpdated.AddDynamic(this, &ThisClass::OnGameplayTagUpdated);
+	ActionSystemComponent->GetAttributeListener(SharedGameplayTags::Attribute_Health).AddUObject(this, &ThisClass::OnHealthChanged);
 }
 
 void ARogueAICharacter::BeginPlay()
@@ -95,6 +97,35 @@ FGenericTeamId ARogueAICharacter::GetGenericTeamId() const
 	return FGenericTeamId::NoTeam;
 }
 
+void ARogueAICharacter::OnHealthChanged(FGameplayTag AttributeTag, float NewHealth, float OldHealth)
+{
+	if (NewHealth <= KINDA_SMALL_NUMBER && !bIsDead)
+	{
+		HandleKilled();
+	}
+}
+
+void ARogueAICharacter::HandleKilled()
+{
+	bIsDead = true;
+	
+	URogueGameInstance* GI = GetGameInstance<URogueGameInstance>();
+	GI->AliveMonsters.RemoveSingleSwap(this, EAllowShrinking::No);
+	
+	AAIController* AIC = GetController<AAIController>();
+	AIC->GetBrainComponent()->StopLogic("Killed");
+	
+	GetMesh()->bPauseAnims = true;
+	
+	GetMesh()->SetCollisionProfileName("Ragdoll");
+	GetMesh()->SetAllBodiesSimulatePhysics(true);
+	
+	GetCharacterMovement()->DisableMovement();
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	SetLifeSpan(10.f);
+}
+
 float ARogueAICharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
                                     class AController* EventInstigator, AActor* DamageCauser)
 {
@@ -119,8 +150,6 @@ float ARogueAICharacter::TakeDamage(float DamageAmount, struct FDamageEvent cons
 	{
 		GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
 	}, 1.0f, false);
-	
-	// @todo: handle death, remove from AliveMonsters array
 
 	return ActualDamage;
 }
