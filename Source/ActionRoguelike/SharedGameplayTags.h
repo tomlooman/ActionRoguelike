@@ -9,11 +9,14 @@ namespace SharedGameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attribute_Health);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attribute_HealthMax);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attribute_Rage);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Attribute_Coins);
 	
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Action_PrimaryAttack);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Action_SecondaryAttack);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Action_SpecialAttack);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Action_Sprint);
+	
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Action_DropLoot);
 	
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(StatusEffect_Sprinting);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(StatusEffect_Stunned);

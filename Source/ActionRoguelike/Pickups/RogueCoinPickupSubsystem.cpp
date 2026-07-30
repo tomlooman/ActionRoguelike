@@ -5,6 +5,8 @@
 
 #include "ActionRoguelike.h"
 #include "EngineUtils.h"
+#include "SharedGameplayTags.h"
+#include "ActionSystem/RogueActionSystemComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Core/RogueDeveloperSettings.h"
@@ -113,9 +115,11 @@ void URogueCoinPickupSubsystem::Tick(float DeltaTime)
 	
 	UWorld* World = GetWorld();
 
+	ARoguePlayerCharacter* CurrentPlayer = nullptr;
 	FVector PlayerLocation = FVector::ZeroVector;
 	for (ARoguePlayerCharacter* PlayerCharacter : TActorRange<ARoguePlayerCharacter>(World))
 	{
+		CurrentPlayer = PlayerCharacter;
 		PlayerLocation = PlayerCharacter->GetActorLocation();
 	}
 
@@ -154,10 +158,12 @@ void URogueCoinPickupSubsystem::Tick(float DeltaTime)
 	if (TotalCoinsToGrant > 0)
 	{
 		PlayPickupSound();
+		
+		// Grants coins as Attribute
+		CurrentPlayer->GetActionSystemComponent()->ApplyAttributeChange(SharedGameplayTags::Attribute_Coins, TotalCoinsToGrant, Modifier);
 	}
 
 #if 0
-	// @todo: grant coins to player(s)
 	UE_CLOG(TotalCoinsToGrant > 0, LogGame, Log, TEXT("Picked up Coin Amount=%d"), TotalCoinsToGrant);
 
 	for (int i = 0; i < CoinLocations.Num(); ++i)

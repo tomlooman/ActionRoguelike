@@ -4,6 +4,7 @@
 #include "RogueAICharacter.h"
 
 #include "AIController.h"
+#include "EngineUtils.h"
 #include "RogueGameTypes.h"
 #include "SharedGameplayTags.h"
 #include "ActionSystem/RogueActionSystemComponent.h"
@@ -13,6 +14,7 @@
 #include "Core/RogueGameInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Perception/AISense_Damage.h"
+#include "World/RoguePatrolPoint.h"
 
 
 ARogueAICharacter::ARogueAICharacter()
@@ -122,6 +124,9 @@ void ARogueAICharacter::HandleKilled()
 	
 	GetCharacterMovement()->DisableMovement();
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	// Drop Loot!
+	GetActionSystemComponent()->StartAction(SharedGameplayTags::Action_DropLoot);
 	
 	SetLifeSpan(10.f);
 }

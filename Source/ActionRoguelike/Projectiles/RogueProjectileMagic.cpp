@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "ActionSystem/RogueActionEffect.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Perception/AISense_Hearing.h"
 
 
 ARogueProjectileMagic::ARogueProjectileMagic()
@@ -25,6 +26,8 @@ void ARogueProjectileMagic::OnActorHit(UPrimitiveComponent* HitComponent, AActor
 	FVector HitFromDirection = GetActorRotation().Vector();
 	
 	//FVector TravelDirection = (Hit.TraceEnd - Hit.TraceStart).GetSafeNormal();
+	
+	UAISense_Hearing::ReportNoiseEvent(this, GetActorLocation(), 1, GetInstigator());
 	
 	UGameplayStatics::ApplyPointDamage(OtherActor, AttackDamage, HitFromDirection, Hit,  GetInstigatorController(),
 		this, nullptr);

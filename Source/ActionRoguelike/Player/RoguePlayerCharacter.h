@@ -74,7 +74,12 @@ protected:
 	void OnHealthChanged(FGameplayTag AttributeTag, float NewHealth, float OldHealth);
 
 public:
-
+	
+	URogueActionSystemComponent* GetActionSystemComponent() const
+	{
+		return ActionSystemComponent;
+	}
+	
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	virtual void PostInitializeComponents() override;

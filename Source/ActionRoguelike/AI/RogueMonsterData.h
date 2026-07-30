@@ -22,6 +22,9 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TSubclassOf<URogueAction>> Actions;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin=0))
+	int32 LootCoins = 100;
 	
 	// Example: Behavior Tree from AI Controller
 };

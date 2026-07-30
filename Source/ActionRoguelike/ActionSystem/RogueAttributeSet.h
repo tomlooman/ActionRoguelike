@@ -101,6 +101,9 @@ class URoguePlayerAttributeSet : public URoguePawnAttributeSet
 public:
 
 	UPROPERTY(EditAnywhere, Category=Resources)
+	FRogueAttribute Coins;
+
+	UPROPERTY(EditAnywhere, Category=Resources)
 	FRogueAttribute Rage;
 };
 
