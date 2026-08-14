@@ -20,6 +20,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta = (ExposeOnSpawn))
 	TObjectPtr<USceneComponent> OwningComponent;
 	
+	void AddToRootCanvas();
+	
 protected:
 	
 	UPROPERTY(meta = (BindWidget))

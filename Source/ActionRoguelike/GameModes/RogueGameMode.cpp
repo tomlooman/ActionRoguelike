@@ -4,8 +4,10 @@
 #include "RogueGameMode.h"
 
 #include "Player/RoguePlayerController.h"
+#include "UI/RogueHUD.h"
 
 ARogueGameMode::ARogueGameMode()
 {
 	PlayerControllerClass = ARoguePlayerController::StaticClass();
+	HUDClass = ARogueHUD::StaticClass();
 }
