@@ -3,17 +3,21 @@
 
 #include "RogueAICharacter.h"
 
+#include "ActionRoguelike.h"
 #include "AIController.h"
 #include "EngineUtils.h"
 #include "RogueGameTypes.h"
+#include "RogueMonsterData.h"
 #include "SharedGameplayTags.h"
 #include "ActionSystem/RogueActionSystemComponent.h"
 #include "ActionSystem/RogueAttributeSet.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "Components/CapsuleComponent.h"
 #include "Core/RogueGameInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Perception/AISense_Damage.h"
+#include "UI/RogueWorldUserWidget.h"
 #include "World/RoguePatrolPoint.h"
 
 
@@ -128,6 +132,12 @@ void ARogueAICharacter::HandleKilled()
 	// Drop Loot!
 	GetActionSystemComponent()->StartAction(SharedGameplayTags::Action_DropLoot);
 	
+	if (HealthBarInst)
+	{
+		HealthBarInst->RemoveFromParent();
+		HealthBarInst = nullptr;
+	}
+	
 	SetLifeSpan(10.f);
 }
 
@@ -145,6 +155,11 @@ float ARogueAICharacter::TakeDamage(float DamageAmount, struct FDamageEvent cons
 	}
 	
 	ActionSystemComponent->ApplyAttributeChange(SharedGameplayTags::Attribute_Health, -ActualDamage, Base);
+	
+	if (!bIsDead && HealthBarInst == nullptr)
+	{
+		CreateHealthBar();
+	}
 
 	GetMesh()->SetOverlayMaterialMaxDrawDistance(0);
 	
@@ -157,4 +172,23 @@ float ARogueAICharacter::TakeDamage(float DamageAmount, struct FDamageEvent cons
 	}, 1.0f, false);
 
 	return ActualDamage;
+}
+
+void ARogueAICharacter::CreateHealthBar()
+{
+	if (IsValid(HealthBarInst))
+	{
+		check(HealthBarInst->IsInViewport())
+		return;
+	}
+	
+	if (MonsterData == nullptr || MonsterData->HealthWidgetClass == nullptr)
+	{
+		UE_LOG(LogGame, Warning, TEXT("No HealthWidgetClass available in MonsterData (%s) for '%s'"), *GetNameSafe(MonsterData), *GetName());
+		return;
+	}
+	
+	HealthBarInst = CreateWidget<URogueWorldUserWidget>(GetWorld(), MonsterData->HealthWidgetClass);
+	HealthBarInst->OwningComponent = GetRootComponent();
+	HealthBarInst->AddToViewport();
 }

@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "RogueAICharacter.generated.h"
 
+class URogueWorldUserWidget;
 struct FGameplayTag;
 class URogueMonsterData;
 class URogueActionSystemComponent;
@@ -31,12 +32,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category=Animation)
 	TObjectPtr<UAnimMontage> StunnedAnimation;
 	
-	UPROPERTY(Transient)
+	UPROPERTY(EditAnywhere, Category="MonsterConfig")
 	TObjectPtr<URogueMonsterData> MonsterData;
 
 public:
 	
-	virtual FGenericTeamId GetGenericTeamId() const;
+	virtual FGenericTeamId GetGenericTeamId() const override;
 	
 	URogueActionSystemComponent* GetActionSystemComponent() const
 	{
@@ -65,6 +66,11 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 protected:
+	
+	void CreateHealthBar();
+	
+	UPROPERTY()
+	TObjectPtr<URogueWorldUserWidget> HealthBarInst;
 	
 	bool bIsDead = false;
 

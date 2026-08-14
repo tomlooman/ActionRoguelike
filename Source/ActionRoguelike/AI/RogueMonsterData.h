@@ -6,6 +6,7 @@
 #include "Engine/DataAsset.h"
 #include "RogueMonsterData.generated.h"
 
+class URogueWorldUserWidget;
 class URogueAction;
 /**
  * 
@@ -25,6 +26,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin=0))
 	int32 LootCoins = 100;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<URogueWorldUserWidget> HealthWidgetClass;
 	
 	// Example: Behavior Tree from AI Controller
 };
