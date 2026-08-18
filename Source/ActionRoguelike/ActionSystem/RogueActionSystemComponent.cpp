@@ -93,6 +93,8 @@ void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueAction> NewActio
 
 		NewAction->StartAction();
 	}
+	
+	OnActionAdded.Broadcast(NewAction);
 }
 
 void URogueActionSystemComponent::RemoveAction(URogueAction* ActionToRemove)
@@ -101,6 +103,8 @@ void URogueActionSystemComponent::RemoveAction(URogueAction* ActionToRemove)
 	ensure(RemoveCount == 1);
 	
 	UE_LOG(LogGame, Verbose, TEXT("Removed Action %s from %s"), *GetNameSafe(ActionToRemove), *GetNameSafe(GetOwner()));
+	
+	OnActionRemoved.Broadcast(ActionToRemove);
 	
 	ActionToRemove->MarkAsGarbage();
 }

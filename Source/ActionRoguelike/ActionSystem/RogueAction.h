@@ -34,6 +34,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Actions")
 	TMap<FGameplayTag, float> ActivationCost;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Actions")
+	TSoftObjectPtr<UTexture2D> Icon;
 
 public:
 	

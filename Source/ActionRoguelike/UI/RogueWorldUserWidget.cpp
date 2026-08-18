@@ -23,6 +23,7 @@ void URogueWorldUserWidget::AddToRootCanvas()
 	// Center the Overlay
 	UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(Slot);
 	CanvasSlot->SetAlignment(FVector2D(0.5f, 1.0f));
+	CanvasSlot->SetAutoSize(true);
 }
 
 void URogueWorldUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
