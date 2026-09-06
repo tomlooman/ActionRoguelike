@@ -216,14 +216,18 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 #if USE_MID_HITFLASHOVERLAY
 		if (OverlayHitflashMID)
 		{
-			GetMesh()->SetOverlayMaterial(OverlayHitflashMID);
+			USkeletalMeshComponent* SkelMesh = GetMesh();
+			SkelMesh->SetOverlayMaterial(OverlayHitflashMID);
 			
 			OverlayHitflashMID->SetScalarParameterValue(MonsterConfig->HitFlashTimeParamName, GetWorld()->TimeSeconds);
 			
 			// After 0.Xseconds we should be finished with the hitflash (re-use the handle to reset timer if we get hit again)
-			GetWorldTimerManager().SetTimer(OverlayTimerHandle, [this]()
+			GetWorldTimerManager().SetTimer(OverlayTimerHandle, [SkelMesh]()
 			{
-				GetMesh()->SetOverlayMaterial(nullptr);
+				if (IsValid(SkelMesh))
+				{
+					SkelMesh->SetOverlayMaterial(nullptr);
+				}
 			}, 0.5f, false);
 		}
 #else
@@ -339,7 +343,7 @@ void ARogueAICharacter::CreateDamagePopupWidget(float DamageAmount)
 
 	// @todo: somehow we constantly see just one instance, are we grabbing the same one for re-use too soon?
 	// Damage Pop-up Instance
-	URogueDamageNumberWidget* DmgPopupWidgetInst = nullptr;//Pooler->WidgetPool.GetOrCreateInstance<URogueDamageNumberWidget>(DmgPopupWidgetClass);
+	/*URogueDamageNumberWidget* DmgPopupWidgetInst = nullptr;//Pooler->WidgetPool.GetOrCreateInstance<URogueDamageNumberWidget>(DmgPopupWidgetClass);
 
 	DmgPopupWidgetInst->SetDamageAmount(FMath::Abs(DamageAmount));
 	DmgPopupWidgetInst->AttachedActor = this;
@@ -358,7 +362,7 @@ void ARogueAICharacter::CreateDamagePopupWidget(float DamageAmount)
 	float OffsetX = RndStream.FRandRange(-1.0f, 1.0f);
 	float OffsetY = RndStream.FRandRange(-1.0f, 1.0f);
 
-	CanvasSlot->SetOffsets(FMargin(OffsetX * MaxOffset, OffsetY * MaxOffset));
+	CanvasSlot->SetOffsets(FMargin(OffsetX * MaxOffset, OffsetY * MaxOffset));*/
 
 	// @todo: calling Release, removes all the instances...so needs fixing.
 	const float DamageNumberDuration = 0.75f;
@@ -450,5 +454,12 @@ UDataAsset* ARogueAICharacter::GetActorConfigData() const
 FGenericTeamId ARogueAICharacter::GetGenericTeamId() const
 {
 	// Matches the AIController team ID
-	return FGenericTeamId(TEAM_ID_BOTS);
+	//return FGenericTeamId(TEAM_ID_BOTS);
+	
+	if (AAIController* AIC = GetController<AAIController>())
+	{
+		AIC->GetGenericTeamId();
+	}
+	
+	return FGenericTeamId::NoTeam;
 }

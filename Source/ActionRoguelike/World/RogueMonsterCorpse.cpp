@@ -63,7 +63,10 @@ bool ARogueMonsterCorpse::AddImpulseAtLocationCustom(FVector Impulse, FVector Lo
 	GetWorldTimerManager().SetTimer(TimerHandle, [this]()
 	{
 		// Cheap trick to skip rendering this all the time unless we are actively hit flashing
-		MeshComp->SetOverlayMaterialMaxDrawDistance(1);
+		if (IsValid(MeshComp))
+		{
+			MeshComp->SetOverlayMaterialMaxDrawDistance(1);
+		}
 	}, 0.5f, false);
 
 	// Handled

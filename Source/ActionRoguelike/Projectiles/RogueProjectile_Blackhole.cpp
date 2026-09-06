@@ -69,7 +69,7 @@ void ARogueProjectile_Blackhole::BeginPlay()
 		{
 			RadialForceComp->Radius = MaxRadius * CurrentValue;
 
-			DrawDebugSphere(GetWorld(), GetActorLocation(), RadialForceComp->Radius, 32, FColor::Blue, false, 0.f);
+			//DrawDebugSphere(GetWorld(), GetActorLocation(), RadialForceComp->Radius, 32, FColor::Blue, false, 0.f);
 		});
 	}
 }
