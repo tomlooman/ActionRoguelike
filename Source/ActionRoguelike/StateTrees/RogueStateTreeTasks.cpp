@@ -4,10 +4,8 @@
 
 #include "StateTreeExecutionContext.h"
 #include "StateTreeLinker.h"
-#include "Core/RogueGameModeBase.h"
 #include "StateTreePropertyRef.h"
-#include "Engine/AssetManager.h"
-#include "Engine/StreamableManager.h"
+#include "Core/RoguePrimaryGameMode.h"
 
 
 FRogueSTTask_SelectMonster::FRogueSTTask_SelectMonster()

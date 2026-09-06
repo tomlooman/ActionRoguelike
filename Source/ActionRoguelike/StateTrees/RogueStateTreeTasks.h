@@ -4,6 +4,8 @@
 #include "StateTreeTaskBase.h"
 #include "RogueStateTreeTasks.generated.h"
 
+class UDataTable;
+
 /**
  * Configurable Vars in the State Tree in Select Monster Task
  */

@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "EnvironmentQuery/EnvQuery.h"
-
+#include "Curves/CurveFloat.h"
 #include "RogueSpawnDirectors.generated.h"
 
 
 class URogueMonsterData;
 class UCurveFloat;
+class UDataTable;
 
 USTRUCT(BlueprintType)
 struct FRogueDirectorData
