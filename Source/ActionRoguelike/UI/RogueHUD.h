@@ -7,6 +7,9 @@
 #include "RogueHUD.generated.h"
 
 class URogueMainHUDWidget;
+class UUserWidget;
+class APlayerState;
+
 /**
  * 
  */
