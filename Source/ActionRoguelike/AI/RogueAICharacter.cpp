@@ -458,7 +458,7 @@ FGenericTeamId ARogueAICharacter::GetGenericTeamId() const
 	
 	if (AAIController* AIC = GetController<AAIController>())
 	{
-		AIC->GetGenericTeamId();
+		return AIC->GetGenericTeamId();
 	}
 	
 	return FGenericTeamId::NoTeam;
