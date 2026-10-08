@@ -8,6 +8,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraDataChannel.h"
 #include "NiagaraDataChannelAccessor.h"
+#include "NiagaraDataChannelFunctionLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 #include "RogueProjectileData.h"
 #include "Core/RogueGameState.h"

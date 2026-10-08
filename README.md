@@ -4,7 +4,7 @@
 
 Welcome to **"Project Orion", a co-op Action Roguelike Sample Game** made in Unreal Engine 5 and C++. The project is an expansion on the game that you can build during the [Professional Game Development in C++ and Unreal Engine 5](https://tomlooman.com/courses/unrealengine-cpp) Course and is my continued effort at building the most advanced sample game for Unreal Engine, while being easy to understand, learn from and adapt to your own games.
 
-**Main Branch Engine Version: 5.6** <br>
+**Main Branch Engine Version: 5.8** <br>
 
 The main branch is a bit of a playground for experimentation of new systems that may eventually turn into a blog post or in one of my courses (C++ or Game Optimization). For example, the projectiles have both Object Pooling mechanism AND an experimental Data Oriented Design approach to projectiles using no Actors at all. This may affect stability and is not always supporting multiplayer yet until the systems stabilize over time. Many of the experimental features are disabled by default using `#define` directives to easily toggle on/off during compilation.
 
@@ -20,8 +20,8 @@ You can read detailed information about this project and game features on the [D
 The game on the main branch has been updated over the years to keep up with the latest Unreal Engine release. Additionally, many new features are added to the project, often related to new Articles or Tutorials posted on [tomlooman.com](https://tomlooman.com). For students following the Unreal Engine C++ Courses, use one of these two branches:
 
 **For C++ Course Students:** 
+- **For the current UE5.6+ version of the C++ course:** [UE5.6-CourseProject](https://github.com/tomlooman/ActionRoguelike/tree/UE5.6-CourseProject) which has a commit URL with each lesson of the C++ course for easy reference.
 - **For the original UE4 version:** [UE4-Lecture29-FinishedProject](https://github.com/tomlooman/ActionRoguelike/tree/Lecture29-FinishedProject) for finished course code without additions all the way back to UE4.25.
-- **For the new UE5.6 version of the course:** [UE5.6-CourseProject](https://github.com/tomlooman/ActionRoguelike/tree/UE5.6-CourseProject) which has a commit URL with each lesson of the C++ course for easy reference.
 
 ![GitHub Branch Selection Info](https://tomlooman.com/assets/images/github_branchesinfo.jpg)
 
