@@ -102,6 +102,7 @@ bool URogueActionComponent::K2_GetAttribute(FGameplayTag InAttributeTag, float& 
 		CurrentValue = FoundAttribute->GetValue();
 		Base = FoundAttribute->Base;
 		Delta = FoundAttribute->Modifier;
+		return true;
 	}
 
 	return false;
