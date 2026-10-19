@@ -61,15 +61,15 @@ protected:
 	// Not required for assignment, useful for expanding in Blueprint later on
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Explode();
+	
+	virtual void BeginPlay() override;
 
-	virtual void PostInitializeComponents() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:	
 	ARogueProjectile();
 
-	virtual void BeginPlay() override;
-
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void PostInitializeComponents() override;
 
 	virtual void LifeSpanExpired() override;
 
