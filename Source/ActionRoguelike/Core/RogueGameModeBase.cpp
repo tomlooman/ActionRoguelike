@@ -46,7 +46,7 @@ void ARogueGameModeBase::StartPlay()
 	Super::StartPlay();
 
 	// Make sure we have assigned at least one power-up class
-	if (ensure(PowerupClasses.Num() > 0))
+	if (PowerupClasses.Num() > 0)
 	{
 		// Skip the Blueprint wrapper and use the direct C++ option which the Wrapper uses as well
 		FEnvQueryRequest Request(PowerupSpawnQuery, this);
