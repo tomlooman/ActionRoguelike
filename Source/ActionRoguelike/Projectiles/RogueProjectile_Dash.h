@@ -17,22 +17,25 @@ class ACTIONROGUELIKE_API ARogueProjectile_Dash : public ARogueProjectile
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Teleport")
-	float TeleportDelay;
+	float TeleportDelay = 0.2f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Teleport")
-	float DetonateDelay;
+	float DetonateDelay = 0.2f;
 
 	// Handle to cancel timer if we already hit something
 	FTimerHandle TimerHandle_DelayedDetonate;
 
-	// Base class using BlueprintNativeEvent, we must override the _Implementation not the Explode()
-	virtual void Explode_Implementation() override;
-
 	void TeleportInstigator();
 
 	virtual void BeginPlay() override;
+	
+	UPROPERTY(Replicated)
+	float TeleportAtTime;
 
 public:
+	
+	// Base class using BlueprintNativeEvent, we must override the _Implementation not the Explode()
+	virtual void Explode_Implementation() override;
 
 	ARogueProjectile_Dash();
 };
