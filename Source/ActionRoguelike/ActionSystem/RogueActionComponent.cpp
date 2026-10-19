@@ -405,31 +405,30 @@ bool URogueActionComponent::StartActionByName(AActor* Instigator, FGameplayTag A
 	check(CachedActions.Num() > 0);
 	if (TObjectPtr<URogueAction>* ActionPtr = CachedActions.Find(ActionName))
 	{
-		URogueAction* Action = ActionPtr->Get();
-		
-		if (!Action->CanStart(Instigator))
-		{
-			FString OwnerName = GetOwner()->GetName();
-			FString FailedMsg = FString::Printf(TEXT("%s - Failed to run: %s"), *OwnerName, *ActionName.ToString());
-
-			// Limits display in viewport to one per actor instance
-			uint64 Key = GetTypeHash(OwnerName);
-
-			GEngine->AddOnScreenDebugMessage(Key, 2.0f, FColor::Red, FailedMsg);
-			return false;
-		}
-
 		// Bookmark for Unreal Insights
 		//TRACE_BOOKMARK(TEXT("StartAction::%s"), *GetNameSafe(Action));
-
+		
 		// Is Client?
 		if (!GetOwner()->HasAuthority())
 		{
-			// Request on the server
+			// Request on the server regardless of passing CanStart, let server handle that
 			ServerStartAction(Instigator, ActionName);
 		}
 		else
 		{
+			URogueAction* Action = ActionPtr->Get();
+			
+			if (!Action->CanStart(Instigator))
+			{
+				FString OwnerName = GetOwner()->GetName();
+				FString FailedMsg = FString::Printf(TEXT("%s - Failed to run: %s"), *OwnerName, *ActionName.ToString());
+
+				// Limits display in viewport to one per actor instance
+				uint64 Key = GetTypeHash(OwnerName);
+				GEngine->AddOnScreenDebugMessage(Key, 2.0f, FColor::Red, FailedMsg);
+				return false;
+			}
+
 			// Scoped within the curly braces. the _FSTRING variant adds additional tracing overhead due to grabbing the class name every time
 			SCOPED_NAMED_EVENT_FSTRING(Action->GetClass()->GetName(), FColor::White);
 
@@ -449,20 +448,21 @@ bool URogueActionComponent::StopActionByName(AActor* Instigator, FGameplayTag Ac
 	{
 		if (Action->GetActivationTag() == ActionName)
 		{
-			if (Action->IsRunning())
+			// Is Client?
+			if (!GetOwner()->HasAuthority())
 			{
-				// Is Client?
-				if (!GetOwner()->HasAuthority())
-				{
-					ServerStopAction(Instigator, ActionName);
-				}
-				else
-				{
-					Action->StopAction(Instigator);
-				}
-
+				// always send, even if not running (locally), latency might otherwise mess up the state
+				ServerStopAction(Instigator, ActionName);
+				
 				return true;
 			}
+			
+			if (Action->IsRunning())
+			{
+				Action->StopAction(Instigator);
+			}
+
+			return true;
 		}
 	}
 
