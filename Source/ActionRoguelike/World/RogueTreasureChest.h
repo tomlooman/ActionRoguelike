@@ -35,10 +35,6 @@ protected:
 	UFUNCTION()
 	void OnRep_LidOpened();
 
-	//virtual void Tick(float DeltaSeconds) override;
-
-	//FActiveCurveAnim* CurveAnimInst;
-
 	UPROPERTY(VisibleAnywhere, Category=Components)
 	TObjectPtr<UStaticMeshComponent> BaseMesh;
 
@@ -50,9 +46,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category=Components)
 	TObjectPtr<UAudioComponent> OpenChestSound;
-
-	TArray<int32> IntTestArray;
-	void UpdateTestArray(int32 StartIndex, int32 MaxCount);
 
 public:	
 
