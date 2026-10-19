@@ -24,7 +24,7 @@ void URoguePickupSubsystem::AddCoinsPickup(TArray<FVector> Locations, TArray<int
 	check(GetWorld()->GetNetMode() != NM_Client);
 
 	CoinPickupLocations.Append(Locations);
-	CoinPickupAmount.Append(CoinAmount);
+	CoinCreditRewards.Append(CoinAmount);
 
 	// Convert to transforms for ISM
 	TArray<FTransform> Transforms;
@@ -35,7 +35,7 @@ void URoguePickupSubsystem::AddCoinsPickup(TArray<FVector> Locations, TArray<int
 	}
 	
 	TArray<FPrimitiveInstanceId> NewMeshIDs = AddMeshInstances(Transforms);
-	MeshIDs.Append(NewMeshIDs);
+	CoinMeshIDs.Append(NewMeshIDs);
 	
 	// Are we playing a networked game
 	if (NetMode > NM_Standalone)
@@ -63,7 +63,7 @@ void URoguePickupSubsystem::RemoveCoinsPickup(int32 InIndex)
 	check(NetMode != NM_Client);
 	
 	CoinPickupLocations.RemoveAt(InIndex);
-	CoinPickupAmount.RemoveAt(InIndex);
+	CoinCreditRewards.RemoveAt(InIndex);
 
 	// Playing any networked game, clients should not reach here in the first place
 	if (NetMode > NM_Standalone)
@@ -71,13 +71,13 @@ void URoguePickupSubsystem::RemoveCoinsPickup(int32 InIndex)
 		ARogueGameState* GS = GetWorld()->GetGameState<ARogueGameState>();
 
 		// Find match based on local ID again
-		FPrimitiveInstanceId IdToFind = MeshIDs[InIndex];
+		FPrimitiveInstanceId IdToFind = CoinMeshIDs[InIndex];
 		GS->CoinPickupData.Items.Remove(FPickupLocationItem(FVector::ZeroVector, IdToFind));
 		GS->CoinPickupData.MarkArrayDirty();
 	}
 
-	WorldISM->RemoveInstanceById(MeshIDs[InIndex]);
-	MeshIDs.RemoveAt(InIndex);
+	WorldISM->RemoveInstanceById(CoinMeshIDs[InIndex]);
+	CoinMeshIDs.RemoveAt(InIndex);
 }
 
 FPrimitiveInstanceId URoguePickupSubsystem::AddMeshInstance(FVector InLocation)
@@ -216,7 +216,7 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 			int32 TotalCoins = 0;
 			for (int i = ProcessList.Num() - 1; i >= 0; --i)
 			{
-				TotalCoins += CoinPickupAmount[ProcessList[i]];
+				TotalCoins += CoinCreditRewards[ProcessList[i]];
 				
 				RemoveCoinsPickup(ProcessList[i]);
 			}

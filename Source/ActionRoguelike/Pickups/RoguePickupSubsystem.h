@@ -30,8 +30,8 @@ protected:
 
 	// -- These arrays are in sync
 	TArray<FVector> CoinPickupLocations;
-	TArray<int32> CoinPickupAmount;
-	TArray<FPrimitiveInstanceId> MeshIDs;
+	TArray<int32> CoinCreditRewards;
+	TArray<FPrimitiveInstanceId> CoinMeshIDs;
 	// -- end
 
 	FPrimitiveInstanceId AddMeshInstance(FVector InLocation);
