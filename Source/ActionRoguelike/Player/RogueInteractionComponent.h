@@ -37,6 +37,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category=Interaction)
 	TObjectPtr<UMaterialInterface> HighlightOverlayMaterial;
+	
+	/*
+	 * Remove UI and in-world FX feedback
+	 */
+	static void ClearFocusFeedback(AActor* RemoveFromActor, URogueWorldUserWidget* RemoveWidgetInst);
 
 public:	
 

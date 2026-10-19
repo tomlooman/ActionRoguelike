@@ -50,9 +50,10 @@ void URogueInteractionComponent::FindBestInteractable()
 	check(OwningController); // Only allow this to exist on (player)controllers
 	
 	APawn* OwningPawn = OwningController->GetPawn();
+	// We do not always have a pawn, or we died
 	if (OwningPawn == nullptr || !URogueGameplayFunctionLibrary::IsAlive(OwningPawn))
 	{
-		// We do not always have a pawn, or we died
+		ClearFocusFeedback(FocusedActor, WidgetInst);
 		FocusedActor = nullptr;
 		return;
 	}
@@ -115,21 +116,9 @@ void URogueInteractionComponent::FindBestInteractable()
 	}
 
 	// Clear old focus
-	if (FocusedActor && FocusedActor != NewFocusActor)
+	if (FocusedActor != NewFocusActor)
 	{
-		TInlineComponentArray<UStaticMeshComponent*> MeshComps;
-		FocusedActor->GetComponents(UStaticMeshComponent::StaticClass(), MeshComps);
-		for (UStaticMeshComponent* MeshComp : MeshComps)
-		{
-			MeshComp->bDisallowNanite = false;
-			//MeshComp->bEvaluateWorldPositionOffset = true;
-			MeshComp->SetOverlayMaterial(nullptr);
-		}
-
-		if (WidgetInst)
-		{
-			WidgetInst->RemoveFromParent();
-		}
+		ClearFocusFeedback(FocusedActor, WidgetInst);
 	}
 	
 	// Valid focus
@@ -185,6 +174,26 @@ void URogueInteractionComponent::FindBestInteractable()
 #endif
 }
 
+
+void URogueInteractionComponent::ClearFocusFeedback(AActor* RemoveFromActor, URogueWorldUserWidget* RemoveWidgetInst)
+{
+	if (IsValid(RemoveFromActor))
+	{
+		TInlineComponentArray<UStaticMeshComponent*> MeshComps;
+		RemoveFromActor->GetComponents(UStaticMeshComponent::StaticClass(), MeshComps);
+		for (UStaticMeshComponent* MeshComp : MeshComps)
+		{
+			MeshComp->bDisallowNanite = false;
+			//MeshComp->bEvaluateWorldPositionOffset = true;
+			MeshComp->SetOverlayMaterial(nullptr);
+		}
+	}
+
+	if (RemoveWidgetInst)
+	{
+		RemoveWidgetInst->RemoveFromParent();
+	}
+}
 
 void URogueInteractionComponent::PrimaryInteract()
 {
