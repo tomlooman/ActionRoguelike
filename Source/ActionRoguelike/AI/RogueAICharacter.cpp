@@ -400,7 +400,7 @@ bool ARogueAICharacter::AddImpulseAtLocationCustom(FVector Impulse, FVector Loca
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	// Skip playback if we are attacking, stunned etc. which currently rely on the same slot
 	// @todo: possibly introduce additional slotgroups...
-	if (AnimInst->IsSlotActive(Config.SlotName))
+	if (!AnimInst->IsSlotActive(Config.SlotName))
 	{
 		// Play hit Anim
 		AnimInst->PlaySlotAnimationAsDynamicMontage(
