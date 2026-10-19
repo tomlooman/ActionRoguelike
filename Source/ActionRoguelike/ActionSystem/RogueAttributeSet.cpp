@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
 
 
 URogueMonsterAttributeSet::URogueMonsterAttributeSet()
@@ -30,6 +31,12 @@ void URogueHealthAttributeSet::OnRep_Health(FRogueAttribute OldValue)
 	Modification.TargetComp = OwningComp;
 
 	OwningComp->BroadcastAttributeChanged(SharedGameplayTags::Attribute_Health, NewValue, Modification);
+}
+
+
+void URogueAttributeSet::RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context, UE::Net::EFragmentRegistrationFlags RegistrationFlags)
+{
+	UE::Net::FReplicationFragmentUtil::CreateAndRegisterFragmentsForObject(this, Context, RegistrationFlags);
 }
 
 
