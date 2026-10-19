@@ -156,12 +156,15 @@ void ARoguePlayerCharacter::FindCrosshairTarget()
 
 void ARoguePlayerCharacter::CrosshairTraceComplete(const FTraceHandle& InTraceHandle, FTraceDatum& InTraceDatum)
 {
+	// Reset
+	bHasPawnTarget = false;
+	
 	// at most expect one hit
 	if (InTraceDatum.OutHits.IsValidIndex(0))
 	{
 		FHitResult Hit = InTraceDatum.OutHits[0];
 		// Figure out if dealing with a Pawn, may want aim assist on other 'things', which requires a different check
-		bHasPawnTarget = Hit.IsValidBlockingHit() && Hit.GetActor()->IsA(APawn::StaticClass());
+		bHasPawnTarget = Hit.GetActor()->IsA(APawn::StaticClass());
 
 		//UE_LOG(LogGame, Log, TEXT("has pawn target: %s"), bHasPawnTarget ? TEXT("true") : TEXT("false"));
 	}
