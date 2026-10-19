@@ -40,6 +40,9 @@ protected:
 	FTimerHandle PeriodHandle;
 	FTimerHandle DurationHandle;
 
+	/*
+	 * Runs on CLIENT/SERVER
+	 */
 	UFUNCTION(BlueprintNativeEvent, Category = "Effect")
 	void ExecutePeriodicEffect(AActor* Instigator);
 	

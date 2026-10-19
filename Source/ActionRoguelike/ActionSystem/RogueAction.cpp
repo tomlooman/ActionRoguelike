@@ -5,6 +5,7 @@
 #include "ActionSystem/RogueActionComponent.h"
 #include "ActionRoguelike.h"
 #include "Net/UnrealNetwork.h"
+#include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueAction)
 
@@ -127,6 +128,12 @@ void URogueAction::OnRep_RepData()
 bool URogueAction::IsRunning() const
 {
 	return RepData.bIsRunning;
+}
+
+
+void URogueAction::RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context, UE::Net::EFragmentRegistrationFlags RegistrationFlags)
+{
+	UE::Net::FReplicationFragmentUtil::CreateAndRegisterFragmentsForObject(this, Context, RegistrationFlags);
 }
 
 
