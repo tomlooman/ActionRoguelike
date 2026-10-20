@@ -21,16 +21,15 @@ URogueInteractionComponent::URogueInteractionComponent()
 
 void URogueInteractionComponent::Interact()
 {
-	/*IRogueInteractionInterface* InteractInterface = Cast<IRogueInteractionInterface>(SelectedActor);
-	if (InteractInterface)
-	{
-		InteractInterface->Interact();
-	}*/
+	ServerInteract(SelectedActor);
+}
 
-	if (SelectedActor)
-	{
-		IRogueInteractionInterface::Execute_Interact(SelectedActor);
-	}
+void URogueInteractionComponent::ServerInteract_Implementation(AActor* InteractWith)
+{
+	if (InteractWith)
+    {
+    	IRogueInteractionInterface::Execute_Interact(InteractWith);
+    }
 }
 
 void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -38,6 +37,12 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	APlayerController* PC = CastChecked<APlayerController>(GetOwner());
+	
+	if (!PC->IsLocalController())
+	{
+		// @todo: disable ticking
+		return;
+	}
 
 	FVector Center = PC->GetPawn()->GetActorLocation();
 	FVector CameraLocation = PC->PlayerCameraManager->GetCameraLocation();

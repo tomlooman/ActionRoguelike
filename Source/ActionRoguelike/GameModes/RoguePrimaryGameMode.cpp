@@ -66,7 +66,7 @@ void ARoguePrimaryGameMode::Tick(float DeltaSeconds)
 		Director.CurrentCredits += CreditsPerSecond * DeltaSeconds;
 		
 		FString DebugMsg = FString::Printf(TEXT("%s\nCurrent Credits: %f\nNextTickTime: %f\n"), *Director.DebugDisplayName, Director.CurrentCredits, Director.NextTickTime);
-		GEngine->AddOnScreenDebugMessage(KeyID, PrimaryActorTick.TickInterval, Director.DebugColor, DebugMsg);
+		//GEngine->AddOnScreenDebugMessage(KeyID, PrimaryActorTick.TickInterval, Director.DebugColor, DebugMsg);
 		KeyID++;
 		
 		if (Director.NextTickTime > TotalElapsedTime)
