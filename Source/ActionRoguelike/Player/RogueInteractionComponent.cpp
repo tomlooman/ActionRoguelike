@@ -203,13 +203,32 @@ void URogueInteractionComponent::PrimaryInteract()
 
 void URogueInteractionComponent::ServerInteract_Implementation(AActor* InFocus)
 {
-	if (InFocus == nullptr)
+	// May have expired/deleted on the host
+	if (!IsValid(InFocus))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, "No Focus Actor to interact.");
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, "No Valid Focus Actor to interact.");
 		return;
 	}
 
 	AController* MyController = CastChecked<AController>(GetOwner());
-	IRogueGameplayInterface::Execute_Interact(InFocus, MyController);
+	check(MyController);
+	
+	// Pawn may have been removed, or died.
+	APawn* MyPawn = MyController->GetPawn();
+	if (MyPawn && URogueGameplayFunctionLibrary::IsAlive(MyPawn))
+	{
+		// Sanity check on server if client is within a reasonable distance
+		float DistanceTo = FVector::Dist(InFocus->GetActorLocation(), MyPawn->GetActorLocation());
+		
+		// Adding pretty large distance buffer...should be enough to account for large latency
+		if (DistanceTo < (TraceRadius * 2.0f))
+		{
+			IRogueGameplayInterface::Execute_Interact(InFocus, MyController);
+		}
+		else
+		{
+			UE_LOG(LogNet, Warning, TEXT("Rejected Interaction on Actor '%s' for Pawn '%s'. Distance too large."), *GetNameSafe(InFocus), *GetNameSafe(MyPawn));
+		}
+	}
 }
 
