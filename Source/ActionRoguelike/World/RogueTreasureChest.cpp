@@ -9,6 +9,7 @@
 #include "Animation/RogueCurveAnimSubsystem.h"
 #include "Components/AudioComponent.h"
 #include "Core/RogueDeferredTaskSystem.h"
+#include "GameFramework/GameStateBase.h"
 #include "Net/Core/PushModel/PushModel.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueTreasureChest)
@@ -47,39 +48,83 @@ ARogueTreasureChest::ARogueTreasureChest()
 
 void ARogueTreasureChest::Interact_Implementation(AController* InstigatorController)
 {
-	bLidOpened = true;
-	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, bLidOpened, this);
+	if (!bLidOpened)
+	{
+		// Set state, for re-loading the world, animation handled through timestamp
+		bLidOpened = true;
+		check(HasAuthority());
+		// Sets server time
+		InteractedServerTime = GetWorld()->TimeSeconds;
+		MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, InteractedServerTime, this);
 	
-	ConditionalOpenChest();
+		StartOpenChestAnim();
+	}
 }
 
 
 void ARogueTreasureChest::OnActorLoaded_Implementation()
 {
-	ConditionalOpenChest();
-}
-
-
-void ARogueTreasureChest::ConditionalOpenChest()
-{
 	if (bLidOpened)
 	{
-		URogueCurveAnimSubsystem* AnimSubsystem = GetWorld()->GetSubsystem<URogueCurveAnimSubsystem>();
-		AnimSubsystem->PlayCurveAnim(LidAnimCurve, 1.f, [&](float CurrValue)
-		{
-			LidMesh->SetRelativeRotation(FRotator(CurrValue, 0, 0));
-		});
-
-		OpenChestEffect->Activate(true);
-
-		OpenChestSound->Play();
+		SetChestFullyOpened();
 	}
 }
 
 
-void ARogueTreasureChest::OnRep_LidOpened()
+void ARogueTreasureChest::StartOpenChestAnim()
 {
-	ConditionalOpenChest();
+	URogueCurveAnimSubsystem* AnimSubsystem = GetWorld()->GetSubsystem<URogueCurveAnimSubsystem>();
+	AnimSubsystem->PlayCurveAnim(LidAnimCurve, 1.f, [&](float CurrValue)
+	{
+		LidMesh->SetRelativeRotation(FRotator(CurrValue, 0, 0));
+	});
+
+	OpenChestEffect->Activate(true);
+
+	OpenChestSound->Play();
+}
+
+
+void ARogueTreasureChest::SetChestFullyOpened()
+{
+	// Set state to already opened, skipping VFX playback
+	URogueCurveAnimSubsystem* AnimSubsystem = GetWorld()->GetSubsystem<URogueCurveAnimSubsystem>();
+	float FinalPitchRotation = AnimSubsystem->GetAnimationEndValue(LidAnimCurve);
+	LidMesh->SetRelativeRotation(FRotator(FinalPitchRotation, 0, 0));
+}
+
+
+void ARogueTreasureChest::OnRep_InteractedTime()
+{
+	// Assume this is not called until we set a valid time
+	check(InteractedServerTime > 0.0f);
+
+	if (AGameStateBase* GS = GetWorld()->GetGameState())
+	{
+		float CurrentServerTime = GS->GetServerWorldTimeSeconds();
+		
+		// Could it happen we don't receive an initial valid server time during late join?
+		check(CurrentServerTime > 0.0f);
+		
+		float TimeSinceOpened = CurrentServerTime - InteractedServerTime;
+		
+		// @fixme: find actual animation time with some buffer
+		const float AssumedAnimDuration = 2.0f;
+		
+		if (TimeSinceOpened > AssumedAnimDuration)
+		{
+			SetChestFullyOpened();
+		}
+		else
+		{
+			StartOpenChestAnim();
+		}
+	}
+	else
+	{
+		// no comparison available, maybe GameState hasn't arrived yet.
+		SetChestFullyOpened();
+	}
 }
 
 
@@ -90,5 +135,6 @@ void ARogueTreasureChest::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	// Opt-in for Iris Push Model
 	FDoRepLifetimeParams PushParams;
 	PushParams.bIsPushBased = true;
-	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, bLidOpened, PushParams);
+	
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, InteractedServerTime, PushParams);
 }

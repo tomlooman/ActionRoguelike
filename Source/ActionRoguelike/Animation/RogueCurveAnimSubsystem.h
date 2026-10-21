@@ -122,4 +122,6 @@ public:
 
 	/* Play easing function with output between 0.0 - 1.0 */
 	void PlayEasingFunc(EEasingFunc::Type EasingType, float EasingExp, float InPlayRate, const TFunction<void(float)>& Func);
+	
+	float GetAnimationEndValue(UCurveFloat* InCurveAsset);
 };

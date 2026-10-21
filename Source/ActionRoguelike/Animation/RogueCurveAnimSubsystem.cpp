@@ -56,6 +56,17 @@ void URogueCurveAnimSubsystem::PlayEasingFunc(EEasingFunc::Type EasingType, floa
 	ActiveEasingFuncs.Add(FActiveEasingFunc(EasingExp, InPlayRate, Func));
 }
 
+float URogueCurveAnimSubsystem::GetAnimationEndValue(UCurveFloat* InCurveAsset)
+{
+	if (InCurveAsset)
+	{
+		// @todo: assumes global 1.0 as duration
+		return InCurveAsset->GetFloatValue(1.0f);
+	}
+	
+	return 0.0f;
+}
+
 
 TStatId URogueCurveAnimSubsystem::GetStatId() const
 {

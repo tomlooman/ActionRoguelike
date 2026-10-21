@@ -27,13 +27,21 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category= "Animation")
 	TObjectPtr<UCurveFloat> LidAnimCurve;
 
-	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly, SaveGame)
+	UPROPERTY(BlueprintReadOnly, SaveGame)
 	bool bLidOpened;
+	
+	/*
+	 * Store server time, for late joiners and relevancy to skip animations and cosmetic effects
+	 */
+	UPROPERTY(ReplicatedUsing=OnRep_InteractedTime)
+	float InteractedServerTime;
 
-	void ConditionalOpenChest();
+	void StartOpenChestAnim();
+	
+	void SetChestFullyOpened();
 
 	UFUNCTION()
-	void OnRep_LidOpened();
+	void OnRep_InteractedTime();
 
 	UPROPERTY(VisibleAnywhere, Category=Components)
 	TObjectPtr<UStaticMeshComponent> BaseMesh;

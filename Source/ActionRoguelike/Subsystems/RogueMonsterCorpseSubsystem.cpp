@@ -29,8 +29,9 @@ void URogueMonsterCorpseSubsystem::Initialize(FSubsystemCollectionBase& Collecti
 {
 	Super::Initialize(Collection);
 
-	URogueActorPoolingSubsystem* Pooler = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
-	Pooler->PrimeActorPool(ARogueMonsterCorpse::StaticClass(), MaxCorpses);
+	// @todo: fixme on clients
+	//URogueActorPoolingSubsystem* Pooler = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
+	//Pooler->PrimeActorPool(ARogueMonsterCorpse::StaticClass(), MaxCorpses);
 }
 
 
