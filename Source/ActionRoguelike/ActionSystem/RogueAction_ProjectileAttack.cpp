@@ -39,7 +39,6 @@ void URogueAction_ProjectileAttack::StartAction_Implementation(AActor* Instigato
 	if (Character->HasAuthority())
 #endif
 	{
-		FTimerHandle TimerHandle_AttackDelay;
 		FTimerDelegate Delegate;
 		Delegate.BindUObject(this, &ThisClass::AttackDelay_Elapsed, Character);
 
@@ -47,11 +46,18 @@ void URogueAction_ProjectileAttack::StartAction_Implementation(AActor* Instigato
 	}
 }
 
+void URogueAction_ProjectileAttack::StopAction_Implementation(AActor* Instigator)
+{
+	Super::StopAction_Implementation(Instigator);
+	
+	GetWorld()->GetTimerManager().ClearTimer(TimerHandle_AttackDelay);
+}
+
 
 void URogueAction_ProjectileAttack::AttackDelay_Elapsed(ARoguePlayerCharacter* InstigatorCharacter)
 {
-	// Blueprint has not been properly configured yet if this fails
-	if (ensureAlways(ProjectileClass))
+	// Blueprint has not been properly configured yet if this fails (Check again in case player is removed/disconnected)
+	if (ensureAlways(ProjectileClass) && IsValid(InstigatorCharacter))
 	{
 		FVector HandLocation = InstigatorCharacter->GetMesh()->GetSocketLocation(HandSocketName);
 
@@ -79,7 +85,8 @@ void URogueAction_ProjectileAttack::AttackDelay_Elapsed(ARoguePlayerCharacter* I
 
 		TArray<FHitResult> Hits;
 		// Enemies are using Overlap response to Projectiles, we cant look for single Blocking hits and instead look for all overlaps and filter after
-		if (GetWorld()->SweepMultiByChannel(Hits, TraceStart, TraceEnd, FQuat::Identity, COLLISION_PROJECTILE, Shape, Params))
+		GetWorld()->SweepMultiByChannel(Hits, TraceStart, TraceEnd, FQuat::Identity, COLLISION_PROJECTILE, Shape, Params);
+		if (Hits.Num() > 0)
 		{
 			// Overwrite trace end with impact point in world
 			// First entry must exist and first entry will be first overlap or block

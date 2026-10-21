@@ -24,6 +24,8 @@ public:
 
 	virtual void StartAction_Implementation(AActor* Instigator) override;
 	
+	virtual void StopAction_Implementation(AActor* Instigator) override;
+	
 protected:
 
 	UPROPERTY(EditDefaultsOnly)
@@ -56,6 +58,8 @@ protected:
 	/* Sound Effect to play (Can be Wave or Cue) */
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	TObjectPtr<USoundBase> CastingSound;
+	
+	FTimerHandle TimerHandle_AttackDelay;
 	
 	void AttackDelay_Elapsed(class ARoguePlayerCharacter* InstigatorCharacter);
 };
