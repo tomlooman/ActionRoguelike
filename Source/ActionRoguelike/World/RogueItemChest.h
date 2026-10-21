@@ -29,6 +29,12 @@ protected:
 	float AnimationTargetPitch = 120.f;
 
 	float CurrentAnimationPitch = 0.0f;
+	
+	UPROPERTY(ReplicatedUsing=OnRep_LidIsOpened)
+	bool bLidIsOpened = false;
+	
+	UFUNCTION()
+	void OnRep_LidIsOpened();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ChestAnimationComplete();
