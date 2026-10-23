@@ -31,7 +31,7 @@ EStateTreeRunStatus FRogueSTTask_SelectMonster::EnterState(FStateTreeExecutionCo
 	}
 
 	// Random number within total random
-	int32 RandomWeight = FMath::RandRange(0.0f, TotalWeight);
+	float RandomWeight = FMath::FRandRange(0.0f, TotalWeight);
 	// @todo: make it seeded?
 
 	//Reset

@@ -62,8 +62,8 @@ void URoguePickupSubsystem::RemoveCoinsPickup(int32 InIndex)
 	ENetMode NetMode = GetWorld()->GetNetMode();
 	check(NetMode != NM_Client);
 	
-	CoinPickupLocations.RemoveAt(InIndex);
-	CoinCreditRewards.RemoveAt(InIndex);
+	CoinPickupLocations.RemoveAtSwap(InIndex, EAllowShrinking::No);
+	CoinCreditRewards.RemoveAtSwap(InIndex, EAllowShrinking::No);
 
 	// Playing any networked game, clients should not reach here in the first place
 	if (NetMode > NM_Standalone)
@@ -77,7 +77,7 @@ void URoguePickupSubsystem::RemoveCoinsPickup(int32 InIndex)
 	}
 
 	WorldISM->RemoveInstanceById(CoinMeshIDs[InIndex]);
-	CoinMeshIDs.RemoveAt(InIndex);
+	CoinMeshIDs.RemoveAtSwap(InIndex, EAllowShrinking::No);
 }
 
 FPrimitiveInstanceId URoguePickupSubsystem::AddMeshInstance(FVector InLocation)

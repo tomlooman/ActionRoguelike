@@ -54,8 +54,8 @@ void URogueAction_MinionRangedAttack::StartAction_Implementation(AActor* Instiga
 	// Note: We need to replace the function SuggestProjectileVelocity_MovingTarget with a variant that doesn't grab TargetActor->GetVelocity but instead our own averaged velocity over the past 1 second or so.
 
 	// Ignore negative pitch to not hit the floor in front itself
-	MuzzleRotation.Pitch += FMath::RandRange(0.0f, MaxBulletSpread);
-	MuzzleRotation.Yaw += FMath::RandRange(-MaxBulletSpread, MaxBulletSpread);
+	MuzzleRotation.Pitch += FMath::FRandRange(0.0f, MaxBulletSpread);
+	MuzzleRotation.Yaw += FMath::FRandRange(-MaxBulletSpread, MaxBulletSpread);
 
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;

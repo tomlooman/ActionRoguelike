@@ -26,6 +26,8 @@ class ACTIONROGUELIKE_API URogueAction_MinionRangedAttack : public URogueAction
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<URogueProjectileData> ProjectileConfig;
 
+public:
+	
 	virtual void StartAction_Implementation(AActor* Instigator) override;
 
 	virtual bool CanStart_Implementation(AActor* Instigator) override;

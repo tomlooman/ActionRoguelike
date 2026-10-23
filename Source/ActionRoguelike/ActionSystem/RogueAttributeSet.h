@@ -113,10 +113,8 @@ class URogueAttributeSet : public UObject
 
 public:
 
-	virtual void InitializeAttributes(URogueActionComponent* InNewOwningComponent)
+	virtual void InitializeAttributes()
 	{
-		OwningComp = InNewOwningComponent;
-
 		FillAttributeCache();
 	}
 	
@@ -148,12 +146,11 @@ public:
 	{
 		return true;
 	}
+	
+	URogueActionComponent* GetOwningComponent() const;
 
 	/* Fetch from properties stored inside the AttributeSet for quick access */
 	TMap<FGameplayTag, FRogueAttribute*> AttributeCache;
-
-	UPROPERTY(Transient)
-	TObjectPtr<URogueActionComponent> OwningComp;
 };
 
 
@@ -207,9 +204,9 @@ public:
 		MoveSpeed = FRogueAttribute(550);
 	}
 
-	virtual void InitializeAttributes(URogueActionComponent* InNewOwningComponent) override
+	virtual void InitializeAttributes() override
 	{
-		Super::InitializeAttributes(InNewOwningComponent);
+		Super::InitializeAttributes();
 
 		ApplyMovementSpeed();
 	}

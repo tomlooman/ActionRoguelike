@@ -57,6 +57,9 @@ ARogueAICharacter::ARogueAICharacter(const FObjectInitializer& ObjectInitializer
 
 	// Ensures we receive a controlled when spawned in the level by our gamemode
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	
+	// Low update for slower enemies
+	SetNetUpdateFrequency(5.0f);
 
 	// Enabled on mesh to react to incoming projectiles
 	USkeletalMeshComponent* SkelMesh = GetMesh();

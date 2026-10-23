@@ -28,15 +28,21 @@ void URogueHealthAttributeSet::OnRep_Health(FRogueAttribute OldValue)
 	FAttributeModification Modification;
 	Modification.AttributeTag = SharedGameplayTags::Attribute_Health;
 	Modification.Magnitude = Health.GetValue() - OldValue.GetValue();
-	Modification.TargetComp = OwningComp;
+	Modification.TargetComp = GetOwningComponent();
 
-	OwningComp->BroadcastAttributeChanged(SharedGameplayTags::Attribute_Health, NewValue, Modification);
+	GetOwningComponent()->BroadcastAttributeChanged(SharedGameplayTags::Attribute_Health, NewValue, Modification);
 }
 
 
 void URogueAttributeSet::RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context, UE::Net::EFragmentRegistrationFlags RegistrationFlags)
 {
 	UE::Net::FReplicationFragmentUtil::CreateAndRegisterFragmentsForObject(this, Context, RegistrationFlags);
+}
+
+
+URogueActionComponent* URogueAttributeSet::GetOwningComponent() const
+{
+	return Cast<URogueActionComponent>(GetOuter());
 }
 
 
@@ -52,6 +58,6 @@ void URogueHealthAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetime
 void URoguePawnAttributeSet::ApplyMovementSpeed()
 {
 	// Assume all Pawns are Characters with CMC (may change with Mover 2.0)
-	ACharacter* OwningCharacter = CastChecked<ACharacter>(OwningComp->GetOwner());
+	ACharacter* OwningCharacter = CastChecked<ACharacter>(GetOwningComponent()->GetOwner());
 	OwningCharacter->GetCharacterMovement()->MaxWalkSpeed = MoveSpeed.GetValue();
 }

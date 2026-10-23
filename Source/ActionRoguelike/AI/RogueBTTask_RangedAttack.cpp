@@ -32,7 +32,7 @@ EBTNodeResult::Type UDEPRECATED_URogueBTTask_RangedAttack::ExecuteTask(UBehavior
 
 	// Ignore negative pitch to not hit the floor in front itself
 	MuzzleRotation.Pitch += FMath::RandRange(0.0f, MaxBulletSpread);
-	MuzzleRotation.Yaw += FMath::RandRange(-MaxBulletSpread, MaxBulletSpread);
+	MuzzleRotation.Yaw += FMath::FRandRange(-MaxBulletSpread, MaxBulletSpread);
 
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;

@@ -205,7 +205,7 @@ void URogueActionComponent::OnRep_AttributeSet()
 
 void URogueActionComponent::InitAttributeSet()
 {
-	AttributeSet->InitializeAttributes(this);
+	AttributeSet->InitializeAttributes();
 }
 
 
