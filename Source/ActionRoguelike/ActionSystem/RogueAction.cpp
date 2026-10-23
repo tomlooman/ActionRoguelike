@@ -4,6 +4,7 @@
 #include "ActionSystem/RogueAction.h"
 #include "ActionSystem/RogueActionComponent.h"
 #include "ActionRoguelike.h"
+#include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 #include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
 
@@ -19,6 +20,7 @@ bool URogueAction::CanStart_Implementation(AActor* Instigator)
 
 	if (CooldownTimeRemaining() > 0.0f)
 	{
+		UE_LOG(LogGame, Log, TEXT("CanStart failed, cooling down for %f seconds"), CooldownTimeRemaining());
 		return false;
 	}
 
@@ -65,11 +67,11 @@ void URogueAction::StopAction_Implementation(AActor* Instigator)
 	{
 		RepData.bIsRunning = false;
 		RepData.Instigator = Instigator;
-	}
-
-	if (CooldownTime > 0.0f)
-	{
-		CooldownUntil = GetWorld()->TimeSeconds + CooldownTime;
+		
+		if (CooldownTime > 0.0f)
+		{
+			CooldownUntil = GetWorld()->TimeSeconds + CooldownTime;
+		}
 	}
 
 	GetOwningComponent()->OnActionStopped.Broadcast(GetOwningComponent(), this);
@@ -78,7 +80,13 @@ void URogueAction::StopAction_Implementation(AActor* Instigator)
 
 float URogueAction::CooldownTimeRemaining() const
 {
-	return FMath::Max(0.0f, CooldownUntil - GetWorld()->TimeSeconds);
+	// For multiplayer, use the server time 
+	if (AGameStateBase* GS = GetWorld()->GetGameState())
+	{
+		return FMath::Max(0.0f, CooldownUntil - GS->GetServerWorldTimeSeconds());
+	}
+	
+	return 0.0f;
 }
 
 
