@@ -313,10 +313,8 @@ void URogueActionComponent::AddAction(AActor* Instigator, TSubclassOf<URogueActi
 		}
 	}
 
-	URogueAction* NewAction = NewObject<URogueAction>(GetOwner(), ActionClass);
+	URogueAction* NewAction = NewObject<URogueAction>(this, ActionClass);
 	check(NewAction);
-
-	NewAction->Initialize(this);
 
 	Actions.Add(NewAction);
 

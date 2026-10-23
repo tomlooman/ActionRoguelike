@@ -52,9 +52,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSoftObjectPtr<UTexture2D> Icon;
 
-	UPROPERTY(Transient, Replicated)
-	TObjectPtr<URogueActionComponent> ActionComp;
-
 	/* Tags added to owning actor when activated, removed when action stops */
 	UPROPERTY(EditDefaultsOnly, Category = "Tags")
 	FGameplayTagContainer GrantsTags;
@@ -91,8 +88,6 @@ public:
 		return ActivationTag;
 	}
 
-	void Initialize(URogueActionComponent* NewActionComp);
-
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool IsRunning() const;
 
@@ -108,12 +103,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	float CooldownTimeRemaining() const;
 
-	virtual UWorld* GetWorld() const override;
-
 	virtual void RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context, UE::Net::EFragmentRegistrationFlags RegistrationFlags) override;
 
 	virtual bool IsSupportedForNetworking() const override
 	{
 		return true;
 	}
+	
+#if WITH_EDITOR
+	virtual bool ImplementsGetWorld() const override
+	{
+		return true;
+	}
+#endif
 };

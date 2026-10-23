@@ -15,7 +15,7 @@ void URogueActionEffect_Thorns::StartAction_Implementation(AActor* Instigator)
 	Super::StartAction_Implementation(Instigator);
 
 	// Start listening
-	AttriChangedHandle = ActionComp->GetAttributeListenerDelegate(SharedGameplayTags::Attribute_Health).AddUObject(this, &ThisClass::OnHealthChanged);
+	AttriChangedHandle = GetOwningComponent()->GetAttributeListenerDelegate(SharedGameplayTags::Attribute_Health).AddUObject(this, &ThisClass::OnHealthChanged);
 }
 
 
@@ -24,7 +24,7 @@ void URogueActionEffect_Thorns::StopAction_Implementation(AActor* Instigator)
 	Super::StopAction_Implementation(Instigator);
 
 	// Stop listening
-	ActionComp->GetAttributeListenerDelegate(SharedGameplayTags::Attribute_Health).Remove(AttriChangedHandle);
+	GetOwningComponent()->GetAttributeListenerDelegate(SharedGameplayTags::Attribute_Health).Remove(AttriChangedHandle);
 }
 
 

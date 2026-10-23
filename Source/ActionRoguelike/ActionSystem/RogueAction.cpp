@@ -10,12 +10,6 @@
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueAction)
 
 
-void URogueAction::Initialize(URogueActionComponent* NewActionComp)
-{
-	ActionComp = NewActionComp;
-}
-
-
 bool URogueAction::CanStart_Implementation(AActor* Instigator)
 {
 	if (IsRunning())
@@ -87,18 +81,6 @@ float URogueAction::CooldownTimeRemaining() const
 	return FMath::Max(0.0f, CooldownUntil - GetWorld()->TimeSeconds);
 }
 
-UWorld* URogueAction::GetWorld() const
-{
-	// Outer is set when creating action via NewObject<T>
-	AActor* Actor = Cast<AActor>(GetOuter());
-	if (Actor)
-	{
-		return Actor->GetWorld();
-	}
-
-	return nullptr;
-}
-
 
 TSoftObjectPtr<UTexture2D> URogueAction::GetIcon() const
 {
@@ -108,7 +90,7 @@ TSoftObjectPtr<UTexture2D> URogueAction::GetIcon() const
 
 URogueActionComponent* URogueAction::GetOwningComponent() const
 {
-	return ActionComp;
+	return Cast<URogueActionComponent>(GetOuter());
 }
 
 
@@ -143,6 +125,5 @@ void URogueAction::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& O
 
 	DOREPLIFETIME(URogueAction, RepData);
 	DOREPLIFETIME(URogueAction, TimeStarted);
-	DOREPLIFETIME(URogueAction, CooldownUntil);
-	DOREPLIFETIME(URogueAction, ActionComp);
+	DOREPLIFETIME_CONDITION(URogueAction, CooldownUntil, COND_OwnerOnly);
 }
