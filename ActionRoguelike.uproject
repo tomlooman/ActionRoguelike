@@ -24,6 +24,10 @@
 	],
 	"Plugins": [
 		{
+			"Name": "VisualStudioSourceCodeAccess",
+			"Enabled": false
+		},
+		{
 			"Name": "SignificanceManager",
 			"Enabled": true
 		},
