@@ -54,6 +54,13 @@ void URogueActorPoolingSubsystem::PrimeActorPool(TSubclassOf<AActor> ActorClass,
 	UE_LOGFMT(LogGame, Log, "Priming Pool for {actorclass} ({amount})", GetNameSafe(ActorClass), Amount);
 	SCOPED_NAMED_EVENT(PrimeActorPool, FColor::Blue);
 	
+	// Sanity check to only prime when enabled
+	if (!IsPoolingEnabled(this))
+	{
+		UE_LOG(LogGame, Log, TEXT("Pooling disabled, skip Actor Pool priming for %s"), *GetNameSafe(ActorClass));
+		return;
+	}
+	
 	// Prime a set number of pooled actors, this reduces memory fragmentation and any potential initial hitches during gameplay
 	for (int i = 0; i < Amount; ++i)
 	{

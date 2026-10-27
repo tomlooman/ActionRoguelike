@@ -48,6 +48,8 @@ public:
 	ARogueMonsterCorpse* FetchCorpse(AActor* InActor, URogueMonsterData* MonsterData);
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
 protected:
 

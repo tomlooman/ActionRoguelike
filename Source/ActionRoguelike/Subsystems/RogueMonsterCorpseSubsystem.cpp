@@ -27,11 +27,20 @@ ARogueMonsterCorpse* URogueMonsterCorpseSubsystem::FetchCorpse(AActor* InActor, 
 
 void URogueMonsterCorpseSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
+	Collection.InitializeDependency<URogueActorPoolingSubsystem>();
+	
 	Super::Initialize(Collection);
+}
 
-	// @todo: fixme on clients
-	//URogueActorPoolingSubsystem* Pooler = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
-	//Pooler->PrimeActorPool(ARogueMonsterCorpse::StaticClass(), MaxCorpses);
+void URogueMonsterCorpseSubsystem::OnWorldBeginPlay(UWorld& InWorld)
+{
+	Super::OnWorldBeginPlay(InWorld);
+	
+	if (URogueActorPoolingSubsystem::IsPoolingEnabled(this))
+	{
+		URogueActorPoolingSubsystem* Pooler = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
+		Pooler->PrimeActorPool(ARogueMonsterCorpse::StaticClass(), MaxCorpses);
+	}
 }
 
 
