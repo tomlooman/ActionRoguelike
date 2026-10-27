@@ -46,7 +46,8 @@ void URoguePickupSubsystem::AddCoinsPickup(TArray<FVector> Locations, TArray<int
 		// Note: Unclear if we can Append() and mark the items dirty, instead we just add one by one
 		for (int i = 0; i < NewMeshIDs.Num(); ++i)
 		{
-			FPickupLocationItem NewItem = FPickupLocationItem(Locations[i], NewMeshIDs[i]);
+			// Must mark dirty by reference later, so construct item directly in array rather than locally
+			FPickupLocationItem& NewItem = GS->CoinPickupData.Items.Emplace_GetRef(FPickupLocationItem(Locations[i], NewMeshIDs[i]));
 
 			GS->CoinPickupData.Items.Add(NewItem);
 			GS->CoinPickupData.MarkItemDirty(NewItem);
@@ -120,6 +121,7 @@ void URoguePickupSubsystem::CreateWorldISM()
 	WorldISM = NewObject<UInstancedStaticMeshComponent>(World, NAME_None, RF_Transient);
 	WorldISM->SetStaticMesh(Mesh);
 	WorldISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	WorldISM->SetAffectDistanceFieldLighting(false);
 	WorldISM->RegisterComponentWithWorld(World);
 }
 
@@ -263,6 +265,8 @@ void URoguePickupSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	CoinPickupAudioComp = NewObject<UAudioComponent>(World, NAME_None, RF_Transient);
 	CoinPickupAudioComp->bAutoActivate = false;
+	// Force 2D so it doesn't need to move with the recent pick-up. Alternatively, do move it before playing a new pickup sound if fall-off and 3D is better.
+	CoinPickupAudioComp->bAllowSpatialization = false;
 	CoinPickupAudioComp->RegisterComponentWithWorld(World);
 
 	// Async load the sound
