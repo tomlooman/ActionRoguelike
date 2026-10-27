@@ -8,7 +8,6 @@
 #include "Net/UnrealNetwork.h"
 #include "Animation/RogueCurveAnimSubsystem.h"
 #include "Components/AudioComponent.h"
-#include "Core/RogueDeferredTaskSystem.h"
 #include "GameFramework/GameStateBase.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -41,8 +40,6 @@ ARogueTreasureChest::ARogueTreasureChest()
 	// Directly set bool instead of going through SetReplicates(true) within constructor,
 	// Only use SetReplicates() outside constructor
 	bReplicates = true;
-
-	//PrimaryActorTick.bCanEverTick = true;
 }
 
 
@@ -71,16 +68,32 @@ void ARogueTreasureChest::OnActorLoaded_Implementation()
 }
 
 
+void ARogueTreasureChest::OnRep_LidOpened()
+{
+	// Assume initial state from host, that loaded a save game
+	if (bLidOpened && InteractedServerTime == 0.0f)
+	{
+		SetChestFullyOpened();		
+	}
+}
+
 void ARogueTreasureChest::StartOpenChestAnim()
 {
 	URogueCurveAnimSubsystem* AnimSubsystem = GetWorld()->GetSubsystem<URogueCurveAnimSubsystem>();
-	AnimSubsystem->PlayCurveAnim(LidAnimCurve, 1.f, [&](float CurrValue)
+	
+	// Avoid holding onto strong pointers inside lambdas
+	TWeakObjectPtr<UStaticMeshComponent> WeakLidPtr = LidMesh;
+	
+	AnimSubsystem->PlayCurveAnim(LidAnimCurve, 1.f, [WeakLidPtr](float CurrValue)
 	{
-		LidMesh->SetRelativeRotation(FRotator(CurrValue, 0, 0));
+		if (UStaticMeshComponent* LidPtr = WeakLidPtr.Get())
+		{
+			LidPtr->SetRelativeRotation(FRotator(CurrValue, 0, 0));
+		}
 	});
 
+	// Cosmetics
 	OpenChestEffect->Activate(true);
-
 	OpenChestSound->Play();
 }
 
@@ -102,16 +115,15 @@ void ARogueTreasureChest::OnRep_InteractedTime()
 	if (AGameStateBase* GS = GetWorld()->GetGameState())
 	{
 		float CurrentServerTime = GS->GetServerWorldTimeSeconds();
-		
 		// Could it happen we don't receive an initial valid server time during late join?
 		check(CurrentServerTime > 0.0f);
 		
+		URogueCurveAnimSubsystem* AnimSubsystem = GetWorld()->GetSubsystem<URogueCurveAnimSubsystem>();
+		float AnimDuration = AnimSubsystem->GetAnimDuration(LidAnimCurve);
+		
+		// Has enough time passed to skip the full animation?
 		float TimeSinceOpened = CurrentServerTime - InteractedServerTime;
-		
-		// @fixme: find actual animation time with some buffer
-		const float AssumedAnimDuration = 2.0f;
-		
-		if (TimeSinceOpened > AssumedAnimDuration)
+		if (TimeSinceOpened >= AnimDuration)
 		{
 			SetChestFullyOpened();
 		}
@@ -137,4 +149,7 @@ void ARogueTreasureChest::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	PushParams.bIsPushBased = true;
 	
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, InteractedServerTime, PushParams);
+	
+	// Replicate once to support a SaveGame on host having it on true, so clients also load in with this state
+	DOREPLIFETIME_CONDITION(ThisClass, bLidOpened, COND_InitialOnly);
 }

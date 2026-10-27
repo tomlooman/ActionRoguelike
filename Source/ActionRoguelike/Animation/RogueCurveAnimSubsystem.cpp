@@ -60,8 +60,25 @@ float URogueCurveAnimSubsystem::GetAnimationEndValue(UCurveFloat* InCurveAsset)
 {
 	if (InCurveAsset)
 	{
-		// @todo: assumes global 1.0 as duration
-		return InCurveAsset->GetFloatValue(1.0f);
+		float MinTime;
+		float MaxTime;
+		InCurveAsset->GetTimeRange(MinTime, MaxTime);
+		
+		return InCurveAsset->GetFloatValue(MaxTime);
+	}
+	
+	return 0.0f;
+}
+
+float URogueCurveAnimSubsystem::GetAnimDuration(UCurveFloat* InCurveAsset) const
+{
+	if (InCurveAsset)
+	{
+		float MinTime;
+		float MaxTime;
+		InCurveAsset->GetTimeRange(MinTime, MaxTime);
+		
+		return MaxTime - MinTime;
 	}
 	
 	return 0.0f;

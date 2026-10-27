@@ -40,10 +40,10 @@ struct FActiveCurveAnim
 
 	void Tick(float DeltaTime)
 	{
-		Time += (DeltaTime*PlayRate);
+		// Clamp to avoid overshoots
+		Time = FMath::Min (Time + (DeltaTime * PlayRate), MaxTime);
 
 		float CurrentValue = Curve->GetFloatValue(Time);
-
 		Callback(CurrentValue);
 
 		if (Time >= MaxTime)
@@ -124,4 +124,6 @@ public:
 	void PlayEasingFunc(EEasingFunc::Type EasingType, float EasingExp, float InPlayRate, const TFunction<void(float)>& Func);
 	
 	float GetAnimationEndValue(UCurveFloat* InCurveAsset);
+	
+	float GetAnimDuration(UCurveFloat* InCurveAsset) const;
 };

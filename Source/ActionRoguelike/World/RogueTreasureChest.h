@@ -27,8 +27,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category= "Animation")
 	TObjectPtr<UCurveFloat> LidAnimCurve;
 
-	UPROPERTY(BlueprintReadOnly, SaveGame)
+	UPROPERTY(BlueprintReadOnly, SaveGame, ReplicatedUsing=OnRep_LidOpened)
 	bool bLidOpened;
+	
+	UFUNCTION()
+	void OnRep_LidOpened();
 	
 	/*
 	 * Store server time, for late joiners and relevancy to skip animations and cosmetic effects
