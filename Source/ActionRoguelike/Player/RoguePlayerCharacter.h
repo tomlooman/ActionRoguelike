@@ -11,6 +11,7 @@
 #include "InputAction.h"
 #include "ActionSystem/RogueActionSystemInterface.h"
 #include "Core/RogueGameplayInterface.h"
+#include "Core/RoguePawnInterface.h"
 #include "RoguePlayerCharacter.generated.h"
 
 struct FAttributeModification;
@@ -24,13 +25,19 @@ class UAnimMontage;
 class URogueActionComponent;
 
 UCLASS(Abstract)
-class ACTIONROGUELIKE_API ARoguePlayerCharacter : public ACharacter, public IGenericTeamAgentInterface, public IRogueActionSystemInterface, public IRogueGameplayInterface
+class ACTIONROGUELIKE_API ARoguePlayerCharacter : public ACharacter, 
+	public IGenericTeamAgentInterface, 
+	public IRogueActionSystemInterface, 
+	public IRogueGameplayInterface,
+	public IRoguePawnInterface
 {
 	GENERATED_BODY()
 
 public:
 
 	void PlayAttackSound(USoundBase* InSound);
+	
+	virtual bool IsAlive() const;
 
 protected:
 

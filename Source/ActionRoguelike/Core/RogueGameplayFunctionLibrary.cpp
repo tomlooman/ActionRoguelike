@@ -5,6 +5,7 @@
 
 #include "ActionRoguelike.h"
 #include "RogueGameplayInterface.h"
+#include "RoguePawnInterface.h"
 #include "ShaderPipelineCache.h"
 #include "SharedGameplayTags.h"
 #include "ActionSystem/RogueActionComponent.h"
@@ -53,6 +54,13 @@ bool URogueGameplayFunctionLibrary::IsAlive(AActor* InActor)
 		return false;
 	}
 	
+	// In case an Actor has the interface, call directly
+	if (IRoguePawnInterface* PawnInterface = Cast<IRoguePawnInterface>(InActor))
+	{
+		return PawnInterface->IsAlive();
+	}
+	
+	// Fallback
 	URogueActionComponent* ActionComp = GetActionComponentFromActor(InActor);
 	check(ActionComp);
 

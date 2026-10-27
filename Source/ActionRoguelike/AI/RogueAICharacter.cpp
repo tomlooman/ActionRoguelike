@@ -453,6 +453,12 @@ UDataAsset* ARogueAICharacter::GetActorConfigData() const
 	return MonsterConfig;
 }
 
+bool ARogueAICharacter::IsAlive() const
+{
+	// @todo: may want to rely on TAG for state
+	return ActionComp->GetAttributeValue(SharedGameplayTags::Attribute_Health) > 0.0f;
+}
+
 
 FGenericTeamId ARogueAICharacter::GetGenericTeamId() const
 {

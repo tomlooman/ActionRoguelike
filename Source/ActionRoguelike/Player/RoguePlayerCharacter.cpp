@@ -190,6 +190,12 @@ void ARoguePlayerCharacter::PlayAttackSound(USoundBase* InSound)
 	AttackSoundsComp->Play();
 }
 
+bool ARoguePlayerCharacter::IsAlive() const
+{
+	// @todo: may want to implement using TAGs
+	return ActionComp->GetAttributeValue(SharedGameplayTags::Attribute_Health) > 0.0f;
+}
+
 void ARoguePlayerCharacter::Move(const FInputActionInstance& Instance)
 {
 	FRotator ControlRot = GetControlRotation();

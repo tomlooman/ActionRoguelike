@@ -7,6 +7,7 @@
 #include "ActionSystem/RogueActionSystemInterface.h"
 #include "ActionSystem/RogueAttributeSet.h"
 #include "Core/RogueGameplayInterface.h"
+#include "Core/RoguePawnInterface.h"
 #include "GameFramework/Character.h"
 #include "Performance/RogueSignificanceInterface.h"
 #include "RogueAICharacter.generated.h"
@@ -20,7 +21,12 @@ class URogueActionComponent;
 class UMaterialInstanceDynamic;
 
 UCLASS()
-class ACTIONROGUELIKE_API ARogueAICharacter : public ACharacter, public IGenericTeamAgentInterface, public IRogueSignificanceInterface, public IRogueActionSystemInterface, public IRogueGameplayInterface
+class ACTIONROGUELIKE_API ARogueAICharacter : public ACharacter, 
+	public IGenericTeamAgentInterface, 
+	public IRogueSignificanceInterface, 
+	public IRogueActionSystemInterface, 
+	public IRogueGameplayInterface,
+	public IRoguePawnInterface
 {
 	GENERATED_BODY()
 
@@ -38,6 +44,8 @@ public:
 	virtual bool AddImpulseAtLocationCustom(FVector Impulse, FVector Location, FName BoneName = NAME_None) override;
 
 	virtual UDataAsset* GetActorConfigData() const override;
+	
+	virtual bool IsAlive() const override;
 
 protected:
 

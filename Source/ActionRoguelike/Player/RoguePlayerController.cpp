@@ -5,6 +5,8 @@
 
 #include "EnhancedInputComponent.h"
 #include "RogueInteractionComponent.h"
+#include "Core/RogueGameplayFunctionLibrary.h"
+#include "Core/RoguePawnInterface.h"
 #include "Development/RogueCheatManager.h"
 #include "UI/RogueHUD.h"
 
@@ -23,7 +25,11 @@ ARoguePlayerController::ARoguePlayerController()
 
 void ARoguePlayerController::PrimaryInteract()
 {
-	InteractionComp->PrimaryInteract();
+	IRoguePawnInterface* MyPawnInterface = Cast<IRoguePawnInterface>(GetPawn());
+	if (MyPawnInterface && MyPawnInterface->IsAlive())
+	{
+		InteractionComp->PrimaryInteract();
+	}
 }
 
 
