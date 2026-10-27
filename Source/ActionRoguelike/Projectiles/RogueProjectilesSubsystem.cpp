@@ -86,10 +86,9 @@ void URogueProjectilesSubsystem::InternalCreateProjectile(FVector InPosition, FV
 	{
 		float ExpirationGameTime = World->TimeSeconds + ProjectileConfig->Lifespan;
 		// Full data of the projectile instance, used for bookkeeping and replication, not constantly updated
-		FProjectileItem Info = FProjectileItem(InPosition, InDirection, ProjectileConfig, InstigatorActor, NewID, ExpirationGameTime);
-		
+		FProjectileItem& Info = ProjectileConfigs.Items.Emplace_GetRef(FProjectileItem(InPosition, InDirection, ProjectileConfig, InstigatorActor, NewID, ExpirationGameTime));
 		Info.TracerEffectComp = EffectComp;
-
+		
 		// @todo: unclear if this is OK to add to array on clients, as we may desync the array between server/client
 		// if not, I may need to keep a local array as temp lookup until the server updates his array.
 		ProjectileConfigs.Items.Add(Info);
