@@ -18,11 +18,20 @@ public:
 	void PrimaryInteract();
 
 protected:
-
+	
+	UPROPERTY(EditAnywhere, Category = "Interaction|Debug")
+	bool bDebugRejectInteractions = false;
+	
 	// Reliable - Will always arrive, eventually. Request will be re-sent unless an acknowledgment was received.
 	// Unreliable - Not guaranteed, packet can get lost and won't retry.
 	UFUNCTION(Server, Reliable)
 	void ServerInteract(AActor* InFocus);
+	
+	/*
+	 * A locally predicted interaction was rejected, for example, from other client already pulled a lever or opened a chest.
+	 */
+	UFUNCTION(Client, Reliable)
+	void ClientInteractRejected(AActor* TargetActor);
 
 	void FindBestInteractable();
 

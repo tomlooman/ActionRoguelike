@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Curves/CurveFloat.h"
 #include "RogueCurveAnimSubsystem.generated.h"
+
 
 
 USTRUCT()
@@ -37,7 +39,7 @@ struct FActiveCurveAnim
 	float MaxTime = 0.0f;
 
 	TFunction<void(float)> Callback;
-
+	
 	void Tick(float DeltaTime)
 	{
 		// Clamp to avoid overshoots
@@ -52,10 +54,38 @@ struct FActiveCurveAnim
 			Curve = nullptr;
 		}
 	}
+	
+	void Reset()
+	{
+		// Resets time to start
+		Curve->GetTimeRange(Time, MaxTime);
+		
+		// Run once on the original frame
+		float CurrentValue = Curve->GetFloatValue(Time);
+		Callback(CurrentValue);
+	}
 
 	bool IsFinished() const
 	{
 		return Curve == nullptr;
+	}
+};
+
+struct FCurveAnimHandle
+{
+	uint64 Id = 0;
+
+	bool IsValid() const { return Id != 0; }
+	void Reset() { Id = 0; }
+
+	bool operator==(const FCurveAnimHandle& Other) const
+	{
+		return Id == Other.Id;
+	}
+	
+	friend uint32 GetTypeHash(const FCurveAnimHandle& Handle)
+	{
+		return ::GetTypeHash(Handle.Id);
 	}
 };
 
@@ -107,23 +137,31 @@ class ACTIONROGUELIKE_API URogueCurveAnimSubsystem : public UTickableWorldSubsys
 	GENERATED_BODY()
 
 	// This could be a FInstancedStruct array if we want a variety of struct options with different sets of data
-	TArray<FActiveCurveAnim> ActiveAnims;
+	TMap<FCurveAnimHandle, FActiveCurveAnim> ActiveAnims;
 
 	TArray<FActiveEasingFunc> ActiveEasingFuncs;
+	
+	uint64 NextHandleId = 1;
+
+public:
 
 	virtual void Tick(float DeltaTime) override;
 
 	virtual TStatId GetStatId() const override;
 
-public:
-
 	/* Start animation based on curve */
-	void PlayCurveAnim(UCurveFloat* InCurveAsset, float InPlayRate, const TFunction<void(float)>& Func);
+	FCurveAnimHandle PlayCurveAnim(UCurveFloat* InCurveAsset, float InPlayRate, const TFunction<void(float)>& Func);
+	
+	bool StopCurveAnim(const FCurveAnimHandle& InHandle);
+	
+	bool CancelCurveAnim(const FCurveAnimHandle& InHandle);
 
 	/* Play easing function with output between 0.0 - 1.0 */
 	void PlayEasingFunc(EEasingFunc::Type EasingType, float EasingExp, float InPlayRate, const TFunction<void(float)>& Func);
 	
 	float GetAnimationEndValue(UCurveFloat* InCurveAsset);
+	
+	float GetAnimationStartValue(UCurveFloat* InCurveAsset);
 	
 	float GetAnimDuration(UCurveFloat* InCurveAsset) const;
 };

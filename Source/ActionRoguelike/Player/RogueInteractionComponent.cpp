@@ -44,6 +44,13 @@ void URogueInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickT
 }
 
 
+void URogueInteractionComponent::ClientInteractRejected_Implementation(AActor* TargetActor)
+{
+	// Actor itself must implement stopping any cosmetics
+	IRogueGameplayInterface::Execute_CancelInteractCosmetics(TargetActor);
+}
+
+
 void URogueInteractionComponent::FindBestInteractable()
 {
 	AController* OwningController = Cast<AController>(GetOwner());
@@ -198,6 +205,12 @@ void URogueInteractionComponent::ClearFocusFeedback(AActor* RemoveFromActor, URo
 void URogueInteractionComponent::PrimaryInteract()
 {
 	ServerInteract(FocusedActor);
+	
+	// Local cosmetic prediction
+	if (!GetOwner()->HasAuthority())
+	{
+		IRogueGameplayInterface::Execute_PlayInteractCosmetics(FocusedActor);
+	}
 }
 
 
@@ -217,18 +230,36 @@ void URogueInteractionComponent::ServerInteract_Implementation(AActor* InFocus)
 	APawn* MyPawn = MyController->GetPawn();
 	if (MyPawn && URogueGameplayFunctionLibrary::IsAlive(MyPawn))
 	{
-		// Sanity check on server if client is within a reasonable distance
-		float DistanceTo = FVector::Dist(InFocus->GetActorLocation(), MyPawn->GetActorLocation());
+		// Server side only check to possibly reject client requests
+		if (IRogueGameplayInterface::Execute_CanInteract(InFocus))
+		{
+			// Sanity check on server if client is within a reasonable distance
+			const float DistanceTo = FVector::Dist(InFocus->GetActorLocation(), MyPawn->GetActorLocation());
 		
-		// Adding pretty large distance buffer...should be enough to account for large latency
-		if (DistanceTo < (TraceRadius * 2.0f))
-		{
-			IRogueGameplayInterface::Execute_Interact(InFocus, MyController);
-		}
-		else
-		{
-			UE_LOG(LogNet, Warning, TEXT("Rejected Interaction on Actor '%s' for Pawn '%s'. Distance too large."), *GetNameSafe(InFocus), *GetNameSafe(MyPawn));
+			// Adding pretty large distance buffer...should be enough to account for large latency
+			if (DistanceTo < (TraceRadius * 2.0f))
+			{
+#if !UE_BUILD_SHIPPING
+				// Forcefully reject, enabled net simulation with latency for this to function and debug
+				if (bDebugRejectInteractions)
+				{
+					ClientInteractRejected(InFocus);
+					return;
+				}
+#endif
+				
+				
+				IRogueGameplayInterface::Execute_Interact(InFocus, MyController);
+				IRogueGameplayInterface::Execute_PlayInteractCosmetics(InFocus);
+			
+				return;
+			}
 		}
 	}
+	
+	// distance too large, player dead, caninteract failed
+	UE_LOG(LogNet, Warning, TEXT("Rejected Interaction on Actor '%s' for Pawn '%s'."), *GetNameSafe(InFocus), *GetNameSafe(MyPawn));
+	// Stop any prediction
+	ClientInteractRejected(InFocus);
 }
 

@@ -10,17 +10,19 @@ void URogueCurveAnimSubsystem::Tick(float DeltaTime)
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE(CurveAnimationsTick)
 	
-	// Curve Based Anims - Reverse to easily remove completed anims during iteration
-	for (int i = ActiveAnims.Num() - 1; i >= 0; --i)
+	// Curve Based Anims
+	int32 DebugKey = 0;
+	for (auto It = ActiveAnims.CreateIterator(); It; ++It)
 	{
-		ActiveAnims[i].Tick(DeltaTime);
+		FActiveCurveAnim& Anim = It.Value();
+		Anim.Tick(DeltaTime);
 
-		FString DebugMsg = FString::Printf(TEXT("CurveAnim: %f"), ActiveAnims[i].Time);
-		GEngine->AddOnScreenDebugMessage(100 + i, 0.0f, FColor::Green, DebugMsg);
+		FString DebugMsg = FString::Printf(TEXT("CurveAnim: %f"), Anim.Time);
+		GEngine->AddOnScreenDebugMessage(100 + (DebugKey++), 0.0f, FColor::Green, DebugMsg);
 
-		if (ActiveAnims[i].IsFinished())
+		if (Anim.IsFinished())
 		{
-			ActiveAnims.RemoveAtSwap(i);
+			It.RemoveCurrent();
 		}
 	}
 
@@ -40,11 +42,37 @@ void URogueCurveAnimSubsystem::Tick(float DeltaTime)
 }
 
 
-void URogueCurveAnimSubsystem::PlayCurveAnim(UCurveFloat* InCurveAsset, float InPlayRate, const TFunction<void (float CurrentValue)>& Func)
+FCurveAnimHandle URogueCurveAnimSubsystem::PlayCurveAnim(UCurveFloat* InCurveAsset, float InPlayRate, const TFunction<void (float CurrentValue)>& Func)
 {
 	check(InCurveAsset);
 
-	ActiveAnims.Add(FActiveCurveAnim(InCurveAsset, Func, InPlayRate));
+	FCurveAnimHandle Handle;
+	Handle.Id = NextHandleId++;
+	
+	ActiveAnims.Add(Handle, FActiveCurveAnim(InCurveAsset, Func, InPlayRate));
+	
+	return Handle;
+}
+
+
+bool URogueCurveAnimSubsystem::StopCurveAnim(const FCurveAnimHandle& InHandle)
+{
+	return ActiveAnims.Remove(InHandle) > 0;
+}
+
+
+bool URogueCurveAnimSubsystem::CancelCurveAnim(const FCurveAnimHandle& InHandle)
+{
+	FActiveCurveAnim* Anim = ActiveAnims.Find(InHandle);
+	// Reset to original state, triggers anim at start time once
+	if (Anim)
+	{
+		Anim->Reset();
+		ActiveAnims.Remove(InHandle);
+		return true;
+	}
+	
+	return false;
 }
 
 
@@ -65,6 +93,20 @@ float URogueCurveAnimSubsystem::GetAnimationEndValue(UCurveFloat* InCurveAsset)
 		InCurveAsset->GetTimeRange(MinTime, MaxTime);
 		
 		return InCurveAsset->GetFloatValue(MaxTime);
+	}
+	
+	return 0.0f;
+}
+
+float URogueCurveAnimSubsystem::GetAnimationStartValue(UCurveFloat* InCurveAsset)
+{
+	if (InCurveAsset)
+	{
+		float MinTime;
+		float MaxTime;
+		InCurveAsset->GetTimeRange(MinTime, MaxTime);
+		
+		return InCurveAsset->GetFloatValue(MinTime);
 	}
 	
 	return 0.0f;

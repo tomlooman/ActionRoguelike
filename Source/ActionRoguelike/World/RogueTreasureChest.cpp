@@ -58,6 +58,48 @@ void ARogueTreasureChest::Interact_Implementation(AController* InstigatorControl
 	}
 }
 
+void ARogueTreasureChest::PlayInteractCosmetics_Implementation()
+{
+	// Skip if already opening through non-predicted means
+	if (!bLidOpened && InteractedServerTime == 0.0f && !bPlayingPredictedCosmetics)
+	{
+		bPlayingPredictedCosmetics = true;
+		StartOpenChestAnim();
+	}
+}
+
+
+bool ARogueTreasureChest::CanInteract_Implementation()
+{
+	check(HasAuthority());
+	// only valid to check on authority
+	return !bLidOpened;
+}
+
+
+void ARogueTreasureChest::CancelInteractCosmetics_Implementation()
+{
+	// Skip if meanwhile receive authority to have chest opened or ongoing animation from replication rather than prediction
+	if (bPlayingPredictedCosmetics && !bLidOpened && InteractedServerTime == 0.0f)
+	{
+		// Reset lid state
+		URogueCurveAnimSubsystem* AnimSubsystem = GetWorld()->GetSubsystem<URogueCurveAnimSubsystem>();
+		if (!AnimSubsystem->CancelCurveAnim(PredictedAnimHandle))
+		{
+			// if animation already finished, we need to reset lid state manually.
+			float StartRotation = AnimSubsystem->GetAnimationStartValue(LidAnimCurve);
+			LidMesh->SetRelativeRotation(FRotator(StartRotation, 0, 0));
+		}
+		
+		OpenChestEffect->Deactivate();
+		OpenChestSound->Stop();	
+		
+		// Clean up anims
+		bPlayingPredictedCosmetics = false;
+		PredictedAnimHandle.Reset();
+	}
+}
+
 
 void ARogueTreasureChest::OnActorLoaded_Implementation()
 {
@@ -70,7 +112,7 @@ void ARogueTreasureChest::OnActorLoaded_Implementation()
 
 void ARogueTreasureChest::OnRep_LidOpened()
 {
-	// Assume initial state from host, that loaded a save game
+	// Assume initial state from host, which loaded a save game
 	if (bLidOpened && InteractedServerTime == 0.0f)
 	{
 		SetChestFullyOpened();		
@@ -84,13 +126,19 @@ void ARogueTreasureChest::StartOpenChestAnim()
 	// Avoid holding onto strong pointers inside lambdas
 	TWeakObjectPtr<UStaticMeshComponent> WeakLidPtr = LidMesh;
 	
-	AnimSubsystem->PlayCurveAnim(LidAnimCurve, 1.f, [WeakLidPtr](float CurrValue)
+	FCurveAnimHandle NewHandle = AnimSubsystem->PlayCurveAnim(LidAnimCurve, 1.f, [WeakLidPtr](float CurrValue)
 	{
 		if (UStaticMeshComponent* LidPtr = WeakLidPtr.Get())
 		{
 			LidPtr->SetRelativeRotation(FRotator(CurrValue, 0, 0));
 		}
 	});
+	
+	if (bPlayingPredictedCosmetics)
+	{
+		// Only storing when locally predicting to avoid overriding any active animation
+		PredictedAnimHandle = NewHandle;
+	}
 
 	// Cosmetics
 	OpenChestEffect->Activate(true);
@@ -100,6 +148,7 @@ void ARogueTreasureChest::StartOpenChestAnim()
 
 void ARogueTreasureChest::SetChestFullyOpened()
 {
+	// @todo: implement force finish in the anim subsystem
 	// Set state to already opened, skipping VFX playback
 	URogueCurveAnimSubsystem* AnimSubsystem = GetWorld()->GetSubsystem<URogueCurveAnimSubsystem>();
 	float FinalPitchRotation = AnimSubsystem->GetAnimationEndValue(LidAnimCurve);
@@ -111,6 +160,14 @@ void ARogueTreasureChest::OnRep_InteractedTime()
 {
 	// Assume this is not called until we set a valid time
 	check(InteractedServerTime > 0.0f);
+	
+	if (bPlayingPredictedCosmetics)
+	{
+		// Already playing local anims from prediction, cleanup and skip
+		bPlayingPredictedCosmetics = false;
+		PredictedAnimHandle.Reset();
+		return;
+	}
 
 	if (AGameStateBase* GS = GetWorld()->GetGameState())
 	{

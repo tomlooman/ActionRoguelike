@@ -34,6 +34,21 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Interact(AController* InstigatorController);
+	
+	UFUNCTION(BlueprintNativeEvent)
+	bool CanInteract();
+
+	/*
+	 * Play any cosmetic only effects such as particles, sounds, animations 
+	 */
+	UFUNCTION(BlueprintNativeEvent)
+	void PlayInteractCosmetics();
+	
+	/*
+	 * Stop playback on any predicted cosmetic effects
+	 */
+	UFUNCTION(BlueprintNativeEvent)
+	void CancelInteractCosmetics();
 
 	/*
 	 * Retrieve the Data Asset for this Actor which defines important properties that sit outside of the main Blueprint

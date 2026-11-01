@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 //#include "Animation/RogueCurveAnimSubsystem.h"
+#include "Animation/RogueCurveAnimSubsystem.h"
 #include "GameFramework/Actor.h"
 #include "Core/RogueGameplayInterface.h"
 #include "RogueTreasureChest.generated.h"
@@ -19,6 +20,12 @@ class ACTIONROGUELIKE_API ARogueTreasureChest : public AActor, public IRogueGame
 public:
 
 	virtual void Interact_Implementation(AController* InstigatorController) override;
+	
+	virtual void PlayInteractCosmetics_Implementation() override;
+	
+	virtual bool CanInteract_Implementation() override;
+	
+	virtual void CancelInteractCosmetics_Implementation() override;
 
 	virtual void OnActorLoaded_Implementation() override;
 
@@ -26,9 +33,14 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category= "Animation")
 	TObjectPtr<UCurveFloat> LidAnimCurve;
+	
+	/* Active handle to allow cancelling animations (prediction only) */
+	FCurveAnimHandle PredictedAnimHandle;
 
 	UPROPERTY(BlueprintReadOnly, SaveGame, ReplicatedUsing=OnRep_LidOpened)
 	bool bLidOpened;
+	
+	bool bPlayingPredictedCosmetics = false;
 	
 	UFUNCTION()
 	void OnRep_LidOpened();
