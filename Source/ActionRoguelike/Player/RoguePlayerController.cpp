@@ -28,7 +28,7 @@ void ARoguePlayerController::PrimaryInteract()
 	IRoguePawnInterface* MyPawnInterface = Cast<IRoguePawnInterface>(GetPawn());
 	if (MyPawnInterface && MyPawnInterface->IsAlive())
 	{
-		InteractionComp->PrimaryInteract();
+		InteractionComp->InteractFocusedActor();
 	}
 }
 

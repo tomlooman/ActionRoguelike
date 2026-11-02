@@ -15,7 +15,9 @@ class ACTIONROGUELIKE_API URogueInteractionComponent : public UActorComponent
 
 public:
 
-	void PrimaryInteract();
+	void InteractFocusedActor();
+	
+	void TryInteract(AActor* InActor);
 
 protected:
 	

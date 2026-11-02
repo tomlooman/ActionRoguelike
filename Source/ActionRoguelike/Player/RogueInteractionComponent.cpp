@@ -202,15 +202,22 @@ void URogueInteractionComponent::ClearFocusFeedback(AActor* RemoveFromActor, URo
 	}
 }
 
-void URogueInteractionComponent::PrimaryInteract()
+
+void URogueInteractionComponent::InteractFocusedActor()
 {
-	ServerInteract(FocusedActor);
+	TryInteract(FocusedActor);
+}
+
+
+void URogueInteractionComponent::TryInteract(AActor* InActor)
+{
+	ServerInteract(InActor);
 	
 	// Local cosmetic prediction
 	if (!GetOwner()->HasAuthority())
 	{
-		IRogueGameplayInterface::Execute_PlayInteractCosmetics(FocusedActor);
-	}
+		IRogueGameplayInterface::Execute_PlayInteractCosmetics(InActor);
+	}	
 }
 
 

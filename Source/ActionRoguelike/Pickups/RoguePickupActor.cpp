@@ -7,7 +7,9 @@
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/RogueInteractionComponent.h"
 #include "Player/RoguePlayerCharacter.h"
+#include "Player/RoguePlayerController.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RoguePickupActor)
 
@@ -52,11 +54,14 @@ void ARoguePickupActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ARoguePickupActor::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                                      int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	ARoguePlayerCharacter* MyPawn = Cast<ARoguePlayerCharacter>(OtherActor);
-	// Skip for non-local pawns
-	if (MyPawn && MyPawn->IsLocallyControlled())
+	APawn* MyPawn = Cast<APawn>(OtherActor);
+	if (MyPawn)
 	{
-		Execute_Interact(this, CastChecked<AController>(MyPawn->GetController()));
+		if (ARoguePlayerController* PC = Cast<ARoguePlayerController>(MyPawn->GetController()))
+		{
+			// Route through component to support client side prediction
+			PC->GetInteractionComponent()->TryInteract(this);
+		}
 	}
 }
 
