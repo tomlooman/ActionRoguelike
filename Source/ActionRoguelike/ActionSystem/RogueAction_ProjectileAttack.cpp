@@ -18,31 +18,20 @@
 void URogueAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
 {
 	Super::StartAction_Implementation(Instigator);
-
-	ARoguePlayerCharacter* Character = CastChecked<ARoguePlayerCharacter>(Instigator);
-	Character->PlayAnimMontage(AttackAnim);
-
-	// Auto-released particle pooling
-	UNiagaraFunctionLibrary::SpawnSystemAttached(CastingEffect, Character->GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator,
-		EAttachLocation::SnapToTarget, true, true, ENCPoolMethod::AutoRelease);
-
-	//UGameplayStatics::SpawnSoundAttached(CastingSound, Character->GetMesh());
-	// Alternative to spawning fresh instances for short-lived attacks every time (via SpawnSoundAttached above)
-	// we use a single audio component on the player, which uses AutoManageAttachment to detach itself when not active
-	Character->PlayAttackSound(CastingSound);
+	
+	// Other clients should not run this logic ever
+	check(GetOwningActor()->GetLocalRole() != ROLE_SimulatedProxy);
 
 #if USE_DATA_ORIENTED_PROJECTILES
+	ARoguePlayerCharacter* Character = CastChecked<ARoguePlayerCharacter>(Instigator);
 	// For projectile spawn only run locally
 	// @fixme: verify local prediction for these projectiles works as expected
 	if (Character->IsLocallyControlled())
 #else
-	if (Character->HasAuthority())
+	if (GetOwningActor()->HasAuthority())
 #endif
 	{
-		FTimerDelegate Delegate;
-		Delegate.BindUObject(this, &ThisClass::AttackDelay_Elapsed, Character);
-
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, AttackAnimDelay, false);
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, this, &ThisClass::AttackDelay_Elapsed, AttackAnimDelay, false);
 	}
 }
 
@@ -54,31 +43,52 @@ void URogueAction_ProjectileAttack::StopAction_Implementation(AActor* Instigator
 }
 
 
-void URogueAction_ProjectileAttack::AttackDelay_Elapsed(ARoguePlayerCharacter* InstigatorCharacter)
+void URogueAction_ProjectileAttack::PlayActionCosmetics()
 {
-	// Blueprint has not been properly configured yet if this fails (Check again in case player is removed/disconnected)
-	if (ensureAlways(ProjectileClass) && IsValid(InstigatorCharacter))
-	{
-		FVector HandLocation = InstigatorCharacter->GetMesh()->GetSocketLocation(HandSocketName);
+	Super::PlayActionCosmetics();
+	
+	ARoguePlayerCharacter* OwningCharacter = Cast<ARoguePlayerCharacter>(GetOwningActor());
+	
+	OwningCharacter->PlayAnimMontage(AttackAnim);
+
+	// Auto-released particle pooling
+	UNiagaraFunctionLibrary::SpawnSystemAttached(CastingEffect, OwningCharacter->GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator,
+		EAttachLocation::SnapToTarget, true, true, ENCPoolMethod::AutoRelease);
+
+	//UGameplayStatics::SpawnSoundAttached(CastingSound, Character->GetMesh());
+	// Alternative to spawning fresh instances for short-lived attacks every time (via SpawnSoundAttached above)
+	// we use a single audio component on the player, which uses AutoManageAttachment to detach itself when not active
+	OwningCharacter->PlayAttackSound(CastingSound);
+}
+
+
+void URogueAction_ProjectileAttack::AttackDelay_Elapsed()
+{
+	ARoguePlayerCharacter* OwningCharacter = Cast<ARoguePlayerCharacter>(GetOwningActor());
+	
+	// Blueprint has not been properly configured yet if this fails (Check again in case player is removed/dead/disconnected)
+	if (ensureAlways(ProjectileClass) && IsValid(OwningCharacter) && OwningCharacter->IsAlive())
+	{	
+		FVector HandLocation = OwningCharacter->GetMesh()->GetSocketLocation(HandSocketName);
 
 		// We trace against the environment first to find whats under the player crosshair.
 		// We use the hit location to adjust the projectile launch direction so it will hit what is under the crosshair rather than shoot straight forward from the player hands.
 
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpawnParams.Instigator = InstigatorCharacter;
+		SpawnParams.Instigator = OwningCharacter;
 
 		FCollisionShape Shape;
 		Shape.SetSphere(SweepRadius);
 
 		// Ignore Player
 		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(InstigatorCharacter);
+		Params.AddIgnoredActor(OwningCharacter);
 
-		FVector TraceDirection = InstigatorCharacter->GetControlRotation().Vector();
+		FVector TraceDirection = OwningCharacter->GetControlRotation().Vector();
 
 		// Add sweep radius onto start to avoid the sphere clipping into floor/walls the camera is directly against.
-		const FVector TraceStart = InstigatorCharacter->GetPawnViewLocation() + (TraceDirection * SweepRadius);
+		const FVector TraceStart = OwningCharacter->GetPawnViewLocation() + (TraceDirection * SweepRadius);
 		// endpoint far into the look-at distance (not too far, still adjust somewhat towards crosshair on a miss)
 		const FVector TraceEnd = TraceStart + (TraceDirection * SweepDistanceFallback);
 		FVector AdjustedTraceEnd = TraceEnd;
@@ -127,5 +137,5 @@ void URogueAction_ProjectileAttack::AttackDelay_Elapsed(ARoguePlayerCharacter* I
 #endif
 	}
 
-	StopAction(InstigatorCharacter);
+	StopAction(OwningCharacter);
 }

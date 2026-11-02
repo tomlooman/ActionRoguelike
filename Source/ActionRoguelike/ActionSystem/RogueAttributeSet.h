@@ -221,7 +221,7 @@ protected:
 	/*
 	 * Walking speed directly linked with Character Movement Component
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, ReplicatedUsing=OnRep_MoveSpeed)
 	FRogueAttribute MoveSpeed;
 	
 	virtual void PostAttributeChanged() override
@@ -230,6 +230,9 @@ protected:
 
 		ApplyMovementSpeed();
 	}
+	
+	UFUNCTION()
+	void OnRep_MoveSpeed();
 
 	void ApplyMovementSpeed();
 };

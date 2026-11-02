@@ -13,6 +13,7 @@
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueActionComponent)
 
 
+
 URogueActionComponent::URogueActionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -62,8 +63,11 @@ void URogueActionComponent::BeginPlay()
 
 void URogueActionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	StopAllActions();
-
+	// Server Only
+	if (GetOwner()->HasAuthority())
+	{
+		StopAllActions();
+	}
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -354,10 +358,13 @@ void URogueActionComponent::RemoveAction(URogueAction* ActionToRemove)
 
 void URogueActionComponent::AppendActiveTags(FGameplayTagContainer NewTags)
 {
+	check(GetOwner()->HasAuthority());
+	
 	ActiveGameplayTags.AppendTags(NewTags);
 	
 	//CheckAgainstBlockedTags(NewTags);
 
+	// @todo: handle broadcasts on network
 	for (FGameplayTag Tag : NewTags)
 	{
 		GameplayTagUpdated.Broadcast(Tag, 1);
@@ -367,6 +374,8 @@ void URogueActionComponent::AppendActiveTags(FGameplayTagContainer NewTags)
 
 void URogueActionComponent::RemoveActiveTags(FGameplayTagContainer TagsToRemove)
 {
+	check(GetOwner()->HasAuthority());
+	
 	int32 PrevCount = ActiveGameplayTags.Num();
 	
 	ActiveGameplayTags.RemoveTags(TagsToRemove);
@@ -374,6 +383,7 @@ void URogueActionComponent::RemoveActiveTags(FGameplayTagContainer TagsToRemove)
 	// @todo: this can easily fail until we implement StackedTags (Lyra) as multiple applied Stunned debuffs can cause conflicts
 	ensure((PrevCount - ActiveGameplayTags.Num()) == TagsToRemove.Num());
 	
+	// @todo: handle broadcasts on network
 	for (FGameplayTag Tag : TagsToRemove)
 	{
 		GameplayTagUpdated.Broadcast(Tag, 0);
@@ -492,6 +502,12 @@ void URogueActionComponent::ServerStopAction_Implementation(AActor* Instigator, 
 	StopActionByName(Instigator, ActionName);
 }
 
+void URogueActionComponent::MulticastPlayActionCosmetics_Implementation(URogueAction* Action)
+{
+	check(Action);
+	
+	Action->PlayActionCosmetics();
+}
 
 void URogueActionComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -499,6 +515,7 @@ void URogueActionComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 
 	DOREPLIFETIME(URogueActionComponent, Actions);
 	DOREPLIFETIME(URogueActionComponent, AttributeSet);
+	DOREPLIFETIME(URogueActionComponent, ActiveGameplayTags);
 }
 
 

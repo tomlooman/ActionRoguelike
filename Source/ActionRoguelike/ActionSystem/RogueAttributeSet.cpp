@@ -55,9 +55,23 @@ void URogueHealthAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetime
 
 // -- Pawn Attribute Set -- //
 
+void URoguePawnAttributeSet::OnRep_MoveSpeed()
+{
+	ApplyMovementSpeed();
+}
+
+
 void URoguePawnAttributeSet::ApplyMovementSpeed()
 {
 	// Assume all Pawns are Characters with CMC (may change with Mover 2.0)
 	ACharacter* OwningCharacter = CastChecked<ACharacter>(GetOwningComponent()->GetOwner());
 	OwningCharacter->GetCharacterMovement()->MaxWalkSpeed = MoveSpeed.GetValue();
+}
+
+
+void URoguePawnAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(URoguePawnAttributeSet, MoveSpeed);
 }

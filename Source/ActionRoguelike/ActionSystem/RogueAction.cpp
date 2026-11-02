@@ -25,7 +25,6 @@ bool URogueAction::CanStart_Implementation(AActor* Instigator)
 	}
 
 	URogueActionComponent* Comp = GetOwningComponent();
-	
 	if (Comp->GetActiveTags().HasAny(BlockedTags))
 	{
 		return false;
@@ -39,16 +38,23 @@ void URogueAction::StartAction_Implementation(AActor* Instigator)
 {
 	UE_LOGFMT(LogGame, Verbose, "Started: {ActionName}", ("ActionName", GetName()));
 
+	// Only run on server from now. (owning) clients take a different path.
+	check(GetOwningComponent()->GetOwnerRole() == ROLE_Authority);
+	
+	// @todo: this now needs to be replicated
 	URogueActionComponent* Comp = GetOwningComponent();	
 	Comp->AppendActiveTags(GrantsTags);
 
-	if (GetOwningComponent()->GetOwnerRole() == ROLE_Authority)
-	{
-		RepData.bIsRunning = true;
-		RepData.Instigator = Instigator;
+	
+	RepData.bIsRunning = true;
+	RepData.Instigator = Instigator;
 
-		TimeStarted = GetWorld()->TimeSeconds; 
-	}
+	TimeStarted = GetWorld()->TimeSeconds; 
+	
+	SetActionCosmeticsActive(true);
+	
+	//MulticastPlayCosmetics();
+	GetOwningComponent()->MulticastPlayActionCosmetics(this);
 
 	GetOwningComponent()->OnActionStarted.Broadcast(GetOwningComponent(), this);
 }
@@ -59,19 +65,19 @@ void URogueAction::StopAction_Implementation(AActor* Instigator)
 	UE_LOGFMT(LogGame, Verbose, "Stopped: {ActionName}", ("ActionName", GetName()));
 
 	//ensureAlways(bIsRunning);
+	check(GetOwningComponent()->GetOwnerRole() == ROLE_Authority);
 
 	URogueActionComponent* Comp = GetOwningComponent();
 	Comp->RemoveActiveTags(GrantsTags);
 
-	if (GetOwningComponent()->GetOwnerRole() == ROLE_Authority)
+	RepData.bIsRunning = false;
+	RepData.Instigator = Instigator;
+	
+	SetActionCosmeticsActive(false);
+	
+	if (CooldownTime > 0.0f)
 	{
-		RepData.bIsRunning = false;
-		RepData.Instigator = Instigator;
-		
-		if (CooldownTime > 0.0f)
-		{
-			CooldownUntil = GetWorld()->TimeSeconds + CooldownTime;
-		}
+		CooldownUntil = GetWorld()->TimeSeconds + CooldownTime;
 	}
 
 	GetOwningComponent()->OnActionStopped.Broadcast(GetOwningComponent(), this);
@@ -90,28 +96,39 @@ float URogueAction::CooldownTimeRemaining() const
 }
 
 
-TSoftObjectPtr<UTexture2D> URogueAction::GetIcon() const
-{
-	return Icon;
-}
-
-
 URogueActionComponent* URogueAction::GetOwningComponent() const
 {
 	return Cast<URogueActionComponent>(GetOuter());
 }
 
+AActor* URogueAction::GetOwningActor() const
+{
+	return GetOwningComponent()->GetOwner();
+}
+
 
 void URogueAction::OnRep_RepData()
 {
-	if (RepData.bIsRunning)
-	{
-		StartAction(RepData.Instigator);
-	}
-	else
-	{
-		StopAction(RepData.Instigator);
-	}
+	ApplyActionState(RepData.bIsRunning);
+	
+	SetActionCosmeticsActive(RepData.bIsRunning);
+}
+
+
+void URogueAction::ApplyActionState_Implementation(bool bIsRunning)
+{
+	// Nothing here, sprint applies state like AirControl
+}
+
+
+void URogueAction::PlayActionCosmetics()
+{
+	// Nothing to do here, projectile attack handles one-shot cosmetics
+}
+
+void URogueAction::SetActionCosmeticsActive_Implementation(bool bIsActive)
+{
+	// Nothing to do here, sprint handled start/stop for cosmetics
 }
 
 

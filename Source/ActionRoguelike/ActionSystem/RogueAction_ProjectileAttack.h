@@ -27,6 +27,8 @@ public:
 	virtual void StopAction_Implementation(AActor* Instigator) override;
 	
 protected:
+	
+	virtual void PlayActionCosmetics() override;
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<URogueProjectileData> ProjectileConfig;
@@ -61,5 +63,5 @@ protected:
 	
 	FTimerHandle TimerHandle_AttackDelay;
 	
-	void AttackDelay_Elapsed(class ARoguePlayerCharacter* InstigatorCharacter);
+	void AttackDelay_Elapsed();
 };

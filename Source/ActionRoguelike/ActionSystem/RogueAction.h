@@ -39,14 +39,6 @@ class ACTIONROGUELIKE_API URogueAction : public UObject
 {
 	GENERATED_BODY()
 
-public:
-
-	UFUNCTION(BlueprintCallable, Category = "UI")
-	TSoftObjectPtr<UTexture2D> GetIcon() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Action")
-	URogueActionComponent* GetOwningComponent() const;
-
 protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
@@ -73,6 +65,12 @@ protected:
 	UFUNCTION()
 	void OnRep_RepData();
 
+	/*
+	 * Sync state from server to clients
+	 */
+	UFUNCTION(BlueprintNativeEvent)
+	void ApplyActionState(bool bIsRunning);
+
 	UPROPERTY(EditDefaultsOnly, Category="Cooldown")
 	float CooldownTime;
 
@@ -81,11 +79,25 @@ protected:
 	FGameplayTag ActivationTag;
 	
 public:
+	
+	/*
+	 * Cosmetics only - Action Starting
+	 */
+	virtual void PlayActionCosmetics();
+	
+	UFUNCTION(BlueprintNativeEvent)
+	void SetActionCosmeticsActive(bool bIsActive);
 
 	UFUNCTION(BlueprintPure)
 	FGameplayTag GetActivationTag() const
 	{
 		return ActivationTag;
+	}
+	
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	TSoftObjectPtr<UTexture2D> GetIcon() const
+	{
+		return Icon;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
@@ -102,6 +114,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	float CooldownTimeRemaining() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	URogueActionComponent* GetOwningComponent() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	AActor* GetOwningActor() const;
 
 	virtual void RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context, UE::Net::EFragmentRegistrationFlags RegistrationFlags) override;
 

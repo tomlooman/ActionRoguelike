@@ -25,7 +25,7 @@ class ACTIONROGUELIKE_API URogueActionComponent : public UActorComponent
 
 protected:
 
-	UPROPERTY(Transient)
+	UPROPERTY(Transient, Replicated)
 	FGameplayTagContainer ActiveGameplayTags;
 
 public:
@@ -119,7 +119,7 @@ protected:
 
 	UFUNCTION(Server, Reliable)
 	void ServerStopAction(AActor* Instigator, FGameplayTag ActionName);
-
+	
 	/* Granted abilities at game start */
 	UPROPERTY(EditAnywhere, Category = "Actions")
 	TArray<TSubclassOf<URogueAction>> DefaultActions;
@@ -131,15 +131,21 @@ protected:
 	UPROPERTY(Transient)
 	TMap<FGameplayTag, TObjectPtr<URogueAction>> CachedActions;
 
+public:	
+
+	/**
+	 * One-shot, only for currently relevant Actors and connections, late-joiners won't receive this 
+	 */
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastPlayActionCosmetics(URogueAction* Action);
+
+	URogueActionComponent();
+
 	virtual void InitializeComponent() override;
 
 	virtual void BeginPlay() override;
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-public:	
-
-	URogueActionComponent();
 
 	UPROPERTY(BlueprintAssignable)
 	FOnActionStateChanged OnActionStarted;
