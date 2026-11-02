@@ -59,8 +59,16 @@ protected:
 	// BlueprintNativeEvent = C++ base implementation, can be expanded in Blueprints
 	// BlueprintCallable to allow child classes to trigger explosions
 	// Not required for assignment, useful for expanding in Blueprint later on
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void Explode();
+	//UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	//void Explode();
+	
+	virtual void ReleaseToPool();
+	
+	virtual void CosmeticImpact();
+	
+	void HideProjectile();
+	
+	void ShowProjectile();
 	
 	virtual void BeginPlay() override;
 

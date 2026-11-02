@@ -63,10 +63,10 @@ void ARogueProjectile::PostInitializeComponents()
 void ARogueProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-
 	// Can use to fine-tune the pre allocated actor pool by checking how many projectiles are alive during gameplay
 	TRACE_COUNTER_INCREMENT(COUNTER_GAME_ActiveProjectiles);
 }
+
 
 void ARogueProjectile::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
@@ -77,10 +77,66 @@ void ARogueProjectile::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ARogueProjectile::PoolBeginPlay_Implementation()
 {
-	MoveComp->Reset();
+	ShowProjectile();
+}
+
+
+void ARogueProjectile::PoolEndPlay_Implementation()
+{
+	HideProjectile();
+}
+
+
+void ARogueProjectile::LifeSpanExpired()
+{
+	ReleaseToPool();
+}
+
+
+void ARogueProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	// Clients can show impacts visually without removing the projectile or applying logic reactions
+	CosmeticImpact();
 	
-	//NiagaraLoopComp->Activate();
-	//AudioComp->Play();
+	if (HasAuthority())
+	{
+		ReleaseToPool();
+	}
+}
+
+
+void ARogueProjectile::ReleaseToPool()
+{
+	// Release back to pool instead of destroying
+	URogueActorPoolingSubsystem* PoolingSubsystem = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
+	PoolingSubsystem->ReleaseToPool(this);
+}
+
+void ARogueProjectile::CosmeticImpact()
+{
+	// Auto-managed particle pooling
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation(), FVector(1), 
+		true, true, ENCPoolMethod::AutoRelease);
+
+	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
+
+	UGameplayStatics::PlayWorldCameraShake(this, ImpactShake, GetActorLocation(), ImpactShakeInnerRadius, ImpactShakeOuterRadius);
+}
+
+
+void ARogueProjectile::HideProjectile()
+{
+	NiagaraLoopComp->SetPaused(true);
+	AudioComp->SetPaused(true);
+	
+	//SetActorEnableCollision(false);
+	//SetActorHiddenInGame(true);
+}
+
+
+void ARogueProjectile::ShowProjectile()
+{
+	MoveComp->Reset();
 	
 	// Unpausing is significantly faster than re-creating renderstates due to Deactivate()
 	// Does keep its state around which is OK for our loopable VFX that will mostly be active/in-use
@@ -88,58 +144,19 @@ void ARogueProjectile::PoolBeginPlay_Implementation()
 	// Reset to fix ribbon positions
 	//NiagaraLoopComp->ResetSystem();
 	AudioComp->SetPaused(false);
-
+	
+	//SetActorEnableCollision(true);
+	//SetActorHiddenInGame(false);
 }
 
-
-void ARogueProjectile::PoolEndPlay_Implementation()
-{
-	//NiagaraLoopComp->Deactivate();
-	//AudioComp->Stop();
-	NiagaraLoopComp->SetPaused(true);
-	AudioComp->SetPaused(true);
-}
 
 float ARogueProjectile::GetDefaultSpeed() const
 {
 	return MoveComp->InitialSpeed;
 }
 
+
 float ARogueProjectile::GetGravityScale() const
 {
 	return MoveComp->ProjectileGravityScale;
 }
-
-
-void ARogueProjectile::LifeSpanExpired()
-{
-	// Skip destroy and instead release to pool
-	URogueActorPoolingSubsystem* Pooler = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
-	Pooler->ReleaseToPool(this);
-}
-
-
-void ARogueProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-	Explode();
-}
-
-
-// _Implementation from it being marked as BlueprintNativeEvent
-void ARogueProjectile::Explode_Implementation()
-{
-	// Auto-managed particle pooling
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation(), FVector(1), true, true, ENCPoolMethod::AutoRelease);
-
-	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
-
-	UGameplayStatics::PlayWorldCameraShake(this, ImpactShake, GetActorLocation(), ImpactShakeInnerRadius, ImpactShakeOuterRadius);
-
-	// @todo: only destroy on host. the client should only make itself dormant.
-	//Destroy();
-	
-	// Release back to pool instead of destroying
-	URogueActorPoolingSubsystem* PoolingSubsystem = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
-	PoolingSubsystem->ReleaseToPool(this);
-}
-

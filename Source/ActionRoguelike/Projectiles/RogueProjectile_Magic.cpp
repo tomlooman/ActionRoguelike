@@ -2,11 +2,11 @@
 
 
 #include "RogueProjectile_Magic.h"
-
+#include "ActionRoguelike.h"
+#include "GameFramework/Pawn.h"
 #include "Components/SphereComponent.h"
 #include "Core/RogueGameplayFunctionLibrary.h"
 #include "ActionSystem/RogueActionComponent.h"
-#include "Projectiles/RogueProjectileMovementComponent.h"
 #include "ActionSystem/RogueActionEffect.h"
 #include "Core/RogueDeferredTaskSystem.h"
 
@@ -36,16 +36,17 @@ void ARogueProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedCompo
 {
 	if (OtherActor && OtherActor != GetInstigator())
 	{
-		// Parry Ability (GameplayTag Example)
 		URogueActionComponent* OtherActionComp = URogueGameplayFunctionLibrary::GetActionComponentFromActor(OtherActor);
-		if (OtherActionComp && OtherActionComp->GetActiveTags().HasTag(ParryTag))
+		
+		// Parry Ability (GameplayTag Example)
+		/*if (OtherActionComp && OtherActionComp->GetActiveTags().HasTag(ParryTag))
 		{
 			MoveComp->Velocity = -MoveComp->Velocity;
 
 			// The reflector now becomes the 'instigator' of the damage from the reflected projectile
 			SetInstigator(Cast<APawn>(OtherActor));
 			return;
-		}
+		}*/
 
 		// This could contain things such as CriticalHit, Blocked etc. to tell other systems what special damage handling should be done
 		FGameplayTagContainer ContextTags;
@@ -55,8 +56,8 @@ void ARogueProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedCompo
 		if (URogueGameplayFunctionLibrary::CanApplyDamage(GetInstigator(), OtherActor, ContextTags))
 		{
 			// We only explode if the target can be damaged, it ignores anything it Overlaps that it cannot Damage
-			Explode();
-
+			CosmeticImpact();
+			
 			if (HasAuthority())
 			{
 				// Handfill the info, SweepResult not always available
@@ -73,7 +74,7 @@ void ARogueProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedCompo
 				if (OtherActionComp && BurningActionClass)
 				{
 #if USE_DEFERRED_TASKS
-					// Delay adding the burning FX if necessary
+					// Delay adding the burning FX if necessary, this can add other side effects like creating UI, dealing more damage, etc.
 					URogueDeferredTaskSystem::AddLambda(this, [OtherActionComp,MyInstigator,this]()
 						{
 							OtherActionComp->AddAction(MyInstigator, BurningActionClass);
@@ -83,6 +84,9 @@ void ARogueProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedCompo
 #endif
 				}
 			}
+			
+			// @todo: sync the pool state between clients/server
+			ReleaseToPool();
 		}
 	}
 }

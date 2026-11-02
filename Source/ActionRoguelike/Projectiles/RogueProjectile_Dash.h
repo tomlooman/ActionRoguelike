@@ -25,17 +25,18 @@ protected:
 	// Handle to cancel timer if we already hit something
 	FTimerHandle TimerHandle_DelayedDetonate;
 
-	void TeleportInstigator();
-
 	virtual void BeginPlay() override;
 	
 	UPROPERTY(Replicated)
 	float TeleportAtTime;
+	
+	void BeginTeleportation();
+
+	void FinishTeleportation();
+	
+	virtual void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
 
 public:
 	
-	// Base class using BlueprintNativeEvent, we must override the _Implementation not the Explode()
-	virtual void Explode_Implementation() override;
-
 	ARogueProjectile_Dash();
 };

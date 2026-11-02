@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Components/AudioComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Core/RogueGameplayFunctionLibrary.h"
 #include "GameFramework/GameStateBase.h"
@@ -43,39 +44,42 @@ void ARogueProjectile_Dash::BeginPlay()
 		check(TimerDelay > 0.0f);
 	}
 
-	GetWorldTimerManager().SetTimer(TimerHandle_DelayedDetonate, this, &ARogueProjectile_Dash::Explode, TimerDelay);
+	GetWorldTimerManager().SetTimer(TimerHandle_DelayedDetonate, this, &ARogueProjectile_Dash::BeginTeleportation, TimerDelay);
 	
 	// Check for valid setup during spawn, is used during teleport
 	check(GetInstigator());
 }
 
 
-void ARogueProjectile_Dash::Explode_Implementation()
+void ARogueProjectile_Dash::BeginTeleportation()
 {
 	// Clear timer if the Explode was already called through another source like OnActorHit
 	GetWorldTimerManager().ClearTimer(TimerHandle_DelayedDetonate);
 	
-	// Cosmetics
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
-	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
-	NiagaraLoopComp->Deactivate();
-
+	CosmeticImpact();
+	
+	// Pause/Stop looped cosmetics
+	NiagaraLoopComp->SetPaused(true);
+	AudioComp->SetPaused(true);
 	// Make Dormant
 	MoveComp->StopMovementImmediately();
-	SetActorEnableCollision(false);	
-
+	SetActorEnableCollision(false);
+	
 	if (HasAuthority())
 	{
 		FTimerHandle TimerHandle_DelayedTeleport;
-		GetWorldTimerManager().SetTimer(TimerHandle_DelayedTeleport, this, &ARogueProjectile_Dash::TeleportInstigator, TeleportDelay);
+		GetWorldTimerManager().SetTimer(TimerHandle_DelayedTeleport, this, &ARogueProjectile_Dash::FinishTeleportation, TeleportDelay);
 	}
-
-	// Skip base implementation as it will destroy actor (we need to stay alive a bit longer to finish the 2nd timer)
-	//Super::Explode_Implementation();
 }
 
 
-void ARogueProjectile_Dash::TeleportInstigator()
+void ARogueProjectile_Dash::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	BeginTeleportation();
+}
+
+
+void ARogueProjectile_Dash::FinishTeleportation()
 {
 	check(HasAuthority());
 	
