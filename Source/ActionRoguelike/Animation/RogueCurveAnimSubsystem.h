@@ -137,8 +137,10 @@ class ACTIONROGUELIKE_API URogueCurveAnimSubsystem : public UTickableWorldSubsys
 	GENERATED_BODY()
 
 	// This could be a FInstancedStruct array if we want a variety of struct options with different sets of data
+	UPROPERTY(Transient)
 	TMap<FCurveAnimHandle, FActiveCurveAnim> ActiveAnims;
 
+	UPROPERTY(Transient)
 	TArray<FActiveEasingFunc> ActiveEasingFuncs;
 	
 	uint64 NextHandleId = 1;
