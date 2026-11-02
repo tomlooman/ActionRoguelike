@@ -48,8 +48,6 @@ void URoguePickupSubsystem::AddCoinsPickup(TArray<FVector> Locations, TArray<int
 		{
 			// Must mark dirty by reference later, so construct item directly in array rather than locally
 			FPickupLocationItem& NewItem = GS->CoinPickupData.Items.Emplace_GetRef(FPickupLocationItem(Locations[i], NewMeshIDs[i]));
-
-			GS->CoinPickupData.Items.Add(NewItem);
 			GS->CoinPickupData.MarkItemDirty(NewItem);
 		}
 	}
