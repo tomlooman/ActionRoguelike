@@ -71,10 +71,16 @@ struct FActiveCurveAnim
 	}
 };
 
+USTRUCT()
 struct FCurveAnimHandle
 {
+	GENERATED_BODY()
+
+private:
+	
 	uint64 Id = 0;
 
+public:
 	bool IsValid() const { return Id != 0; }
 	void Reset() { Id = 0; }
 
