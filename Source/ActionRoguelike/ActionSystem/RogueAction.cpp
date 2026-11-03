@@ -168,6 +168,7 @@ void URogueAction::PreDestroyFromReplication()
 	// case we handle cleanup
 	if (RepData.bIsRunning)
 	{
+		RepData.bIsRunning = false;
 		// Force the flow that would otherwise be skipped
 		ApplyRunningState(false);
 		
