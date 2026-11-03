@@ -6,6 +6,7 @@
 #include "ActionRoguelike.h"
 #include "ActionSystem/RogueActionComponent.h"
 #include "GameFramework/GameStateBase.h"
+#include "Net/UnrealNetwork.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueActionEffect)
 
@@ -65,9 +66,14 @@ void URogueActionEffect::IncrementStackSize()
 
 void URogueActionEffect::ResetDuration()
 {
+	check(GetOwningActor()->HasAuthority());
+	
+	// Replicates the beginning of the refreshed duration window.
+	TimeStarted = GetWorld()->GetTimeSeconds();
+
 	FTimerDelegate Delegate;
 	Delegate.BindUObject(this, &ThisClass::StopAction, RepData.Instigator.Get());
-
+	
 	GetWorld()->GetTimerManager().SetTimer(DurationHandle, Delegate, Duration, false);
 }
 
@@ -77,7 +83,7 @@ float URogueActionEffect::GetTimeRemaining() const
 	if (AGameStateBase* GS = GetWorld()->GetGameState<AGameStateBase>())
 	{
 		float EndTime = TimeStarted + Duration;
-		return EndTime - GS->GetServerWorldTimeSeconds();
+		return FMath::Max(0.0f, EndTime - GS->GetServerWorldTimeSeconds());
 	}
 
 	return Duration;
@@ -85,3 +91,11 @@ float URogueActionEffect::GetTimeRemaining() const
 
 
 void URogueActionEffect::ExecutePeriodicEffect_Implementation(AActor* Instigator) {}
+
+
+void URogueActionEffect::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass, StackCount);
+}
