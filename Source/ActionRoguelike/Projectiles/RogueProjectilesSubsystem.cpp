@@ -8,6 +8,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraDataChannel.h"
 #include "NiagaraDataChannelAccessor.h"
+#include "NiagaraDataChannelAccessContext.h"
 #include "NiagaraDataChannelFunctionLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 #include "RogueProjectileData.h"
@@ -84,14 +85,14 @@ void URogueProjectilesSubsystem::InternalCreateProjectile(FVector InPosition, FV
 	}
 	else 
 	{
+		// @todo: unclear if this is OK to add to array on clients, as we may desync the array between server/client
+		// if not, I may need to keep a local array as temp lookup until the server updates his array.
+		
 		float ExpirationGameTime = World->TimeSeconds + ProjectileConfig->Lifespan;
 		// Full data of the projectile instance, used for bookkeeping and replication, not constantly updated
 		FProjectileItem& Info = ProjectileConfigs.Items.Emplace_GetRef(FProjectileItem(InPosition, InDirection, ProjectileConfig, InstigatorActor, NewID, ExpirationGameTime));
 		Info.TracerEffectComp = EffectComp;
 		
-		// @todo: unclear if this is OK to add to array on clients, as we may desync the array between server/client
-		// if not, I may need to keep a local array as temp lookup until the server updates his array.
-		ProjectileConfigs.Items.Add(Info);
 		ProjectileConfigs.MarkItemDirty(Info);
 
 	}
@@ -323,13 +324,19 @@ void URogueProjectilesSubsystem::SpawnImpactFX(const UWorld* World, const FProje
 	
 	if (HitComp && HitComp->bReceivesDecals && HitComp->GetMobility() != EComponentMobility::Type::Movable)
 	{
+		// Since 5.7 we access NDCs through contexts
+		const UNiagaraDataChannel* NDC = ProjConfig.ConfigDataAsset->ImpactDecal_DataChannel->Get();
+		FNDCAccessContextInst AccessContext = NDC->GetTransientAccessContext();
+
 		// Helps find the correct island to inject this particle into
-		FNiagaraDataChannelSearchParameters Params = FNiagaraDataChannelSearchParameters(ImpactPosition);
+		// @todo: for now assumes legacy, eventually this should look into moving to the "new API" 
+		FNDCAccessContextLegacy& Context = AccessContext.GetChecked<FNDCAccessContextLegacy>();
+		Context.Location = ImpactPosition;
 
 		// DECAL, using the Data Channels rather than relying on individual particle systems
 		// only visible to CPU, for GPU particles we probably need "GPU" to be true instead 
-		UNiagaraDataChannelWriter* Writer = UNiagaraDataChannelLibrary::WriteToNiagaraDataChannel(World, ProjConfig.ConfigDataAsset->ImpactDecal_DataChannel,
-			Params, 1, false, true, false, "ImpactDecals");
+		UNiagaraDataChannelWriter* Writer = UNiagaraDataChannelLibrary::WriteToNiagaraDataChannel_WithContext(World, ProjConfig.ConfigDataAsset->ImpactDecal_DataChannel, AccessContext, 1, 
+			false, true, false, "ImpactDecals");
 
 		Writer->WriteVector("ImpactLocation", 0, ImpactPosition);
 		Writer->WriteVector("ImpactNormal", 0, ProjConfig.Hit.ImpactNormal);
