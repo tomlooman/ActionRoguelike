@@ -348,11 +348,16 @@ void URogueActionComponent::RemoveAction(URogueAction* ActionToRemove)
 		return;
 	}
 
-	RemoveReplicatedSubObject(ActionToRemove);
+	// RemoveReplicatedSubObject
+	// Immediately delete it on clients, will call PreDestroyFromReplication to handle cleanup on clients such as delegates
+	DestroyReplicatedSubObjectOnRemotePeers(ActionToRemove);
 
 	Actions.Remove(ActionToRemove);
 
 	CachedActions.Remove(ActionToRemove->GetActivationTag());
+	
+	// Prevent any delegates relevant to this Action from running
+	ActionToRemove->MarkAsGarbage();
 }
 
 
@@ -526,7 +531,6 @@ void URogueActionComponent::OnRep_Actions()
 	
 	// Reset
 	CachedActions.Empty(Actions.Num());
-
 	for (URogueAction* Action : Actions)
 	{
 		CachedActions.Add(Action->GetActivationTag(), Action);

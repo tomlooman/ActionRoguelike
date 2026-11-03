@@ -63,7 +63,7 @@ protected:
 	float CooldownUntil = 0;
 
 	UFUNCTION()
-	void OnRep_RepData();
+	void OnRep_RepData(const FActionRepData& PrevData);
 
 	/*
 	 * Sync state from server to clients
@@ -87,7 +87,9 @@ public:
 	
 	UFUNCTION(BlueprintNativeEvent)
 	void SetActionCosmeticsActive(bool bIsActive);
-
+	
+	void ApplyRunningState(bool bIsRunning);
+	
 	UFUNCTION(BlueprintPure)
 	FGameplayTag GetActivationTag() const
 	{
@@ -127,6 +129,11 @@ public:
 	{
 		return true;
 	}
+	
+	/*
+	 * Clients will receive this when Action(Effects) are removed on host, so we can handle cleanup
+	 */
+	virtual void PreDestroyFromReplication() override;
 	
 #if WITH_EDITOR
 	virtual bool ImplementsGetWorld() const override

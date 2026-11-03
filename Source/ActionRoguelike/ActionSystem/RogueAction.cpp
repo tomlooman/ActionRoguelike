@@ -37,26 +37,24 @@ bool URogueAction::CanStart_Implementation(AActor* Instigator)
 void URogueAction::StartAction_Implementation(AActor* Instigator)
 {
 	UE_LOGFMT(LogGame, Verbose, "Started: {ActionName}", ("ActionName", GetName()));
-
-	// Only run on server from now. (owning) clients take a different path.
-	check(GetOwningComponent()->GetOwnerRole() == ROLE_Authority);
 	
-	// @todo: this now needs to be replicated
-	URogueActionComponent* Comp = GetOwningComponent();	
+	URogueActionComponent* Comp = GetOwningComponent();
+	
+	// Only run on server from now. (owning) clients take a different path.
+	check(Comp->GetOwnerRole() == ROLE_Authority);
+		
 	Comp->AppendActiveTags(GrantsTags);
-
 	
 	RepData.bIsRunning = true;
 	RepData.Instigator = Instigator;
 
 	TimeStarted = GetWorld()->TimeSeconds; 
 	
-	SetActionCosmeticsActive(true);
+	ApplyRunningState(RepData.bIsRunning);
 	
-	//MulticastPlayCosmetics();
-	GetOwningComponent()->MulticastPlayActionCosmetics(this);
-
-	GetOwningComponent()->OnActionStarted.Broadcast(GetOwningComponent(), this);
+	Comp->OnActionStarted.Broadcast(GetOwningComponent(), this);
+	
+	Comp->MulticastPlayActionCosmetics(this);
 }
 
 
@@ -64,23 +62,23 @@ void URogueAction::StopAction_Implementation(AActor* Instigator)
 {
 	UE_LOGFMT(LogGame, Verbose, "Stopped: {ActionName}", ("ActionName", GetName()));
 
-	//ensureAlways(bIsRunning);
-	check(GetOwningComponent()->GetOwnerRole() == ROLE_Authority);
-
 	URogueActionComponent* Comp = GetOwningComponent();
+	
+	check(Comp->GetOwnerRole() == ROLE_Authority);
+
 	Comp->RemoveActiveTags(GrantsTags);
 
 	RepData.bIsRunning = false;
 	RepData.Instigator = Instigator;
 	
-	SetActionCosmeticsActive(false);
+	ApplyRunningState(RepData.bIsRunning);
 	
 	if (CooldownTime > 0.0f)
 	{
 		CooldownUntil = GetWorld()->TimeSeconds + CooldownTime;
 	}
 
-	GetOwningComponent()->OnActionStopped.Broadcast(GetOwningComponent(), this);
+	Comp->OnActionStopped.Broadcast(Comp, this);
 }
 
 
@@ -107,11 +105,22 @@ AActor* URogueAction::GetOwningActor() const
 }
 
 
-void URogueAction::OnRep_RepData()
+void URogueAction::OnRep_RepData(const FActionRepData& PrevData)
 {
-	ApplyActionState(RepData.bIsRunning);
+	check(GetOwningComponent()->GetOwnerRole() != ROLE_Authority);
 	
-	SetActionCosmeticsActive(RepData.bIsRunning);
+	ApplyRunningState(RepData.bIsRunning);
+	
+	// Stopping?
+	if (PrevData.bIsRunning && !RepData.bIsRunning)
+	{
+		GetOwningComponent()->OnActionStopped.Broadcast(GetOwningComponent(), this);
+	}
+	// Starting?
+	if (!PrevData.bIsRunning && RepData.bIsRunning)
+	{
+		GetOwningComponent()->OnActionStarted.Broadcast(GetOwningComponent(), this);
+	}
 }
 
 
@@ -125,6 +134,13 @@ void URogueAction::PlayActionCosmetics()
 {
 	// Nothing to do here, projectile attack handles one-shot cosmetics
 }
+
+void URogueAction::ApplyRunningState(bool bIsRunning)
+{
+	ApplyActionState(bIsRunning);
+	SetActionCosmeticsActive(bIsRunning);
+}
+
 
 void URogueAction::SetActionCosmeticsActive_Implementation(bool bIsActive)
 {
@@ -141,6 +157,22 @@ bool URogueAction::IsRunning() const
 void URogueAction::RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context, UE::Net::EFragmentRegistrationFlags RegistrationFlags)
 {
 	UE::Net::FReplicationFragmentUtil::CreateAndRegisterFragmentsForObject(this, Context, RegistrationFlags);
+}
+
+
+void URogueAction::PreDestroyFromReplication()
+{
+	Super::PreDestroyFromReplication();
+	
+	// During removal, a running action may not have received a stop action result (bIsRunning = false), for those
+	// case we handle cleanup
+	if (RepData.bIsRunning)
+	{
+		// Force the flow that would otherwise be skipped
+		ApplyRunningState(false);
+		
+		GetOwningComponent()->OnActionStopped.Broadcast(GetOwningComponent(), this);
+	}
 }
 
 
