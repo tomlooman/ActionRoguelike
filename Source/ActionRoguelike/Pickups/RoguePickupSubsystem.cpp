@@ -154,6 +154,11 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 		
 		for (ARoguePlayerCharacter* PlayerPawn : TActorRange<ARoguePlayerCharacter>(World))
 		{
+			if (!PlayerPawn->IsAlive())
+			{
+				continue;
+			}
+
 			Players.Add(PlayerPawn->GetActorLocation());
 			PlayerPawns.Add(PlayerPawn);
 		}
@@ -233,9 +238,7 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 				continue;
 			}
 			
-			FAttributeModification Mod = FAttributeModification(SharedGameplayTags::Attribute_Credits, AwardAmount);
-
-			PlayerPawns[i]->GetActionComponent()->ApplyAttributeChange(Mod);
+			PlayerPawns[i]->GetActionComponent()->ApplyAttributeChange(SharedGameplayTags::Attribute_Credits, AwardAmount, PlayerPawns[i], EAttributeModifyType::AddBase);
 
 			// @todo: play sound properly for networked players...eg. they receive these Coins w/ a pickup contextTag
 			PlayPickupSound();
