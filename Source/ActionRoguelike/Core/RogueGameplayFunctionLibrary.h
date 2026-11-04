@@ -42,6 +42,9 @@ public:
 	static bool IsFullHealth(AActor* InActor);
 
 	UFUNCTION(BlueprintCallable, Category=Gameplay)
+	static bool TrySpendCredits(URogueActionComponent* ActionComp, int32 Amount, AActor* Instigator);
+
+	UFUNCTION(BlueprintCallable, Category=Gameplay)
 	static bool ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient, FGameplayTagContainer InContextTags = FGameplayTagContainer());
 
 	UFUNCTION(BlueprintCallable, Category=Gameplay)

@@ -92,6 +92,23 @@ bool URogueGameplayFunctionLibrary::IsFullHealth(AActor* InActor)
 }
 
 
+bool URogueGameplayFunctionLibrary::TrySpendCredits(URogueActionComponent* ActionComp, int32 Amount, AActor* Instigator)
+{
+	if (Amount <= 0)
+	{
+		return Amount == 0;
+	}
+
+	if (!IsValid(ActionComp) || ActionComp->GetAttributeValue(SharedGameplayTags::Attribute_Credits) < Amount)
+	{
+		return false;
+	}
+
+	return ActionComp->ApplyAttributeChange(
+		SharedGameplayTags::Attribute_Credits, -Amount, Instigator, EAttributeModifyType::AddBase);
+}
+
+
 bool URogueGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageCoefficient, FGameplayTagContainer InContextTags)
 {
 	if (!CanApplyDamage(DamageCauser, TargetActor))

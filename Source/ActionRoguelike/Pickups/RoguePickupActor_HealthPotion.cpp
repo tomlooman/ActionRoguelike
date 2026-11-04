@@ -6,7 +6,6 @@
 #include "SharedGameplayTags.h"
 #include "ActionSystem/RogueActionComponent.h"
 #include "Core/RogueGameplayFunctionLibrary.h"
-#include "Player/RoguePlayerState.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RoguePickupActor_HealthPotion)
 
@@ -20,25 +19,24 @@ void ARoguePickupActor_HealthPotion::Interact_Implementation(AController* Instig
 	APawn* MyPawn = InstigatorController->GetPawn();
 	
 	URogueActionComponent* ActionComp = URogueActionComponent::GetActionComponent(MyPawn);
+	check(ActionComp);
+	
 	// Check if not already at max health
-	if (ensure(ActionComp) && !URogueGameplayFunctionLibrary::IsFullHealth(MyPawn))
+	if (!URogueGameplayFunctionLibrary::IsFullHealth(MyPawn))
 	{
-		if (ARoguePlayerState* PS = InstigatorController->GetPlayerState<ARoguePlayerState>())
+		if (URogueGameplayFunctionLibrary::TrySpendCredits(ActionComp, CreditCost, this))
 		{
-			if (PS->TryRemoveCredits(CreditCost))
-			{
-				// Heal back to full
-				float MaxHealing = ActionComp->GetAttribute(SharedGameplayTags::Attribute_HealthMax)->GetValue();
+			// Heal back to full
+			float MaxHealing = ActionComp->GetAttributeValue(SharedGameplayTags::Attribute_HealthMax);
 
-				if (ActionComp->ApplyAttributeChange(
-					SharedGameplayTags::Attribute_Health,
-					MaxHealing,
-					this,
-					EAttributeModifyType::AddBase))
-				{
-					// Only activate if healed successfully
-					HideAndCooldown();
-				}
+			if (ActionComp->ApplyAttributeChange(
+				SharedGameplayTags::Attribute_Health,
+				MaxHealing,
+				this,
+				EAttributeModifyType::AddBase))
+			{
+				// Only activate if healed successfully
+				HideAndCooldown();
 			}
 		}
 	}

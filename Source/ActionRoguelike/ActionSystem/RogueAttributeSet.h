@@ -263,8 +263,11 @@ protected:
 	UFUNCTION()
 	void OnRep_Rage(FRogueAttribute OldValue);
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Attributes)
+	UPROPERTY(ReplicatedUsing=OnRep_Credits, EditDefaultsOnly, BlueprintReadOnly, Category=Attributes)
 	FRogueAttribute Credits;
+
+	UFUNCTION()
+	void OnRep_Credits(FRogueAttribute OldValue);
 	/*
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category= "Attributes")
 	FRogueAttribute Level;

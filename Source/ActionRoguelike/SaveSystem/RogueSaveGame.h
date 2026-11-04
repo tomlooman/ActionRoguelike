@@ -36,7 +36,6 @@ public:
 
 	FPlayerSaveData()
 	{
-		Credits = 0;
 		PersonalRecordTime = 0.0f;
 		Location = FVector::ZeroVector;
 		Rotation = FRotator::ZeroRotator;
@@ -46,9 +45,6 @@ public:
 	/* Player Id defined by the online sub system (such as Steam) converted to FString for simplicity  */ 
 	UPROPERTY()
 	FString PlayerID;
-
-	UPROPERTY()
-    int32 Credits;
 
 	/* Longest survival time */
 	UPROPERTY()

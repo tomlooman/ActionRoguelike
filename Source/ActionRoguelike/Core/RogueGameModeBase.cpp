@@ -10,6 +10,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameStateBase.h"
 #include "ActionRoguelike.h"
+#include "ActionSystem/RogueActionComponent.h"
+#include "SharedGameplayTags.h"
 #include "RogueDeferredTaskSystem.h"
 #include "RogueGameState.h"
 #include "SaveSystem/RogueSaveGameSubsystem.h"
@@ -214,11 +216,10 @@ void ARogueGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 	// Don't credit kills of self
 	if (KillerPawn && KillerPawn != VictimActor)
 	{
-		// Only Players will have a 'PlayerState' instance, bots have nullptr
-		ARoguePlayerState* PS = KillerPawn->GetPlayerState<ARoguePlayerState>();
-		if (PS) 
+		if (ARoguePlayerCharacter* KillerPlayer = Cast<ARoguePlayerCharacter>(KillerPawn))
 		{
-			PS->AddCredits(CreditsPerKill);
+			KillerPlayer->GetActionComponent()->ApplyAttributeChange(
+				SharedGameplayTags::Attribute_Credits, CreditsPerKill, VictimActor, EAttributeModifyType::AddBase);
 		}
 	}
 }

@@ -79,11 +79,25 @@ void URogueSurvivorAttributeSet::OnRep_Rage(FRogueAttribute OldValue)
 }
 
 
+void URogueSurvivorAttributeSet::OnRep_Credits(FRogueAttribute OldValue)
+{
+	float NewValue = Credits.GetValue();
+
+	FAttributeModification Modification;
+	Modification.AttributeTag = SharedGameplayTags::Attribute_Credits;
+	Modification.Magnitude = NewValue - OldValue.GetValue();
+	Modification.TargetComp = GetOwningComponent();
+
+	GetOwningComponent()->BroadcastAttributeChanged(SharedGameplayTags::Attribute_Credits, NewValue, Modification);
+}
+
+
 void URogueSurvivorAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(URogueSurvivorAttributeSet, Rage, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(URogueSurvivorAttributeSet, Credits, COND_OwnerOnly);
 }
 
 // -- Pawn Attribute Set -- //
