@@ -242,10 +242,26 @@ class URogueSurvivorAttributeSet : public URoguePawnAttributeSet
 {
 	GENERATED_BODY()
 
+public:
+
+	URogueSurvivorAttributeSet()
+	{
+		Rage = FRogueAttribute(0);
+		RageMax = FRogueAttribute(100);
+	}
+
 protected:
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Attributes)
+	UPROPERTY(ReplicatedUsing=OnRep_Rage, EditDefaultsOnly, BlueprintReadOnly, Category=Attributes)
 	FRogueAttribute Rage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Attributes)
+	FRogueAttribute RageMax;
+
+	virtual void PostAttributeChanged() override;
+
+	UFUNCTION()
+	void OnRep_Rage(FRogueAttribute OldValue);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Attributes)
 	FRogueAttribute Credits;

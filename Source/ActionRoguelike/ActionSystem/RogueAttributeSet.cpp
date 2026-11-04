@@ -53,6 +53,39 @@ void URogueHealthAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetime
 	DOREPLIFETIME(URogueHealthAttributeSet, Health);
 }
 
+// -- Survivor Attribute Set -- //
+
+void URogueSurvivorAttributeSet::PostAttributeChanged()
+{
+	Super::PostAttributeChanged();
+
+	const float MaxRage = RageMax.GetValue();
+	Rage.Base = FMath::Clamp(Rage.Base, 0.0f, MaxRage);
+	// Gains and costs use AddModifier. Discard overflow so spending at the cap takes effect immediately.
+	Rage.Modifier = FMath::Clamp(Rage.Modifier, -Rage.Base, MaxRage - Rage.Base);
+}
+
+
+void URogueSurvivorAttributeSet::OnRep_Rage(FRogueAttribute OldValue)
+{
+	float NewValue = Rage.GetValue();
+
+	FAttributeModification Modification;
+	Modification.AttributeTag = SharedGameplayTags::Attribute_Rage;
+	Modification.Magnitude = NewValue - OldValue.GetValue();
+	Modification.TargetComp = GetOwningComponent();
+
+	GetOwningComponent()->BroadcastAttributeChanged(SharedGameplayTags::Attribute_Rage, NewValue, Modification);
+}
+
+
+void URogueSurvivorAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(URogueSurvivorAttributeSet, Rage, COND_OwnerOnly);
+}
+
 // -- Pawn Attribute Set -- //
 
 void URoguePawnAttributeSet::OnRep_MoveSpeed()
