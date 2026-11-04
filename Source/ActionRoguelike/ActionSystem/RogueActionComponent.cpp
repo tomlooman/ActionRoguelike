@@ -248,14 +248,15 @@ void URogueActionComponent::BroadcastAttributeChanged(FGameplayTag InTag, float 
 	// Broadcast any Blueprint listeners
 	if (TArray<FAttributeChangedDynamicSignature>* Events = AttributeBlueprintListeners.Find(InTag))
 	{
-		// Reverse-for to allow cleanup for any events no longer bound to blueprint instances
-		for (int i = Events->Num() - 1; i >= 0; --i)
+		// Callbacks can modify the listener array or grow its containing map.
+		// Subscription changes take effect on the next broadcast.
+		const TArray<FAttributeChangedDynamicSignature> EventsCopy = *Events;
+		for (const FAttributeChangedDynamicSignature& Event : EventsCopy)
 		{
-			FAttributeChangedDynamicSignature& Event = (*Events)[i];
 			bool bIsBound = Event.ExecuteIfBound(InNewValue, InModification);
 			if (!bIsBound)
 			{
-				Events->RemoveAt(i);
+				AttributeBlueprintListeners.FindChecked(InTag).RemoveSingle(Event);
 				UE_LOG(LogGame, Log, TEXT("Cleaned up expired attribute delegate for %s"), *GetNameSafe(GetOwner()));
 			}
 		}
