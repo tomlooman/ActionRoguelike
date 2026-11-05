@@ -9,6 +9,9 @@
 #include "Core/RogueGameplayFunctionLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "Engine/ActorChannel.h"
+#include "RogueAction_ProjectileAttack.h"
+#include "Projectiles/RogueProjectilesSubsystem.h"
+#include "GameFramework/Pawn.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RogueActionComponent)
 
@@ -53,6 +56,9 @@ void URogueActionComponent::BeginPlay()
 	// Server Only
 	if (GetOwner()->HasAuthority())
 	{
+#if USE_DATA_ORIENTED_PROJECTILES
+		ProjectileSession = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>()->AllocatePredictionSession();
+#endif
 		for (TSubclassOf<URogueAction> ActionClass : DefaultActions)
 		{
 			AddAction(GetOwner(), ActionClass);
@@ -67,6 +73,17 @@ void URogueActionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	if (GetOwner()->HasAuthority())
 	{
 		StopAllActions();
+	}
+	else
+	{
+		for (URogueAction* Action : Actions)
+		{
+			if (URogueAction_ProjectileAttack* Attack = Cast<URogueAction_ProjectileAttack>(Action))
+			{
+				Attack->CancelPrediction({});
+			}
+		}
+		GetWorld()->GetSubsystem<URogueProjectilesSubsystem>()->CancelPredictions(GetOwner());
 	}
 	Super::EndPlay(EndPlayReason);
 }
@@ -416,6 +433,11 @@ bool URogueActionComponent::StartActionByName(AActor* Instigator, FGameplayTag A
 	//SCOPED_NAMED_EVENT(StartActionName, FColor::Green); // Visible in Unreal Insights with namedevents enabled
 	TRACE_CPUPROFILER_EVENT_SCOPE(StartActionByName); // Alternative, available when Insights "CPU" channel is specified
 	
+	if (!GetOwner()->HasAuthority() && CachedActions.IsEmpty())
+	{
+		// Input can be ready before the replicated action subobjects arrive.
+		return false;
+	}
 	check(CachedActions.Num() > 0);
 	if (TObjectPtr<URogueAction>* ActionPtr = CachedActions.Find(ActionName))
 	{
@@ -425,6 +447,34 @@ bool URogueActionComponent::StartActionByName(AActor* Instigator, FGameplayTag A
 		// Is Client?
 		if (!GetOwner()->HasAuthority())
 		{
+#if USE_DATA_ORIENTED_PROJECTILES
+
+			if (URogueAction_ProjectileAttack* Attack = Cast<URogueAction_ProjectileAttack>(ActionPtr->Get()))
+			{
+				const APawn* Pawn = Cast<APawn>(GetOwner());
+				if (ProjectileSession == 0 || !Pawn || !Pawn->IsLocallyControlled() || !Attack->CanPredictProjectile() ||
+					!GetWorld()->GetSubsystem<URogueProjectilesSubsystem>()->HasSynchronizedTime())
+				{
+					return false;
+				}
+				check(NextProjectileSequence != 0);
+				FProjectilePredictionKey Key;
+				Key.Session = ProjectileSession;
+				Key.Sequence = NextProjectileSequence++;
+				const float Now = GetWorld()->GetTimeSeconds();
+				for (auto It = PredictedProjectileCosmetics.CreateIterator(); It; ++It)
+				{
+					if (It.Value() < Now)
+					{
+						It.RemoveCurrent();
+					}
+				}
+				PredictedProjectileCosmetics.Add(Key, Now + 15.0f);
+				ServerBeginProjectileAttack(ActionName, Key);
+				Attack->StartPrediction(Key);
+				return true;
+			}
+#endif
 			// Request on the server regardless of passing CanStart, let server handle that
 			ServerStartAction(Instigator, ActionName);
 		}
@@ -465,6 +515,10 @@ bool URogueActionComponent::StopActionByName(AActor* Instigator, FGameplayTag Ac
 			// Is Client?
 			if (!GetOwner()->HasAuthority())
 			{
+				if (URogueAction_ProjectileAttack* Attack = Cast<URogueAction_ProjectileAttack>(Action))
+				{
+					Attack->CancelPrediction({});
+				}
 				// always send, even if not running (locally), latency might otherwise mess up the state
 				ServerStopAction(Instigator, ActionName);
 				
@@ -510,7 +564,20 @@ void URogueActionComponent::ServerStopAction_Implementation(AActor* Instigator, 
 
 void URogueActionComponent::MulticastPlayActionCosmetics_Implementation(URogueAction* Action)
 {
-	check(Action);
+	if (IsValid(Action))
+	{
+		Action->PlayActionCosmetics();
+	}
+}
+
+
+void URogueActionComponent::MulticastPlayProjectileCosmetics_Implementation(URogueAction* Action, FProjectilePredictionKey PredictionKey)
+{
+	// An action can arrive after this cosmetic event, or be removed while the event is in flight.
+	if (!IsValid(Action) || (PredictionKey.IsValid() && PredictedProjectileCosmetics.Contains(PredictionKey)))
+	{
+		return;
+	}
 	
 	Action->PlayActionCosmetics();
 }
@@ -522,6 +589,7 @@ void URogueActionComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME(URogueActionComponent, Actions);
 	DOREPLIFETIME(URogueActionComponent, AttributeSet);
 	DOREPLIFETIME(URogueActionComponent, ActiveGameplayTags);
+	DOREPLIFETIME_CONDITION(URogueActionComponent, ProjectileSession, COND_OwnerOnly);
 }
 
 
@@ -535,5 +603,98 @@ void URogueActionComponent::OnRep_Actions()
 	for (URogueAction* Action : Actions)
 	{
 		CachedActions.Add(Action->GetActivationTag(), Action);
+	}
+}
+
+
+void URogueActionComponent::RejectProjectilePrediction(FProjectilePredictionKey Key, EProjectileOutcome Outcome)
+{
+	check(GetOwner()->HasAuthority());
+	FProjectileUpdate Rejected;
+	Rejected.Projectile.PredictionKey = Key;
+	Rejected.Outcome = Outcome;
+	GetWorld()->GetSubsystem<URogueProjectilesSubsystem>()->QueueOwnerUpdate(this, Rejected);
+}
+
+
+void URogueActionComponent::ServerBeginProjectileAttack_Implementation(FGameplayTag ActionName, FProjectilePredictionKey Key)
+{
+#if USE_DATA_ORIENTED_PROJECTILES
+	if (!Key.IsValid() || Key.Session != ProjectileSession)
+	{
+		RejectProjectilePrediction(Key, EProjectileOutcome::Rejected);
+		return;
+	}
+	if (Key.Sequence <= LastProjectileSequence)
+	{
+		// A replay must not spawn another shot or reject an already accepted prediction.
+		return;
+	}
+	LastProjectileSequence = Key.Sequence;
+	TObjectPtr<URogueAction>* Found = CachedActions.Find(ActionName);
+	URogueAction_ProjectileAttack* Attack = Found ? Cast<URogueAction_ProjectileAttack>(Found->Get()) : nullptr;
+	if (!Attack || !URogueGameplayFunctionLibrary::IsAlive(GetOwner()) || !Attack->CanStart(GetOwner()))
+	{
+		RejectProjectilePrediction(Key, EProjectileOutcome::Rejected);
+		return;
+	}
+	Attack->StartServerPrediction(Key);
+#else
+	RejectProjectilePrediction(Key, EProjectileOutcome::Rejected);
+#endif
+}
+
+
+void URogueActionComponent::ServerReleaseProjectile_Implementation(FProjectilePredictionKey Key, FVector_NetQuantizeNormal AimDirection)
+{
+	if (Key.Session != ProjectileSession)
+	{
+		return;
+	}
+	for (URogueAction* Action : Actions)
+	{
+		if (URogueAction_ProjectileAttack* Attack = Cast<URogueAction_ProjectileAttack>(Action))
+		{
+			if (Attack->GetServerPredictionKey() == Key && Key.IsValid())
+			{
+				Attack->SubmitPredictedAim(Key, AimDirection);
+				return;
+			}
+		}
+	}
+}
+
+
+void URogueActionComponent::ServerQueryProjectileStatus_Implementation(int64 ID)
+{
+	if (GetWorld()->GetTimeSeconds() < NextProjectileStatusRequestTime)
+	{
+		return;
+	}
+	NextProjectileStatusRequestTime = GetWorld()->GetTimeSeconds() + 0.05f;
+	GetWorld()->GetSubsystem<URogueProjectilesSubsystem>()->QueryProjectileStatus(ID, this);
+}
+
+
+void URogueActionComponent::ClientProjectileUpdates_Implementation(const TArray<FProjectileUpdate>& Updates)
+{
+	if (GetOwner()->HasAuthority())
+	{
+		return;
+	}
+	URogueProjectilesSubsystem* Subsystem = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>();
+	for (const FProjectileUpdate& Update : Updates)
+	{
+		if (Update.Outcome != EProjectileOutcome::Flying)
+		{
+			for (URogueAction* Action : Actions)
+			{
+				if (URogueAction_ProjectileAttack* Attack = Cast<URogueAction_ProjectileAttack>(Action))
+				{
+					Attack->CancelPrediction(Update.Projectile.PredictionKey);
+				}
+			}
+		}
+		Subsystem->ReceiveUpdate(Update, this);
 	}
 }

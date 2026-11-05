@@ -7,21 +7,42 @@
 #include "Projectiles/RogueProjectilesSubsystem.h"
 
 
-void ARogueGameState::ServerCreateProjectile_Implementation(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig, AActor* InstigatorActor, uint32 NewID)
+bool ARogueGameState::HasSynchronizedServerTime() const
+{
+	return HasAuthority() || NumServerWorldTimeSecondsDeltas > 0;
+}
+
+
+void ARogueGameState::MulticastProjectileImpacts_Implementation(const TArray<FProjectileUpdate>& Updates)
 {
 	URogueProjectilesSubsystem* Subsystem = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>();
-	Subsystem->InternalCreateProjectile(InPosition, InDirection, ProjectileConfig, InstigatorActor, NewID);
+	for (const FProjectileUpdate& Update : Updates)
+	{
+		Subsystem->ReceiveUpdate(Update);
+	}
+}
+
+
+void ARogueGameState::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	// Initialize before initial replication callbacks, rather than waiting for BeginPlay.
+	ProjectileData.OwningSubsystem = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>();
 }
 
 
 void ARogueGameState::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Init with subsystem so we can access the world and subsystem within the struct during replication
-	ProjectileData.OwningSubsystem = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>();
-
 	CoinPickupData.OwningSubsystem = GetWorld()->GetSubsystem<URoguePickupSubsystem>();
+	if (!HasAuthority())
+	{
+		for (const FProjectileItem& Item : ProjectileData.Items)
+		{
+			ProjectileData.OwningSubsystem->ReceiveLaunch(Item.Projectile);
+		}
+	}
 }
 
 void ARogueGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

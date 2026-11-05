@@ -29,18 +29,25 @@ void URogueAction_MinionRangedAttack::StartAction_Implementation(AActor* Instiga
 	AActor* TargetActor = MyPawn->GetTargetActor();
 	check(TargetActor);
 
-	const ARogueProjectile* DefaultProj = Cast<ARogueProjectile>(ProjectileClass->GetDefaultObject());
-
 	// Est. time to target based on distance-to and projectile assumed velocity
+#if USE_DATA_ORIENTED_PROJECTILES
+	check(ProjectileConfig);
+	const float ProjectileSpeed = ProjectileConfig->InitialSpeed;
+	const float GravityScale = 0.0f;
+#else
+	check(ProjectileClass);
+	const ARogueProjectile* DefaultProj = CastChecked<ARogueProjectile>(ProjectileClass->GetDefaultObject());
 	const float ProjectileSpeed = DefaultProj->GetDefaultSpeed();
+	const float GravityScale = DefaultProj->GetGravityScale();
+#endif
 	float DistanceToTarget = (TargetActor->GetTargetLocation() - MuzzleLocation).Size();
 	float TravelTime = DistanceToTarget / ProjectileSpeed;
 	
 
 	// Optionally set very small gravity if projectile has scale == 0, otherwise func will use the world default gravity in the calc below when passing in 0.f as override
 	const float TinyGravity = 0.01f;
-	const float ActualProjectileGravity = GetWorld()->GetGravityZ() * DefaultProj->GetGravityScale();
-	const float GravityOverride = FMath::IsNearlyZero(DefaultProj->GetGravityScale()) ? TinyGravity : ActualProjectileGravity;
+	const float ActualProjectileGravity = GetWorld()->GetGravityZ() * GravityScale;
+	const float GravityOverride = FMath::IsNearlyZero(GravityScale) ? TinyGravity : ActualProjectileGravity;
 
 	FVector LaunchVelocity;
 	UGameplayStatics::SuggestProjectileVelocity_MovingTarget(this, LaunchVelocity, MyPawn->GetActorLocation(), TargetActor, FVector::ZeroVector,
@@ -62,10 +69,9 @@ void URogueAction_MinionRangedAttack::StartAction_Implementation(AActor* Instiga
 	Params.Instigator = MyPawn;
 
 #if USE_DATA_ORIENTED_PROJECTILES
-	// WIP for data oriented projectiles
 	URogueProjectilesSubsystem* Subsystem = GetWorld()->GetSubsystem<URogueProjectilesSubsystem>();
 	Subsystem->CreateProjectile(MuzzleLocation, MuzzleRotation.Vector(), ProjectileConfig, MyPawn);
-#else // Actor based projectiles
+#else
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, Params);
 #endif
 

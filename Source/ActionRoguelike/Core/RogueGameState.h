@@ -21,16 +21,17 @@ class ACTIONROGUELIKE_API ARogueGameState : public AGameStateBase
 	
 protected:
 	
+	virtual void PostInitializeComponents() override;
+
 	virtual void BeginPlay() override;
 
 public:
 
-	/* Client requests a new projectile, client will already spawn this locally and it will be kept in sync
-	 * rather than waiting for the server to tell them to spawn it
-	 */
-	UFUNCTION(Server, reliable)
-	void ServerCreateProjectile(FVector InPosition, FVector InDirection, URogueProjectileData* ProjectileConfig,
-		AActor* InstigatorActor, uint32 NewID);
+	bool HasSynchronizedServerTime() const;
+
+	/* Observer cosmetics are best-effort. Shooter completion is delivered reliably through its action component. */
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastProjectileImpacts(const TArray<FProjectileUpdate>& Updates);
 
 	/*
 	 * Holds all replicated "data oriented" projectiles. No Actors, just data handling all movement, cosmetics and overlaps

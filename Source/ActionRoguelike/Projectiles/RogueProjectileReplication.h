@@ -4,96 +4,105 @@
 #include "Net/Serialization/FastArraySerializer.h"
 #include "RogueProjectileReplication.generated.h"
 
-
 class URogueProjectilesSubsystem;
 struct FProjectileArray;
-class UNiagaraComponent;
 
-/*
- * Data oriented projectile data to replicate and bookkeeping for all data which we dont need every frame
- * The other array handles the per-frame data such as current position and velocity
- */
 USTRUCT()
-struct FProjectileItem : public FFastArraySerializerItem
+struct ACTIONROGUELIKE_API FProjectilePredictionKey
 {
 	GENERATED_BODY()
 
-	FProjectileItem(FVector InPosition, FVector InDirection, URogueProjectileData* InDataAsset, AActor* InActor, uint32 InstanceID, float InExpirationTime):
-		InitialPosition(InPosition),
-		InitialDirection(InDirection),
-		ConfigDataAsset(InDataAsset),
-		InstigatorActor(InActor),
-		ID(InstanceID),
-		ExpirationGameTime(InExpirationTime)
-	{
-	}
-
-	FProjectileItem() :
-		InitialPosition(FVector::ZeroVector),
-		InitialDirection(FVector::ForwardVector),
-		ConfigDataAsset(nullptr),
-		InstigatorActor(nullptr),
-		ID(-1)
-	{
-	}
-
-	FProjectileItem(uint32 InID) :
-		InitialPosition(FVector::ZeroVector),
-		InitialDirection(FVector::ZeroVector),
-		ConfigDataAsset(nullptr),
-		InstigatorActor(nullptr),
-		ID(InID)
-	{
-	}
+	UPROPERTY()
+	uint32 Session = 0;
 
 	UPROPERTY()
-	FVector InitialPosition;
+	uint32 Sequence = 0;
+
+	bool IsValid() const { return Session != 0 && Sequence != 0; }
+	bool operator==(const FProjectilePredictionKey& Other) const { return Session == Other.Session && Sequence == Other.Sequence; }
+	friend uint32 GetTypeHash(const FProjectilePredictionKey& Key) { return HashCombine(GetTypeHash(Key.Session), GetTypeHash(Key.Sequence)); }
+};
+
+/* Position and velocity describe the projectile at SimulationTime, in server world time. */
+USTRUCT()
+struct ACTIONROGUELIKE_API FProjectileLaunch
+{
+	GENERATED_BODY()
 
 	UPROPERTY()
-	FVector InitialDirection;
-
-	UPROPERTY() // @todo: can we replicate this asset pointer?
-	TObjectPtr<URogueProjectileData> ConfigDataAsset;
+	int64 ID = 0;
 
 	UPROPERTY()
-	TObjectPtr<AActor> InstigatorActor;
-		
-	/* ID for tracking with the instance data */
+	FProjectilePredictionKey PredictionKey;
+
 	UPROPERTY()
-	uint32 ID;
+	FVector Position = FVector::ZeroVector;
 
-	/* Replicated once we have hit something @todo: does this happen in time as we also remove the item directly upon hit, maybe first we disable the projectile and delete it slightly later?? */
 	UPROPERTY()
-	FHitResult Hit;
+	FVector Velocity = FVector::ZeroVector;
 
-	/* Check to avoid double playback of impact VFX as we can locally predict impacts and also later receive HitResult from server via replication. if we already played VFX we can skip */
-	UPROPERTY(NotReplicated)
-	bool bHasPlayedImpact = false;
+	UPROPERTY()
+	float SimulationTime = 0;
 
-	/* Server-side lifespan check, built from current game time + initial lifespan = expiration time */
-	UPROPERTY(NotReplicated)
-	float ExpirationGameTime = 0;
+	UPROPERTY()
+	float ExpirationTime = 0;
 
-	UPROPERTY(NotReplicated)
-	TObjectPtr<UNiagaraComponent> TracerEffectComp = nullptr;
-	
+	UPROPERTY()
+	TObjectPtr<URogueProjectileData> ConfigDataAsset = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<AActor> InstigatorActor = nullptr;
+};
+
+UENUM()
+enum class EProjectileOutcome : uint8
+{
+	Flying,
+	Impacted,
+	Expired,
+	Rejected,
+	Cancelled
+};
+
+/* Also used for owner-only responses. Impact presentation does not require a live hit actor. */
+USTRUCT()
+struct ACTIONROGUELIKE_API FProjectileUpdate
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FProjectileLaunch Projectile;
+
+	UPROPERTY()
+	EProjectileOutcome Outcome = EProjectileOutcome::Flying;
+
+	UPROPERTY()
+	FVector ImpactPosition = FVector::ZeroVector;
+
+	UPROPERTY()
+	FVector ImpactNormal = FVector::UpVector;
+
+	UPROPERTY()
+	bool bSpawnDecal = false;
+};
+
+USTRUCT()
+struct ACTIONROGUELIKE_API FProjectileItem : public FFastArraySerializerItem
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FProjectileLaunch Projectile;
+
 	void PostReplicatedAdd(const FProjectileArray& InArraySerializer);
 	void PreReplicatedRemove(const FProjectileArray& InArraySerializer);
 	void PostReplicatedChange(const FProjectileArray& InArraySerializer);
-	
-	bool operator==(const FProjectileItem& OtherConfig) const
-	{
-		return OtherConfig.ID == ID;
-	}
 };
 
-/*
- * 
- */
 USTRUCT()
-struct FProjectileArray: public FFastArraySerializer
+struct ACTIONROGUELIKE_API FProjectileArray : public FFastArraySerializer
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	UPROPERTY(NotReplicated)
 	TObjectPtr<URogueProjectilesSubsystem> OwningSubsystem = nullptr;
@@ -101,18 +110,15 @@ struct FProjectileArray: public FFastArraySerializer
 	UPROPERTY()
 	TArray<FProjectileItem> Items;
 
-	bool NetDeltaSerialize(FNetDeltaSerializeInfo & DeltaParms)
-	{
-		return FFastArraySerializer::FastArrayDeltaSerialize<FProjectileItem, FProjectileArray>( Items, DeltaParms, *this );
-	}
+	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms);
+	void PostReplicatedReceive(const FFastArraySerializer::FPostReplicatedReceiveParameters& Parameters);
 };
 
 template<>
 struct TStructOpsTypeTraits<FProjectileArray> : public TStructOpsTypeTraitsBase2<FProjectileArray>
 {
-	enum 
+	enum
 	{
-		WithNetDeltaSerializer = true,
-   };
+		WithNetDeltaSerializer = true
+	};
 };
-

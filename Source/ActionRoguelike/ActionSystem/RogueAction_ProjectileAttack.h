@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "ActionRoguelike.h"
 #include "ActionSystem/RogueAction.h"
+#include "Projectiles/RogueProjectileReplication.h"
 #include "RogueAction_ProjectileAttack.generated.h"
 
 class UNiagaraSystem;
@@ -25,9 +26,18 @@ public:
 	virtual void StartAction_Implementation(AActor* Instigator) override;
 	
 	virtual void StopAction_Implementation(AActor* Instigator) override;
+
+	bool CanPredictProjectile() const;
+	void StartPrediction(FProjectilePredictionKey Key);
+	void CancelPrediction(FProjectilePredictionKey Key);
+	void StartServerPrediction(FProjectilePredictionKey Key);
+	void SubmitPredictedAim(FProjectilePredictionKey Key, FVector AimDirection);
+	FProjectilePredictionKey GetServerPredictionKey() const { return ServerPredictionKey; }
 	
 protected:
 	
+	virtual void BroadcastActionCosmetics() override;
+
 	virtual void PlayActionCosmetics() override;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -64,4 +74,17 @@ protected:
 	FTimerHandle TimerHandle_AttackDelay;
 	
 	void AttackDelay_Elapsed();
+	void PredictionDelay_Elapsed();
+	void PredictionTimeout_Elapsed();
+	bool CalculateProjectileLaunch(FVector AimDirection, FVector& HandLocation, FVector& LaunchDirection) const;
+	void ReleasePredictedProjectile();
+
+	FTimerHandle TimerHandle_PredictionTimeout;
+	FProjectilePredictionKey LocalPredictionKey;
+	FProjectilePredictionKey ServerPredictionKey;
+	FVector PendingAimDirection = FVector::ForwardVector;
+	float NextLocalAttackTime = 0;
+	bool bHasPredictedAim = false;
+	bool bReadyToRelease = false;
+	bool bProjectileReleased = false;
 };

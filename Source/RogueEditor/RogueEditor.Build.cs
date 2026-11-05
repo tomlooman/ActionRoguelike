@@ -12,7 +12,11 @@ public class RogueEditor : ModuleRules
 			"Engine",
 			"DataValidation",
 			"BlueprintGraph",
-			"ActionRoguelike"
+			"ActionRoguelike",
+			"UnrealEd",
+			"GameplayTags",
+			"AIModule",
+			"KismetCompiler"
 		});
 	}
 }

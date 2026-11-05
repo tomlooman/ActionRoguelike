@@ -77,6 +77,9 @@ protected:
 	/* Action nickname to start/stop without a reference to the object */
 	UPROPERTY(EditDefaultsOnly, Category = "Action")
 	FGameplayTag ActivationTag;
+
+	/* Broadcast one-shot presentation. Specialized actions may provide their own transport. */
+	virtual void BroadcastActionCosmetics();
 	
 public:
 	

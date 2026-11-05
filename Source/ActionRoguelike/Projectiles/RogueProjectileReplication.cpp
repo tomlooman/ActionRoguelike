@@ -5,30 +5,42 @@
 
 void FProjectileItem::PostReplicatedAdd(const FProjectileArray& InArraySerializer)
 {
-	InArraySerializer.OwningSubsystem->InternalCreateProjectile(this->InitialPosition, InitialDirection, ConfigDataAsset, InstigatorActor, ID);
+	if (InArraySerializer.OwningSubsystem)
+	{
+		InArraySerializer.OwningSubsystem->ReceiveLaunch(Projectile);
+	}
 }
 
 
 void FProjectileItem::PreReplicatedRemove(const FProjectileArray& InArraySerializer)
 {
-	// It can happen that clients already removed the projectile ID locally from its local collision checks
-	InArraySerializer.OwningSubsystem->RemoveProjectileID(ID);
+	if (InArraySerializer.OwningSubsystem)
+	{
+		InArraySerializer.OwningSubsystem->ReceiveRemoval(Projectile);
+	}
 }
 
 
 void FProjectileItem::PostReplicatedChange(const FProjectileArray& InArraySerializer)
 {
-	// Check if hit was set
-	if (Hit.GetActor() && !bHasPlayedImpact)
-	{
-		bHasPlayedImpact = true;
-		
-		FRotator ImpactRotation = (Hit.TraceEnd - Hit.TraceStart).GetSafeNormal().Rotation();
-		UWorld* World = InArraySerializer.OwningSubsystem->GetWorld();
+	PostReplicatedAdd(InArraySerializer);
+}
 
-		InArraySerializer.OwningSubsystem->SpawnImpactFX(World, *this, Hit.Location, ImpactRotation);
+
+bool FProjectileArray::NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
+{
+	return FastArrayDeltaSerialize<FProjectileItem, FProjectileArray>(Items, DeltaParms, *this);
+}
+
+
+void FProjectileArray::PostReplicatedReceive(const FFastArraySerializer::FPostReplicatedReceiveParameters& Parameters)
+{
+	// Retry deferred launches when Iris/legacy replication resolves an asset or actor reference.
+	if (OwningSubsystem)
+	{
+		for (const FProjectileItem& Item : Items)
+		{
+			OwningSubsystem->ReceiveLaunch(Item.Projectile);
+		}
 	}
-		
-	//DrawDebugDirectionalArrow(World, Hit.Location, (Hit.Location + (ImpactRotation.Vector() * 50.0f)), 20.0f, FColor::Green, false, 5.0f);
-	//DrawDebugSphere(World, Hit.Location, 32.0f, 32, FColor::Orange, false, 5.f);
 }

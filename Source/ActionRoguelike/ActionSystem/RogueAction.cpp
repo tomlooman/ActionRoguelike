@@ -54,7 +54,7 @@ void URogueAction::StartAction_Implementation(AActor* Instigator)
 	
 	Comp->OnActionStarted.Broadcast(GetOwningComponent(), this);
 	
-	Comp->MulticastPlayActionCosmetics(this);
+	BroadcastActionCosmetics();
 }
 
 
@@ -133,6 +133,12 @@ void URogueAction::ApplyActionState_Implementation(bool bIsRunning)
 void URogueAction::PlayActionCosmetics()
 {
 	// Nothing to do here, projectile attack handles one-shot cosmetics
+}
+
+
+void URogueAction::BroadcastActionCosmetics()
+{
+	GetOwningComponent()->MulticastPlayActionCosmetics(this);
 }
 
 void URogueAction::ApplyRunningState(bool bIsRunning)

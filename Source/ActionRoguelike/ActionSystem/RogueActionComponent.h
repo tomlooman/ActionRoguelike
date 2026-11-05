@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Engine/NetSerialization.h"
 #include "GameplayTagContainer.h"
 #include "RogueAttributeSet.h"
+#include "Projectiles/RogueProjectileReplication.h"
 #include "RogueActionComponent.generated.h"
 
 class URogueActionComponent;
@@ -84,6 +86,21 @@ public:
 
 	void BroadcastAttributeChanged(FGameplayTag InTag, float InNewValue, FAttributeModification InModification);
 
+	uint32 GetProjectileSession() const { return ProjectileSession; }
+	void RejectProjectilePrediction(FProjectilePredictionKey Key, EProjectileOutcome Outcome);
+
+	UFUNCTION(Server, Reliable)
+	void ServerBeginProjectileAttack(FGameplayTag ActionName, FProjectilePredictionKey Key);
+
+	UFUNCTION(Server, Reliable)
+	void ServerReleaseProjectile(FProjectilePredictionKey Key, FVector_NetQuantizeNormal AimDirection);
+
+	UFUNCTION(Server, Unreliable)
+	void ServerQueryProjectileStatus(int64 ID);
+
+	UFUNCTION(Client, Reliable)
+	void ClientProjectileUpdates(const TArray<FProjectileUpdate>& Updates);
+
 protected:
 
 	UFUNCTION(BlueprintCallable, Category=Attributes, DisplayName="GetAttribute")
@@ -131,6 +148,14 @@ protected:
 	UPROPERTY(Transient)
 	TMap<FGameplayTag, TObjectPtr<URogueAction>> CachedActions;
 
+	UPROPERTY(Transient, Replicated)
+	uint32 ProjectileSession = 0;
+
+	uint32 NextProjectileSequence = 1;
+	uint32 LastProjectileSequence = 0;
+	float NextProjectileStatusRequestTime = 0;
+	TMap<FProjectilePredictionKey, float> PredictedProjectileCosmetics;
+
 public:	
 
 	/**
@@ -138,6 +163,9 @@ public:
 	 */
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastPlayActionCosmetics(URogueAction* Action);
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastPlayProjectileCosmetics(URogueAction* Action, FProjectilePredictionKey PredictionKey);
 
 	URogueActionComponent();
 
