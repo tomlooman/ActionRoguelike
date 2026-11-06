@@ -71,7 +71,7 @@ void URoguePickupSubsystem::RemoveCoinsPickup(int32 InIndex)
 
 		// Find match based on local ID again
 		FPrimitiveInstanceId IdToFind = CoinMeshIDs[InIndex];
-		GS->CoinPickupData.Items.Remove(FPickupLocationItem(FVector::ZeroVector, IdToFind));
+		GS->CoinPickupData.Items.RemoveSingleSwap(FPickupLocationItem(FVector::ZeroVector, IdToFind));
 		GS->CoinPickupData.MarkArrayDirty();
 	}
 
