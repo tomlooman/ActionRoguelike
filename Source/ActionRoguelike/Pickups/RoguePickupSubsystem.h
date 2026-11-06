@@ -18,7 +18,7 @@ class ACTIONROGUELIKE_API URoguePickupSubsystem : public UTickableWorldSubsystem
 
 public:
 	
-	void AddCoinsPickup(TArray<FVector> Locations, TArray<int32> CoinAmount);
+	void AddCoinsPickup(const TArray<FVector>& Locations, const TArray<int32>& CoinAmount);
 
 	TArray<FPrimitiveInstanceId> AddMeshInstances(const TArray<FTransform>& InAdded);
 

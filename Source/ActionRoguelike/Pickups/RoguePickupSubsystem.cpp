@@ -15,7 +15,7 @@
 
 
 
-void URoguePickupSubsystem::AddCoinsPickup(TArray<FVector> Locations, TArray<int32> CoinAmount)
+void URoguePickupSubsystem::AddCoinsPickup(const TArray<FVector>& Locations, const TArray<int32>& CoinAmount)
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE(RoguePickupSubsystem::AddCoinsPickup)
 	
@@ -174,21 +174,18 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 			TArray<int32> ProcessList;
 			
 #if USE_MULTITHREADED_COIN_PICKUPS
-			// Copy array to avoid issues with 
-			TArray<FVector> CoinPickupLocations_Copy(CoinPickupLocations);
-			
 			// Multiple-producer, single consumer queue
 			TMpscQueue<int32> ProcessQueue;
 			
 			// Min batch size is essential for getting any benefit out of doing this async as the per-iteration
 			// cost for this function is so small (just a distance check)
 			const int32 MinBatchSize = 1000;
-			ParallelFor(TEXT("ParallelCoinTick"), CoinPickupLocations_Copy.Num(), MinBatchSize, [&](int32 Index)
+			ParallelFor(TEXT("ParallelCoinTick"), CoinPickupLocations.Num(), MinBatchSize, [&](int32 Index)
 			{
 				// relatively high overhead vs. just distance checking, so it will skew the numbers
 				//TRACE_CPUPROFILER_EVENT_SCOPE(CoinTick::DistanceCheck)
 				
-				float DistSqrd = FVector::DistSquared(CoinPickupLocations_Copy[Index], PlayerLocation);
+				float DistSqrd = FVector::DistSquared(CoinPickupLocations[Index], PlayerLocation);
 				if (DistSqrd < PickupRadiusSqrd)
 				{
 					// Pickups need processing later to avoid messing with cpu cache					

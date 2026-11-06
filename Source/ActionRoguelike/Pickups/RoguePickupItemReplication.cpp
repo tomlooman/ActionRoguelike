@@ -18,7 +18,7 @@ void FPickupLocationsArray::PostReplicatedAdd(const TArrayView<int32>& AddedIndi
 	
 	for (int Index = 0; Index < AddedIndices.Num(); ++Index)
 	{
-		const FPickupLocationItem Item = Items[AddedIndices[Index]];
+		const FPickupLocationItem& Item = Items[AddedIndices[Index]];
 		NewCoinsTMs.Add(FTransform(Item.CoinLocation));
 	}
 
