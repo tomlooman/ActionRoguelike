@@ -354,6 +354,17 @@ uint32 URogueProjectilesSubsystem::GetUniqueProjID(FVector InPos, float InGameTi
 }
 
 
+bool URogueProjectilesSubsystem::ShouldCreateSubsystem(UObject* Outer) const
+{
+	const UWorld* World = Cast<UWorld>(Outer);
+
+	// Skip in worlds like Editor
+	return !IsRunningCommandlet() && World
+		&& (World->WorldType == EWorldType::Game
+			|| World->WorldType == EWorldType::PIE);
+}
+
+
 TStatId URogueProjectilesSubsystem::GetStatId() const
 {
 	RETURN_QUICK_DECLARE_CYCLE_STAT(URogueProjectilesSubsystem, STATGROUP_Tickables);

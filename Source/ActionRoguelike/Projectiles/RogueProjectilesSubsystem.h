@@ -81,6 +81,8 @@ public:
 	
 	uint32 GetUniqueProjID(FVector InPos, float InGameTime);
 	
+	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
+	
 protected:
 
 	bool HasAuthority() const;
