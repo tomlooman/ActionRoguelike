@@ -124,8 +124,14 @@ void URoguePickupSubsystem::CreateWorldISM()
 }
 
 
-void URoguePickupSubsystem::PlayPickupSound()
+void URoguePickupSubsystem::PlayLocalCoinPickupSound()
 {
+	// The sound may still be loading when the first pickup arrives.
+	if (!IsValid(CoinPickupAudioComp) || !CoinPickupAudioComp->GetSound())
+	{
+		return;
+	}
+
 	if (!CoinPickupAudioComp->IsPlaying())
 	{
 		CoinPickupAudioComp->Play();
@@ -229,16 +235,15 @@ void URoguePickupSubsystem::Tick(float DeltaTime)
 		// Award each player
 		for (int i = 0; i < PlayerPawns.Num(); ++i)
 		{
+			ARoguePlayerCharacter* MyPawn = PlayerPawns[i];
 			int32 AwardAmount = TotalCoinsPerPlayer[i];
 			if (AwardAmount == 0)
 			{
 				continue;
 			}
 			
-			PlayerPawns[i]->GetActionComponent()->ApplyAttributeChange(SharedGameplayTags::Attribute_Credits, AwardAmount, PlayerPawns[i], EAttributeModifyType::AddBase);
-
-			// @todo: play sound properly for networked players...eg. they receive these Coins w/ a pickup contextTag
-			PlayPickupSound();
+			MyPawn->GetActionComponent()->ApplyAttributeChange(SharedGameplayTags::Attribute_Credits, AwardAmount, MyPawn, EAttributeModifyType::AddBase);
+			MyPawn->ClientPlayCoinPickupSound();
 		}
 	}
 
@@ -263,7 +268,7 @@ void URoguePickupSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	CoinPickupAudioComp = NewObject<UAudioComponent>(World, NAME_None, RF_Transient);
 	CoinPickupAudioComp->bAutoActivate = false;
-	// Force 2D so it doesn't need to move with the recent pick-up. Alternatively, do move it before playing a new pickup sound if fall-off and 3D is better.
+	// Only the collecting player hears this feedback, so it stays 2D.
 	CoinPickupAudioComp->bAllowSpatialization = false;
 	CoinPickupAudioComp->RegisterComponentWithWorld(World);
 

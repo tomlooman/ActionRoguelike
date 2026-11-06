@@ -120,6 +120,10 @@ public:
 	UFUNCTION(Client, Unreliable)
 	void ClientOnSeenBy(ARogueAICharacter* SeenByPawn);
 
+	/* Server confirms a coin pickup to the collecting player only. */
+	UFUNCTION(Client, Unreliable)
+	void ClientPlayCoinPickupSound();
+
 	virtual URogueActionComponent* GetActionComponent() const override
 	{
 		return ActionComp;

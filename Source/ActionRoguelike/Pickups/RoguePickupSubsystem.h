@@ -24,6 +24,9 @@ public:
 
 	void RemoveMeshInstances(const TArray<FPrimitiveInstanceId>& IdsToRemove);
 
+	/* Local feedback invoked by the collecting player's Client RPC. */
+	void PlayLocalCoinPickupSound();
+
 protected:
 	
 	void RemoveCoinsPickup(int32 InIndex);
@@ -37,8 +40,6 @@ protected:
 	FPrimitiveInstanceId AddMeshInstance(FVector InLocation);
 
 	void CreateWorldISM();
-
-	void PlayPickupSound();
 
 	/* Single ISM that holds all coins, registered directly with the world instead of Actor wrapper */
 	UPROPERTY()

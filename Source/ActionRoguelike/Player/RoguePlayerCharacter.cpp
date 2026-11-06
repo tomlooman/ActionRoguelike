@@ -20,6 +20,7 @@
 #include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Pickups/RoguePickupSubsystem.h"
 #include "UI/RogueWorldUserWidget.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(RoguePlayerCharacter)
@@ -182,6 +183,12 @@ void ARoguePlayerCharacter::ClientOnSeenBy_Implementation(ARogueAICharacter* See
 		NewWidget->AddToRootCanvasPanel();
 	}*/
 }
+
+void ARoguePlayerCharacter::ClientPlayCoinPickupSound_Implementation()
+{
+	GetWorld()->GetSubsystem<URoguePickupSubsystem>()->PlayLocalCoinPickupSound();
+}
+
 
 void ARoguePlayerCharacter::PlayAttackSound(USoundBase* InSound)
 {
