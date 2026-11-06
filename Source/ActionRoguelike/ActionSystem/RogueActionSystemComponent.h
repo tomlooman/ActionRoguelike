@@ -41,8 +41,15 @@ class ACTIONROGUELIKE_API URogueActionSystemComponent : public UActorComponent
 public:
 
 	void StartAction(FGameplayTag InActionName);
+	
+	UFUNCTION(Server, Reliable)
+	void ServerStartAction(FGameplayTag InActionName);
 
 	void StopAction(FGameplayTag InActionName);
+	
+	UFUNCTION(Server, Reliable)
+	void ServerStopAction(FGameplayTag InActionName);
+
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyAttributeChange(FGameplayTag AttributeTag, float Delta, EAttributeModifyType ModifyType);

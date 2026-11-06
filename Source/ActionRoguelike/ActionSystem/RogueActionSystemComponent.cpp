@@ -153,37 +153,47 @@ void URogueActionSystemComponent::CheckAgainstBlockedTags(const FGameplayTagCont
 
 void URogueActionSystemComponent::StartAction(FGameplayTag InActionName)
 {
-	for (URogueAction* Action : Actions)
-	{
-		if (Action->GetActionName() == InActionName)
-		{
-			if (Action->CanStart())
-			{
-				Action->StartAction();
-			}
-			
-			return;
-		}
-	}
+	ServerStartAction(InActionName);
+}
 
-	UE_LOG(LogGame, Warning, TEXT("No Action found with name %s"), *InActionName.ToString());
+void URogueActionSystemComponent::ServerStartAction_Implementation(FGameplayTag InActionName)
+{
+	for (URogueAction* Action : Actions)
+    {
+    	if (Action->GetActionName() == InActionName)
+    	{
+    		if (Action->CanStart())
+    		{
+    			Action->StartAction();
+    		}
+    		
+    		return;
+    	}
+    }
+
+    UE_LOG(LogGame, Warning, TEXT("No Action found with name %s"), *InActionName.ToString());
 }
 
 void URogueActionSystemComponent::StopAction(FGameplayTag InActionName)
 {
-	for (URogueAction* Action : Actions)
-	{
-		if (Action->GetActionName() == InActionName)
-		{
-			if (Action->IsRunning())
-			{
-				Action->StopAction();
-			}
-			return;
-		}
-	}
+	ServerStopAction(InActionName);
+}
 
-	UE_LOG(LogGame, Warning, TEXT("No Action found with name %s"), *InActionName.ToString());
+void URogueActionSystemComponent::ServerStopAction_Implementation(FGameplayTag InActionName)
+{
+		for (URogueAction* Action : Actions)
+    	{
+    		if (Action->GetActionName() == InActionName)
+    		{
+    			if (Action->IsRunning())
+    			{
+    				Action->StopAction();
+    			}
+    			return;
+    		}
+    	}
+    
+    	UE_LOG(LogGame, Warning, TEXT("No Action found with name %s"), *InActionName.ToString());
 }
 
 void URogueActionSystemComponent::ApplyAttributeChange(FGameplayTag AttributeTag, float Delta, EAttributeModifyType ModifyType)
