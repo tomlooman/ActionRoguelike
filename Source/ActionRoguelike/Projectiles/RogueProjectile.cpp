@@ -26,8 +26,18 @@ ARogueProjectile::ARogueProjectile()
 
 	LoopedAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("LoopedAudioComp"));
 	LoopedAudioComponent->SetupAttachment(SphereComponent);
+	
+	bReplicates = true;
 
 	InitialLifeSpan = 30.0f;
+}
+
+void ARogueProjectile::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	
+	SphereComponent->OnComponentHit.AddDynamic(this, &ARogueProjectile::OnActorHit);
+	SphereComponent->IgnoreActorWhenMoving(GetInstigator(), true);
 }
 
 void ARogueProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -42,12 +52,4 @@ void ARogueProjectile::PlayExplodeEffects()
 {
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ExplosionEffect, GetActorLocation());
 	UGameplayStatics::PlaySoundAtLocation(this, ExplosionSound, GetActorLocation(), FRotator::ZeroRotator);
-}
-
-void ARogueProjectile::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-	
-	SphereComponent->OnComponentHit.AddDynamic(this, &ARogueProjectile::OnActorHit);
-	SphereComponent->IgnoreActorWhenMoving(GetInstigator(), true);
 }

@@ -27,23 +27,26 @@ void ARogueProjectileMagic::OnActorHit(UPrimitiveComponent* HitComponent, AActor
 	
 	//FVector TravelDirection = (Hit.TraceEnd - Hit.TraceStart).GetSafeNormal();
 	
-	UAISense_Hearing::ReportNoiseEvent(this, GetActorLocation(), 1, GetInstigator());
+	if (HasAuthority())
+	{
+		UAISense_Hearing::ReportNoiseEvent(this, GetActorLocation(), 1, GetInstigator());
 	
-	UGameplayStatics::ApplyPointDamage(OtherActor, AttackDamage, HitFromDirection, Hit,  GetInstigatorController(),
-		this, nullptr);
+		UGameplayStatics::ApplyPointDamage(OtherActor, AttackDamage, HitFromDirection, Hit,  GetInstigatorController(),
+			this, nullptr);
+		
+		if (EffectOnHit)
+		{
+			URogueActionSystemComponent* ActionComp = OtherActor->FindComponentByClass<URogueActionSystemComponent>();
+			if (ActionComp) // Not everything will have one
+			{
+				ActionComp->GrantAction(EffectOnHit);
+			}
+		}
+	}
 	
 	if (OtherComp->IsSimulatingPhysics(Hit.BoneName))
 	{
 		OtherComp->AddImpulseAtLocation(HitFromDirection * ImpulseIntensity, Hit.Location, Hit.BoneName);
-	}
-	
-	if (EffectOnHit)
-	{
-		URogueActionSystemComponent* ActionComp = OtherActor->FindComponentByClass<URogueActionSystemComponent>();
-		if (ActionComp) // Not everything will have one
-		{
-			ActionComp->GrantAction(EffectOnHit);
-		}
 	}
 }
 
