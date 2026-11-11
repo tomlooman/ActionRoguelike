@@ -22,8 +22,11 @@ void URogueAction::StartAction_Implementation()
 	}
 	
 	bIsRunning = true;
+	ApplyRunningState(bIsRunning);
 	
 	OwningComp->MulticastPlayBurstCosmetics(this);
+	
+	StartLoopingCosmetics();
 	
 	float GameTime = GetWorld()->TimeSeconds;
 	UE_LOGFMT(LogGame, Log, "Started Action {ActionName} - {WorldTime}",
@@ -34,6 +37,7 @@ void URogueAction::StartAction_Implementation()
 void URogueAction::StopAction_Implementation()
 {
 	bIsRunning = false;
+	ApplyRunningState(bIsRunning);
 	
 	float GameTime = GetWorld()->TimeSeconds;
 	
@@ -44,6 +48,8 @@ void URogueAction::StopAction_Implementation()
 	CooldownUntil = GetWorld()->TimeSeconds + CooldownTime;
 
 	GetOwningComponent()->RemoveActiveTags(GrantTags);
+	
+	StopLoopingCosmetics();
 }
 
 bool URogueAction::CanStart() const
@@ -94,11 +100,26 @@ void URogueAction::RegisterReplicationFragments(UE::Net::FFragmentRegistrationCo
 	UE::Net::FReplicationFragmentUtil::CreateAndRegisterFragmentsForObject(this, Context, RegistrationFlags);	
 }
 
+void URogueAction::ApplyRunningState_Implementation(bool bNewIsRunning) {}
+
+void URogueAction::StartLoopingCosmetics_Implementation() {}
+
+void URogueAction::StopLoopingCosmetics_Implementation() {}
+
 void URogueAction::PlayBurstCosmetics_Implementation() {}
 
 void URogueAction::OnRep_IsRunning()
 {
-	UE_LOG(LogGame, Log, TEXT("Received bIsRunning with OnRep_IsRunning for %s"), *ToString(GetWorld()->GetNetMode()))
+	ApplyRunningState(bIsRunning);
+	
+	if (bIsRunning)
+	{
+		StartLoopingCosmetics();
+	}
+	else
+	{
+		StopLoopingCosmetics();
+	}
 }
 
 URogueActionSystemComponent* URogueAction::GetOwningComponent() const

@@ -84,6 +84,18 @@ public:
 	void PlayBurstCosmetics();
 
 protected:
+	
+	/* update client-side on logic that needs manual syncing, not used for cosmetics */
+	UFUNCTION(BlueprintNativeEvent)
+	void ApplyRunningState(bool bNewIsRunning);
+	
+	/* Activate cosmetics with a defined start/end while running */
+	UFUNCTION(BlueprintNativeEvent)
+	void StartLoopingCosmetics();
+	
+	/* Finish cosmetics with a defined start/end while running */
+	UFUNCTION(BlueprintNativeEvent)
+	void StopLoopingCosmetics();
 
 	/* GameTime until the Action is available again */
 	UPROPERTY(Transient)

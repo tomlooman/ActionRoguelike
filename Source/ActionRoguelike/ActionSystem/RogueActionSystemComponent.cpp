@@ -122,6 +122,8 @@ void URogueActionSystemComponent::RemoveAction(URogueAction* ActionToRemove)
 
 void URogueActionSystemComponent::AppendActiveTags(FGameplayTagContainer NewTags)
 {
+	check(GetOwner()->HasAuthority());
+	
 	ActiveGameplayTags.AppendTags(NewTags);
 	
 	CheckAgainstBlockedTags(NewTags);
@@ -134,6 +136,8 @@ void URogueActionSystemComponent::AppendActiveTags(FGameplayTagContainer NewTags
 
 void URogueActionSystemComponent::RemoveActiveTags(FGameplayTagContainer TagsToRemove)
 {
+	check(GetOwner()->HasAuthority());
+	
 	int32 PrevCount = ActiveGameplayTags.Num();
 	
 	ActiveGameplayTags.RemoveTags(TagsToRemove);
@@ -308,4 +312,5 @@ void URogueActionSystemComponent::GetLifetimeReplicatedProps(TArray<FLifetimePro
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(URogueActionSystemComponent, Actions);
+	DOREPLIFETIME(URogueActionSystemComponent, ActiveGameplayTags);
 }

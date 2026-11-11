@@ -20,12 +20,9 @@ public:
 	
 	virtual void NativeInitializeAnimation() override;
 
-	virtual void NativeBeginPlay() override;
+	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 protected:
-	
-	UFUNCTION()
-	void OnTagUpdated(FGameplayTag UpdatedTag, int32 NewCount);
 
 	UPROPERTY(Transient, BlueprintReadOnly, Category=StatusEffects)
 	bool bIsSprinting;

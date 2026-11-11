@@ -98,6 +98,7 @@ public:
 
 protected:
 	
+	UPROPERTY(Replicated)
 	FGameplayTagContainer ActiveGameplayTags;
 	
 	void CheckAgainstBlockedTags(const FGameplayTagContainer& NewTags);
