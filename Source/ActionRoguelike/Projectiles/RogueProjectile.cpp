@@ -32,12 +32,14 @@ ARogueProjectile::ARogueProjectile()
 	InitialLifeSpan = 30.0f;
 }
 
-void ARogueProjectile::PostInitializeComponents()
+void ARogueProjectile::BeginPlay()
 {
-	Super::PostInitializeComponents();
+	Super::BeginPlay();
 	
 	SphereComponent->OnComponentHit.AddDynamic(this, &ARogueProjectile::OnActorHit);
 	SphereComponent->IgnoreActorWhenMoving(GetInstigator(), true);
+	
+	GetInstigator()->MoveIgnoreActorAdd(this);
 }
 
 void ARogueProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,

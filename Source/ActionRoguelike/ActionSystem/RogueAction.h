@@ -78,6 +78,10 @@ public:
 	virtual void RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context, UE::Net::EFragmentRegistrationFlags RegistrationFlags) override;
 	
 	virtual bool IsSupportedForNetworking() const override { return true; }
+	
+	/* Play fire and forget cosmetics */
+	UFUNCTION(BlueprintNativeEvent)
+	void PlayBurstCosmetics();
 
 protected:
 

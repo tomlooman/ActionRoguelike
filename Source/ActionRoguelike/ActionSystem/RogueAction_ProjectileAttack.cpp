@@ -27,16 +27,6 @@ void URogueAction_ProjectileAttack::StartAction_Implementation()
 {
 	Super::StartAction_Implementation();
 
- 	URogueActionSystemComponent* ActionComp = GetOwningComponent();
-	ACharacter* Character = CastChecked<ACharacter>(ActionComp->GetOwner());
-
-	Character->PlayAnimMontage(AttackMontage);
-
-	UNiagaraFunctionLibrary::SpawnSystemAttached(CastingEffect, Character->GetMesh(), MuzzleSocketName,
-		FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::Type::SnapToTarget, true);
-
-	UGameplayStatics::PlaySound2D(this, CastingSound);
-	
 	FTimerHandle AttackTimerHandle;
 	const float AttackDelayTime = 0.2f;
 
@@ -78,9 +68,7 @@ void URogueAction_ProjectileAttack::AttackTimerElapsed()
 
 	FRotator SpawnRotation = (AdjustTargetLocation - SpawnLocation).Rotation();
 
-	AActor* NewProjectile = World->SpawnActor<AActor>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
-
-	Character->MoveIgnoreActorAdd(NewProjectile);
+	World->SpawnActor<AActor>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
 	
 	StopAction();
 
@@ -102,5 +90,20 @@ void URogueAction_ProjectileAttack::AttackTimerElapsed()
 			false, DebugDrawDuration);
 	}
 #endif
+}
+
+void URogueAction_ProjectileAttack::PlayBurstCosmetics_Implementation()
+{
+	Super::PlayBurstCosmetics_Implementation();
+	
+	URogueActionSystemComponent* ActionComp = GetOwningComponent();
+	ACharacter* Character = CastChecked<ACharacter>(ActionComp->GetOwner());
+	
+	Character->PlayAnimMontage(AttackMontage);
+
+	UNiagaraFunctionLibrary::SpawnSystemAttached(CastingEffect, Character->GetMesh(), MuzzleSocketName,
+		FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::Type::SnapToTarget, true);
+
+	UGameplayStatics::PlaySound2D(this, CastingSound);
 }
 

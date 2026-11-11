@@ -11,15 +11,19 @@
 
 void URogueAction::StartAction_Implementation()
 {
-	GetOwningComponent()->AppendActiveTags(GrantTags);
+	URogueActionSystemComponent* OwningComp = GetOwningComponent();
+	
+	OwningComp->AppendActiveTags(GrantTags);
 
 	// Consume required resources
 	for (TPair<FGameplayTag, float> Cost : ActivationCost)
 	{
-		GetOwningComponent()->ApplyAttributeChange(Cost.Key, -Cost.Value, Modifier);
+		OwningComp->ApplyAttributeChange(Cost.Key, -Cost.Value, Modifier);
 	}
 	
 	bIsRunning = true;
+	
+	OwningComp->MulticastPlayBurstCosmetics(this);
 	
 	float GameTime = GetWorld()->TimeSeconds;
 	UE_LOGFMT(LogGame, Log, "Started Action {ActionName} - {WorldTime}",
@@ -89,6 +93,8 @@ void URogueAction::RegisterReplicationFragments(UE::Net::FFragmentRegistrationCo
 {
 	UE::Net::FReplicationFragmentUtil::CreateAndRegisterFragmentsForObject(this, Context, RegistrationFlags);	
 }
+
+void URogueAction::PlayBurstCosmetics_Implementation() {}
 
 void URogueAction::OnRep_IsRunning()
 {

@@ -50,6 +50,8 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerStopAction(FGameplayTag InActionName);
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastPlayBurstCosmetics(URogueAction* InAction);
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyAttributeChange(FGameplayTag AttributeTag, float Delta, EAttributeModifyType ModifyType);
@@ -95,7 +97,7 @@ public:
 	}
 
 protected:
-
+	
 	FGameplayTagContainer ActiveGameplayTags;
 	
 	void CheckAgainstBlockedTags(const FGameplayTagContainer& NewTags);

@@ -146,6 +146,14 @@ void URogueActionSystemComponent::RemoveActiveTags(FGameplayTagContainer TagsToR
 	}
 }
 
+void URogueActionSystemComponent::MulticastPlayBurstCosmetics_Implementation(URogueAction* InAction)
+{
+	if (IsValid(InAction))
+	{
+		InAction->PlayBurstCosmetics();
+	}
+}
+
 void URogueActionSystemComponent::CheckAgainstBlockedTags(const FGameplayTagContainer& NewTags)
 {
 	for (URogueAction* Action : Actions)
