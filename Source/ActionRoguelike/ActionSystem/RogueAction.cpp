@@ -5,7 +5,8 @@
 
 #include "ActionRoguelike.h"
 #include "RogueActionSystemComponent.h"
-
+#include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
+#include "Net/UnrealNetwork.h"
 
 
 void URogueAction::StartAction_Implementation()
@@ -84,7 +85,24 @@ float URogueAction::GetCooldownTimeRemaining() const
 	return FMath::Max(0.0f, CooldownUntil - GetWorld()->TimeSeconds);
 }
 
+void URogueAction::RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context,	UE::Net::EFragmentRegistrationFlags RegistrationFlags)
+{
+	UE::Net::FReplicationFragmentUtil::CreateAndRegisterFragmentsForObject(this, Context, RegistrationFlags);	
+}
+
+void URogueAction::OnRep_IsRunning()
+{
+	UE_LOG(LogGame, Log, TEXT("Received bIsRunning with OnRep_IsRunning for %s"), *ToString(GetWorld()->GetNetMode()))
+}
+
 URogueActionSystemComponent* URogueAction::GetOwningComponent() const
 {
 	return Cast<URogueActionSystemComponent>(GetOuter());
+}
+
+void URogueAction::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(URogueAction, bIsRunning);
 }

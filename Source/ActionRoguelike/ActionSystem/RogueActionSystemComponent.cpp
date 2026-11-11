@@ -8,12 +8,14 @@
 #include "RogueActionEffect.h"
 #include "RogueAttributeSet.h"
 #include "SharedGameplayTags.h"
-
+#include "Net/UnrealNetwork.h"
 
 
 URogueActionSystemComponent::URogueActionSystemComponent()
 {
 	bWantsInitializeComponent = true;
+	
+	SetIsReplicatedByDefault(true);
 }
 
 void URogueActionSystemComponent::InitializeComponent()
@@ -54,17 +56,22 @@ void URogueActionSystemComponent::BeginPlay()
 
 	Attributes->InitializeAttributes();
 	
-	for (TSubclassOf<URogueAction> ActionClass : DefaultActions)
+	if (GetOwner()->HasAuthority())
 	{
-		if (ensure(ActionClass))
+		for (TSubclassOf<URogueAction> ActionClass : DefaultActions)
 		{
-			GrantAction(ActionClass);
+			if (ensure(ActionClass))
+			{
+				GrantAction(ActionClass);
+			}
 		}
 	}
 }
 
 void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueAction> NewActionClass)
 {
+	check(GetOwner()->HasAuthority());
+	
 	const bool bIsEffectClass = NewActionClass->IsChildOf(URogueActionEffect::StaticClass());
 	if (bIsEffectClass)
 	{
@@ -85,6 +92,8 @@ void URogueActionSystemComponent::GrantAction(TSubclassOf<URogueAction> NewActio
 	
 	URogueAction* NewAction = NewObject<URogueAction>(this, NewActionClass);
 	Actions.Add(NewAction);
+	
+	AddReplicatedSubObject(NewAction);
 
 	if (bIsEffectClass)
 	{
@@ -105,6 +114,8 @@ void URogueActionSystemComponent::RemoveAction(URogueAction* ActionToRemove)
 	UE_LOG(LogGame, Verbose, TEXT("Removed Action %s from %s"), *GetNameSafe(ActionToRemove), *GetNameSafe(GetOwner()));
 	
 	OnActionRemoved.Broadcast(ActionToRemove);
+	
+	RemoveReplicatedSubObject(ActionToRemove);
 	
 	ActionToRemove->MarkAsGarbage();
 }
@@ -283,3 +294,10 @@ void URogueActionSystemComponent::RemoveDynamicAttributeListener(FOnAttributeDyn
 	}
 }
 
+
+void URogueActionSystemComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(URogueActionSystemComponent, Actions);
+}
