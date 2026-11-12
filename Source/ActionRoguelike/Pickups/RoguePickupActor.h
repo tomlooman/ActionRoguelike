@@ -38,22 +38,29 @@ protected:
 
 	void SetPickupState(bool bNewIsActive);
 
+
 	UPROPERTY(VisibleAnywhere, Category = Components)
 	TObjectPtr<USphereComponent> SphereComp;
 
 	UPROPERTY(VisibleAnywhere, Category = Components)
 	TObjectPtr<UStaticMeshComponent> MeshComp;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 public:
 
 	virtual void PostInitializeComponents() override;
 
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
 	UFUNCTION()
 	void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	
+		
+	virtual bool CanInteract_Implementation() override
+	{
+		// Base assumption, @todo: more specific handling of accept/reject
+		return bIsActive;
+	}
+
 	virtual void Interact_Implementation(AController* InstigatorController) override;
 
 	virtual FText GetInteractText_Implementation(AController* InstigatorController) override;
