@@ -20,9 +20,6 @@ URogueActionComponent::URogueActionComponent()
 	bWantsInitializeComponent = true;
 
 	SetIsReplicatedByDefault(true);
-
-	// See GDefaultUseSubObjectReplicationList for CVAR to enable by default project-wide
-	bReplicateUsingRegisteredSubObjectList = true;
 }
 
 
