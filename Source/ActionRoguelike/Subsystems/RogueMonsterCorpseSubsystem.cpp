@@ -9,8 +9,6 @@
 
 ARogueMonsterCorpse* URogueMonsterCorpseSubsystem::FetchCorpse(AActor* InActor, URogueMonsterData* MonsterData)
 {
-	CurrentCorpseCount++;
-	
 	FTransform SpawnTM = FTransform(InActor->GetActorRotation(), InActor->GetActorLocation());
 
 	URogueActorPoolingSubsystem* Pooler = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
@@ -20,6 +18,7 @@ ARogueMonsterCorpse* URogueMonsterCorpseSubsystem::FetchCorpse(AActor* InActor, 
 
 	// Track to clean up after some time or limit reached
 	Corpses.Enqueue(FMonsterCorpseInfo(PooledCorpse, GetWorld()->TimeSeconds));
+	CurrentCorpseCount++;
 
 	return PooledCorpse;
 }
@@ -59,9 +58,15 @@ void URogueMonsterCorpseSubsystem::CleanupNextAvailableCorpse()
 	{
 		return;
 	}
-
+	
+	// Something deleted us, skip usual pooling logic from below
+	if (!NextCorpse->Actor.IsValid())
+	{
+		Corpses.Dequeue();
+		CurrentCorpseCount--;
+	}
 	// If off-screen we can safely hide/delete - include fallback when above hard-limit, we always delete first even if potentially on-screen.
-	if (CurrentCorpseCount > MaxCorpses || !NextCorpse->Actor->WasRecentlyRendered())
+	else if (CurrentCorpseCount > MaxCorpses || !NextCorpse->Actor->WasRecentlyRendered())
 	{
 		URogueActorPoolingSubsystem* Pooler = GetWorld()->GetSubsystem<URogueActorPoolingSubsystem>();
 		Pooler->ReleaseToPool(NextCorpse->Actor.Get());
