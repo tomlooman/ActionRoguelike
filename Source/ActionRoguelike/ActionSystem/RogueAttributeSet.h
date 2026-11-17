@@ -187,8 +187,6 @@ protected:
 
 	UFUNCTION()
 	void OnRep_Health(FRogueAttribute OldValue);
-
-	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 };
 
 UCLASS()
