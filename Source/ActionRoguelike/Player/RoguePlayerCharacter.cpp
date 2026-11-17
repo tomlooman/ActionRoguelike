@@ -50,6 +50,7 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 	AttackSoundsComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AttackSoundsComp"));
 	AttackSoundsComp->SetupAttachment(RootComponent);
 	AttackSoundsComp->bAutoActivate = false;
+	AttackSoundsComp->bCanPlayMultipleInstances = true;
 	// Don't follow player unless actively playing a sound
 	AttackSoundsComp->bAutoManageAttachment = true;
 
@@ -192,7 +193,6 @@ void ARoguePlayerCharacter::ClientPlayCoinPickupSound_Implementation()
 
 void ARoguePlayerCharacter::PlayAttackSound(USoundBase* InSound)
 {
-	// This may interrupt previously playing sounds, so you'd want to test for this
 	AttackSoundsComp->SetSound(InSound);
 	AttackSoundsComp->Play();
 }
