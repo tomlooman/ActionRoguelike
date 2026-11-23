@@ -161,6 +161,8 @@ void ARogueAICharacter::BeginPlay()
 
 void ARogueAICharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	GetWorldTimerManager().ClearTimer(OverlayTimerHandle);
+
 	// Remove from SigMan
 	{
 		USignificanceManager* SigMan = USignificanceManager::Get(GetWorld());
@@ -180,10 +182,6 @@ void ARogueAICharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ARogueAICharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	
-	// Cheap trick to disable until we need it in the health event
-	CachedOverlayMaxDistance = GetMesh()->OverlayMaterialMaxDrawDistance;
-	GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
 
 	FAttributeChangedSignature& Delegate = ActionComp->GetAttributeListenerDelegate(SharedGameplayTags::Attribute_Health);
 	Delegate.AddUObject(this, &ThisClass::OnHealthAttributeChanged);
@@ -216,7 +214,6 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 		}
 
 		// We only hitflash when not killed, when killed we hitflash on the corpse mesh instead
-#if USE_MID_HITFLASHOVERLAY
 		if (OverlayHitflashMID)
 		{
 			USkeletalMeshComponent* SkelMesh = GetMesh();
@@ -225,28 +222,16 @@ void ARogueAICharacter::OnHealthAttributeChanged(float NewValue, const FAttribut
 			OverlayHitflashMID->SetScalarParameterValue(MonsterConfig->HitFlashTimeParamName, GetWorld()->TimeSeconds);
 			
 			// After 0.Xseconds we should be finished with the hitflash (re-use the handle to reset timer if we get hit again)
-			GetWorldTimerManager().SetTimer(OverlayTimerHandle, [SkelMesh]()
+			GetWorldTimerManager().SetTimer(OverlayTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
 			{
-				if (IsValid(SkelMesh))
+				USkeletalMeshComponent* Mesh = GetMesh();
+				// Another effect may have replaced the overlay while the flash was active.
+				if (Mesh->GetOverlayMaterial() == OverlayHitflashMID)
 				{
-					SkelMesh->SetOverlayMaterial(nullptr);
+					Mesh->SetOverlayMaterial(nullptr);
 				}
-			}, 0.5f, false);
+			}), 0.5f, false);
 		}
-#else
-		// Read by the Overlay Material to flash
-		GetMesh()->SetCustomPrimitiveDataFloat(HitFlash_CustomPrimitiveIndex, GetWorld()->TimeSeconds);
-
-		// We can skip rendering this at a distance
-		GetMesh()->SetOverlayMaterialMaxDrawDistance(CachedOverlayMaxDistance);
-
-		// After 1.0seconds we should be finished with the hitflash (re-use the handle to reset timer if we get hit again)
-		GetWorldTimerManager().SetTimer(OverlayTimerHandle, [this]()
-		{
-			// Cheap trick to skip rendering this all the time unless we are actively hit flashing
-			GetMesh()->SetOverlayMaterialMaxDrawDistance(1);
-		}, 1.0f, false);
-#endif
 
 		// Damaged, but not dead yet
 
