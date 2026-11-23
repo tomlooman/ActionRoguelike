@@ -29,6 +29,8 @@ public:
 protected:
 
 	FDelegateHandle OnOverlapHandle;
+	
+	FTimerHandle AnimCompleteHandle;
 
 	/* Have we already applied damage once */
 	bool bDamageApplied = false;

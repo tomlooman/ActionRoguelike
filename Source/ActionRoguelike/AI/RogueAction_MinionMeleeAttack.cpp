@@ -32,20 +32,19 @@ void URogueAction_MinionMeleeAttack::StartAction_Implementation(AActor* Instigat
 	float Duration = MyPawn->PlayAnimMontage(MeleeMontage);
 
 	// Stop once the animation has finished
-	FTimerHandle AnimCompleteHandle;
-	GetWorld()->GetTimerManager().SetTimer(AnimCompleteHandle, [this, Instigator]()
-	{
-		StopAction(Instigator);
-	}, Duration,false);
+	GetWorld()->GetTimerManager().SetTimer(AnimCompleteHandle,
+		FTimerDelegate::CreateUObject(this, &ThisClass::StopAction, Instigator), Duration, false);
 }
 
 void URogueAction_MinionMeleeAttack::StopAction_Implementation(AActor* Instigator)
 {
-	Super::StopAction_Implementation(Instigator);
+	GetWorld()->GetTimerManager().ClearTimer(AnimCompleteHandle);
 
 	ACharacter* MyPawn = CastChecked<ACharacter>(Instigator);
 	URogueAnimInstance* AnimInst = Cast<URogueAnimInstance>(MyPawn->GetMesh()->GetAnimInstance());
 	AnimInst->OnMeleeOverlap.Remove(OnOverlapHandle);
+
+	Super::StopAction_Implementation(Instigator);
 }
 
 void URogueAction_MinionMeleeAttack::OnMeleeOverlaps(const TArray<FOverlapResult>& Overlaps)
