@@ -1,6 +1,6 @@
 # Action Roguelike C++ Unreal Engine Game
 
-![Course Header](https://i0.wp.com/www.tomlooman.com/wp-content/uploads/2023/05/coursecpp_banner_widenarrow-3.png)
+[![Combat Example Still](https://tomlooman.com/assets/images/CourseCPP_HeroBanner_2.jpg)](https://tomlooman.com/unreal-engine-sample-game-action-roguelike/)
 
 **Branch Engine Version: 5.6** <br>
 
