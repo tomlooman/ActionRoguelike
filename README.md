@@ -1,6 +1,6 @@
 # Project Orion: Co-op Action Rogue-like Sample Game in Unreal Engine
 
-![Course Header](https://tomlooman.com/assets/images/coursecpp_banner_widenarrow-3.png)
+[![Combat Example Still](https://tomlooman.com/assets/images/CourseCPP_HeroBanner_2.jpg)](https://tomlooman.com/unreal-engine-sample-game-action-roguelike/)
 
 Welcome to **"Project Orion", a co-op Action Roguelike Sample Game** made in Unreal Engine 5 and C++. The project is an expansion on the game that you can build during the [Professional Game Development in C++ and Unreal Engine 5](https://tomlooman.com/courses/unrealengine-cpp) Course and is my continued effort at building the most advanced sample game for Unreal Engine, while being easy to understand, learn from and adapt to your own games.
 
