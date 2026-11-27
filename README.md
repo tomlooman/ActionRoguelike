@@ -1,15 +1,15 @@
 # Action Roguelike C++ Unreal Engine Game
 
-![Course Header](https://i0.wp.com/www.tomlooman.com/wp-content/uploads/2023/05/coursecpp_banner_widenarrow-3.png)
+[![Combat Example Still](https://tomlooman.com/assets/images/CourseCPP_HeroBanner_2.jpg)](https://tomlooman.com/unreal-engine-sample-game-action-roguelike/)
 
-**Branch Engine Version: 5.6** <br>
+**Branch Engine Version: 5.8** <br>
 
-This branch is dedicated to the lesson content for the [Professional Game Development in C++ and Unreal Engine 5](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github) Course! Browse the Commits list to find each individual lesson changes. These are also linked per lesson in the course platform for easy reference!
+This branch is dedicated to the lesson content for the [Professional Game Development in C++ and Unreal Engine 5](https://tomlooman.com/courses/unrealengine-cpp/) Course! Browse the Commits list to find each individual lesson changes. These are also linked per lesson in the course platform for easy reference!
 
 This is the NEW Unreal Engine 5 version of the course!
 
 > ### Learn Unreal Engine C++ The Epic Way
-> **Want to learn how to build this C++ Game from scratch? Learn more at [Professional Game Development in C++ and Unreal Engine Course](https://courses.tomlooman.com/p/unrealengine-cpp?coupon_code=COMMUNITY15&src=github)**
+> **Want to learn how to build this C++ Game from scratch? Learn more at [Professional Game Development in C++ and Unreal Engine Course](https://tomlooman.com/courses/unrealengine-cpp/)**
 
 # Credits
 
